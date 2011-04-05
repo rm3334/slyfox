@@ -26,9 +26,7 @@ classdef AChanGroup < hgsetget
             if nargin >0
                 obj.myNumChannels = varargin{1};
                 obj.myName = varargin{2};
-                %%%%%%%%%%%%% Steps 1 - assign values to "myValues"
-                %%%%%%%%%%%%% Steps 2 - safely create device
-                %%%%%%%%%%%%% Steps 3 - safely create channel objects
+                %%%%%%%%%%%%% Steps 1 - assi
                 
             end
         end
@@ -48,8 +46,6 @@ classdef AChanGroup < hgsetget
                 obj.myName = value;
             end
         end
-        
-%%%%%%%%%%%%%%%%%% ADD GET METHODS for AChanGroupFrontend
     end
     
 end
