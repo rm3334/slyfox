@@ -9,8 +9,11 @@ classdef AChanGroup < hgsetget
     %          Keys: DriverName, DevName
     
     properties (SetAccess = private)
-        myOutputData = [];
         myDevice = [];
+    end
+    
+    properties (Dependent)
+        myOutputData
     end
     
     properties
@@ -26,6 +29,7 @@ classdef AChanGroup < hgsetget
             if nargin >0
                 obj.myNumChannels = varargin{1};
                 obj.myName = varargin{2};
+                obj.myChanNames{:} = varargin{3}
                 %%%%%%%%%%%%% Steps 1 - assign values to "myValues"
                 %%%%%%%%%%%%% Steps 2 - safely create device
                 %%%%%%%%%%%%% Steps 3 - safely create channel objects
@@ -39,17 +43,47 @@ classdef AChanGroup < hgsetget
             else
                  obj.myNumChannels = value;
             end
-        end
-        
+        end % myNumChannels get function  
         function obj = set.myName(obj, value)
             if ~ischar(value)
                 error('Name of Channel Group must be String')
             else
                 obj.myName = value;
             end
-        end
+        end % myName set function
+        function obj = set.myChanNames(obj, value)
+            if ~iscellstr(value) || length(value) ~= obj.myNumChannels
+                error('Channel Names must be a Cell Array of Strings')
+            else
+                obj.myChanNames{:} = value;
+                %%%% SET NAMES IN EVERY ACHAN
+            end
+        end % myChanNames get function    
+        function obj = set.myOutputData(obj,~)
+            fprintf('%s%d\n','OutputData is: ',obj.Modulus)
+            error('You cannot set OutputData explicitly'); 
+        end % myOutputData get function
         
-%%%%%%%%%%%%%%%%%% ADD GET METHODS for AChanGroupFrontend
+        
+%%%%%%%%%%%%%%%%%% ADD GET METHODS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%SMART DESTRUCTOR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%% ACTIVE/BUILDER Functions%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function addAChan - should be public
+% function enableAChan - should be public  Start/Stops output without
+%                       destroying waveform
+% function disableAChan - should be public Start/Stops output without
+%                       destroying waveform
+% function uploadData - should be public
+% function loadAChanGroup - should be public WRONG? - MAYBE SHOULD BE AS
+% HIGH LEVEL AS POSSIBLE
+% function saveAChanGroup - should be public WRONG? - MAYBE SHOULD BE AS
+% HIGH LEVEL AS POSSIBLE
+%%%%%%%%%%%%%%%%%%HELPER FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function assembleOutputData - should be private, needs to make everything
+% 
+% function findLongestWaveform - should be private
+% function possibleSampleRates - should be public
     end
     
 end
