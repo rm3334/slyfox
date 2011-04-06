@@ -86,19 +86,22 @@ classdef AChan < hgsetget
             end
         end
         %%%%%%%%%%%%%%%%%%WAVEFORM FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%
-        function sampledData = sampleWaveform(obj, sampleRate, tEnd)
+        function sampledData = sampleWaveform(obj, sampleRate)
             %SAMPLEWAVEFORM Creates Discrete sampled waveform
             %   This samples the waveform stored in AChan and this is the 
             %   actual vector that is outputed by the DAQ card. 
-            step = 1/sampleRate;
-            xi = 0:step:tEnd;
-                    
             switch(obj.myWaveformType)
                 case 'Linear'
                     X = obj.myWaveform(:,1);
                     Y = obj.myWaveform(:,2);
+                    step = 1/sampleRate;
+                    tEnd = obj.myWaveformTime;
+                    xi = 0:step:tEnd;
                     sampledData = interp1(X,Y,xi, 'linear');
                 case 'Function'
+                    tEnd = obj.myWaveform{end}{2}(2); %replace with good get
+                    step = 1/sampleRate;
+                    xi = 0:step:tEnd;
                     sampledData = zeros(1,length(xi));
                     numFunctions = size(obj.myWaveform,2);
                     for k=1:numFunctions
