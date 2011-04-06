@@ -63,13 +63,48 @@ classdef AChanGroup < hgsetget
             fprintf('%s%d\n','OutputData is: ',obj.Modulus)
             error('You cannot set OutputData explicitly'); 
         end % myOutputData get function
-        
+        function obj = set.myAChans(obj, value)
+            obj.myAChans(:) = value;
+        end
         
 %%%%%%%%%%%%%%%%%% ADD GET METHODS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+        function value = get.myDevice(obj)
+            value = obj.myDevice;
+        end
+        function value = get.myNumChannels(obj)
+            value = obj.myNumChannels;
+        end
+        function value = get.myAChans(obj)
+            value{:} = obj.myAChans;
+        end
+        function value = get.myName(obj)
+            value = obj.myName;
+        end
+        function value = get.myDisplay(obj)
+            value = obj.myDisplay(obj)
+        end
+        function value = get.myChanNames(obj)
+            value{:} = obj.myChanNames;
+        end
 %%%%%%%%%%%%%%%%%%SMART DESTRUCTOR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% ACTIVE/BUILDER Functions%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function addAChan - should be public
+        function bool = addAChan(obj, newChanID, newChanName)
+            %ADDACHAN Adds a new AChan object to this device
+            %   newChanID - new channel number
+            %   newChanName - new channel name
+            
+            %Try to add to device
+            try
+                addchannel(obj.myDevice, newChanID);
+                out = daqhwinfo(obj.myDevice);
+                newAChan = AChan(newChanID, newChanName, out.AdaptorName);
+                set(obj, 'myAChans', [obj.myAChans; newAChan]);
+                bool = 1;
+            catch exception
+                bool = 0;
+                error('Channel could not be added to device object');
+            end
+        end
 % function enableAChan - should be public  Start/Stops output without
 %                       destroying waveform
 % function disableAChan - should be public Start/Stops output without

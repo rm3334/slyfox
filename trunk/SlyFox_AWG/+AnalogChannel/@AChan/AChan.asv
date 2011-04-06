@@ -11,10 +11,11 @@ classdef AChan < hgsetget
         myIDnum = 0;
         myTriggerType = 'HwDigital';
         myTriggerPort = 'PFI0';
-        myAdaptor = 'nidaq';
+        myAdaptor = 'nidaqmx';
+        myDefaultVoltageValue = 0;
     end
     
-    properties (Access = private)
+    properties (GetAccess = private)
         myWaveform
         % Stored as an array of (ti Vi) pairs
         % or as a cell array of the form:
@@ -40,14 +41,14 @@ classdef AChan < hgsetget
             end
         end
         function obj = set.myIDnum(obj, value)
-            if ~isinteger(value)
+            if ~isnumeric(value)
                 error('ID number must be Integer')
             else
                 obj.myIDnum = value;
             end
         end
         function obj = set.myAdaptor(obj, value)
-            if ~ischar(value) && ~strcmp(value, 'nidaq')
+            if ~ischar(value) && ~strcmp(value, 'nidaqmx')
                 error('Adaptor must be one of the following Strings: nidaq')
             else
                 obj.myAdaptor = value;
@@ -75,6 +76,10 @@ classdef AChan < hgsetget
             fprintf('%s%d\n','myWaveformTime is: ',obj.myWaveformTime)
             error('You cannot set myWaveformTime explicitly'); 
         end
+        function obj = set.myDefaultVoltageValue(obj, value)
+            % Needs protection somehow...check adaptor name?
+            obj.myDefaultVoltageValue = value;
+        end
         
         %%%%%%%%%%%%%%%%%%GET FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function waveformTime = get.myWaveformTime(obj)
@@ -85,37 +90,57 @@ classdef AChan < hgsetget
                     waveformTime = obj.myWaveform{end}{2}(2);
             end
         end
+        function value = get.myName(obj)
+            value = obj.myName;
+        end
+        function value = get.myIDnum(obj)
+            value = obj.myIDnum;
+        end
+        function value = get.myAdaptor(obj)
+            value = obj.myAdaptor;
+        end
+        function value = get.myTriggerType(obj)
+            value = obj.myTriggerType;
+        end
+        function value = get.myWaveformType(obj)
+            value = obj.myWaveformType;
+        end
+        function value = get.myDefaultVoltageValue(obj)
+            value = obj.myDefaultVoltageValue;
+        end
         %%%%%%%%%%%%%%%%%%WAVEFORM FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%
-        function sampledData = sampleWaveform(obj, sampleRate)
+        function sampledData = sampleWaveform(obj, sampleRate, tEnd)
             %SAMPLEWAVEFORM Creates Discrete sampled waveform
             %   This samples the waveform stored in AChan and this is the 
             %   actual vector that is outputed by the DAQ card. 
+            step = 1/sampleRate;
+            xi = 0:step:tEnd;
+                    
             switch(obj.myWaveformType)
                 case 'Linear'
                     X = obj.myWaveform(:,1);
                     Y = obj.myWaveform(:,2);
-                    step = 1/sampleRate;
-                    tEnd = obj.myWaveformTime;
-                    xi = 0:step:tEnd;
-                    sampledData = interp1(X,Y,xi, 'linear');
+                    sampledData = interp1(X,Y,xi, 'linear', obj.myDefaultVoltageValue); 
                 case 'Function'
-                    tEnd = obj.myWaveform{end}{2}(2); %replace with good get
-                    step = 1/sampleRate;
-                    xi = 0:step:tEnd;
                     sampledData = zeros(1,length(xi));
                     numFunctions = size(obj.myWaveform,2);
                     for k=1:numFunctions
-                        inRegion = (xi >= obj.myWaveform{k}{2}{1}) & (xi < obj.myWaveform{k}{2}{12});
+                        inRegion = (xi >= obj.myWaveform{k}{2}(1)) & (xi < obj.myWaveform{k}{2}{2});
                         sampledData(inRegion) = obj.myWaveform{k}{1}(xi(inRegion));
                     end
                     %%%%% Special case when last data point is exactly an
                     %%%%% integer number of clock cycles away.
-                    if tEnd == xi(end)
-                        sampledData(end) = obj.myWaveform{end}{1}(tEnd);
+                    if ~mod(obj.myWaveform{k}{2}{2}, step)
+                        sampledData( xi == obj.myWaveform{end}{2}{2}) = obj.myWaveform{end}{1}(obj.myWaveform{end}{2}{2});
                     end
+                    % fill with DefaultVoltageValues if waveform ending
+                    % time is less than tEnd (longest waveform on the card)
+                    if obj.myWaveform{end}{2}{2} < tEnd
+                        sampledData(xi > obj.myWaveform{end}{2}{2}) = obj.myDefaultVoltageValue;
+                    end
+                    
             end
-        end
-        
+        end    
     end
     
 end
