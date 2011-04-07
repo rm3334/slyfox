@@ -13,6 +13,7 @@ classdef AChan < hgsetget
         myTriggerPort = 'PFI0';
         myAdaptor = 'nidaqmx';
         myDefaultVoltageValue = 0;
+        myEnabled = 1;
     end
     
     properties (GetAccess = private)
@@ -80,6 +81,12 @@ classdef AChan < hgsetget
             % Needs protection somehow...check adaptor name?
             obj.myDefaultVoltageValue = value;
         end
+        function obj = set.myEnabled(obj,value)
+            obj.myEnabled = value;
+        end
+        function obj = set.myTriggerPort(obj, value)
+            obj.myTriggerPort = value;
+        end
         
         %%%%%%%%%%%%%%%%%%GET FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function waveformTime = get.myWaveformTime(obj)
@@ -107,6 +114,12 @@ classdef AChan < hgsetget
         end
         function value = get.myDefaultVoltageValue(obj)
             value = obj.myDefaultVoltageValue;
+        end
+        function value = get.myEnabled(obj)
+            value = obj.myEnabled;
+        end
+        function value = get.myTriggerPort(obj)
+            value = obj.myTriggerPort;
         end
         %%%%%%%%%%%%%%%%%%WAVEFORM FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%
         function sampledData = sampleWaveform(obj, sampleRate, tEnd)

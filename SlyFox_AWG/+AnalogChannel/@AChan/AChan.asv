@@ -13,6 +13,7 @@ classdef AChan < hgsetget
         myTriggerPort = 'PFI0';
         myAdaptor = 'nidaqmx';
         myDefaultVoltageValue = 0;
+        myEnabled = 1;
     end
     
     properties (GetAccess = private)
@@ -80,6 +81,9 @@ classdef AChan < hgsetget
             % Needs protection somehow...check adaptor name?
             obj.myDefaultVoltageValue = value;
         end
+        function obj = set.myEnabled(obj,value)
+            obj.myEnabled = value;
+        end
         
         %%%%%%%%%%%%%%%%%%GET FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function waveformTime = get.myWaveformTime(obj)
@@ -108,6 +112,9 @@ classdef AChan < hgsetget
         function value = get.myDefaultVoltageValue(obj)
             value = obj.myDefaultVoltageValue;
         end
+        function value = get.myEnabled(obj)
+            value = obj.myEnabled;
+        end
         %%%%%%%%%%%%%%%%%%WAVEFORM FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%
         function sampledData = sampleWaveform(obj, sampleRate, tEnd)
             %SAMPLEWAVEFORM Creates Discrete sampled waveform
@@ -125,18 +132,18 @@ classdef AChan < hgsetget
                     sampledData = zeros(1,length(xi));
                     numFunctions = size(obj.myWaveform,2);
                     for k=1:numFunctions
-                        inRegion = (xi >= obj.myWaveform{k}{2}(1)) & (xi < obj.myWaveform{k}{2}{2});
+                        inRegion = (xi >= obj.myWaveform{k}{2}(1)) & (xi < obj.myWaveform{k}{2}(2));
                         sampledData(inRegion) = obj.myWaveform{k}{1}(xi(inRegion));
                     end
                     %%%%% Special case when last data point is exactly an
                     %%%%% integer number of clock cycles away.
-                    if ~mod(obj.myWaveform{k}{2}{2}, step)
-                        sampledData( xi == obj.myWaveform{end}{2}{2}) = obj.myWaveform{end}{1}(obj.myWaveform{end}{2}{2});
+                    if ~mod(obj.myWaveform{k}{2}(2), step)
+                        sampledData( xi == obj.myWaveform{end}{2}(2)) = obj.myWaveform{end}{1}(obj.myWaveform{end}{2}(2));
                     end
                     % fill with DefaultVoltageValues if waveform ending
                     % time is less than tEnd (longest waveform on the card)
-                    if obj.myWaveform{end}{2}{2} < tEnd
-                        sampledData(xi > obj.myWaveform{end}{2}{2}) = obj.myDefaultVoltageValue;
+                    if obj.myWaveform{end}{2}(2) < tEnd
+                        sampledData(xi > obj.myWaveform{end}{2}(2)) = obj.myDefaultVoltageValue;
                     end
                     
             end
