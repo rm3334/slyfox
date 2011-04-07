@@ -23,7 +23,7 @@ classdef AChanGroup < hgsetget
         myName = 'Dev0'
         myDisplay = [];
         myChanNames = {'Ch0'};
-        myAdaptor = 'nidaqmx'
+        myAdaptor = 'nidaqmx';
         myHWProperties = containers.Map(...
             {'SampleRate',...
             'TriggerType'},...
@@ -39,7 +39,8 @@ classdef AChanGroup < hgsetget
                 obj.myNumChannels = varargin{1};
                 obj.myName = varargin{2};
                 obj.myChanNames = varargin{3};
-                obj.myHWProperties = varargin{4};
+                obj.myAdaptor = varargin{4}
+                obj.myHWProperties = varargin{5};
                 obj.myAChans = [];
 
                 %%%%%%%%%%%%% Steps 2 - safely create device
@@ -156,11 +157,11 @@ classdef AChanGroup < hgsetget
             for k = 1:length(obj.myAChans)
                 channelNames{k} = obj.myAChans{k}.myName;
             end
-            addchannels(obj.myDevice, 0:obj.myNumChannels, channelNames)% Adds correct number of channels
+            addchannel(obj.myDevice, 0:obj.myNumChannels-1, channelNames);% -1 for NI cards
             
             ID = cell(size(obj.myAChans));
             for k = 1:length(obj.myAChans)
-                ID{k} = obj.myAChans{k}.myIDnum;
+                ID{k} = obj.myAChans{k}.myIDnum
             end
             
             %Sets Channel DefaultVoltageValue
@@ -170,7 +171,7 @@ classdef AChanGroup < hgsetget
                 defaultVval{k} = obj.myAChans{k}.myDefaultVoltageValue;
             end
             for k = 1:length(obj.myAChans)
-                obj.myDevice.Channel(ID{k}).DefaultChannelValue = defaultVval{k};
+                obj.myDevice.Channel(ID{k}+1).DefaultChannelValue = defaultVval{k}; %+1 for NI cards
             end
             
             %Sets Hardware Trigger Channel
@@ -179,7 +180,9 @@ classdef AChanGroup < hgsetget
                 TrigChannels{k} = obj.myAChans{k}.myTriggerPort;
             end
             for k = 1:length(obj.myAChans)
-                obj.myDevice.Channel(ID{k}).HwDigitalTriggerSource = TrigChannels{k};
+                tempChannelOBJ = obj.myDevice.Channel(ID{k} + 1);
+                set(tempChannelOBJ)
+                tempChannelOBJ.HwDigitalTriggerSource = TrigChannels{k}; % +1 for NI cards
             end
         end
         function bool = uploadData(obj) %%%%% NOT DONE YET
