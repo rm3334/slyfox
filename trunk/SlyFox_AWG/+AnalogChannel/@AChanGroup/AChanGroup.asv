@@ -23,7 +23,7 @@ classdef AChanGroup < hgsetget
         myName = 'Dev0'
         myDisplay = [];
         myChanNames = {'Ch0'};
-        myAdaptorName = 'nidaqmx'
+        myAdaptor = 'nidaqmx'
         myHWProperties = containers.Map(...
             {'SampleRate',...
             'TriggerType'},...
@@ -38,14 +38,15 @@ classdef AChanGroup < hgsetget
                 %%%%%%%%%%%%% Steps 1 - assign values to "myValues"
                 obj.myNumChannels = varargin{1};
                 obj.myName = varargin{2};
-                obj.myChanNames{:} = varargin{3};
+                obj.myChanNames = varargin{3};
                 obj.myHWProperties = varargin{4};
-                
+                obj.myAChans = [];
+
                 %%%%%%%%%%%%% Steps 2 - safely create device
                 for k=1:obj.myNumChannels
-                    obj.addAChan(k,obj.myChanNames{k})
+                    obj.addAChan(k-1,obj.myChanNames{k}); % k-1 is for NI cards
                 end
-                obj.buildNewDAQSession
+                obj.buildNewDAQSession;
             end
         end
 %%%%%%%%%%%%%%%%%% SET METHODS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,8 +68,7 @@ classdef AChanGroup < hgsetget
             if ~iscellstr(value) || length(value) ~= obj.myNumChannels
                 error('Channel Names must be a Cell Array of Strings')
             else
-                obj.myChanNames{:} = value;
-                %%%% SET NAMES IN EVERY ACHAN
+                obj.myChanNames = value;
             end
         end % myChanNames get function    
         function obj = set.myOutputData(obj,~)
@@ -76,7 +76,7 @@ classdef AChanGroup < hgsetget
             error('You cannot set OutputData explicitly'); 
         end % myOutputData get function
         function obj = set.myAChans(obj, value)
-            obj.myAChans(:) = value;
+            obj.myAChans = value;
         end
         function obj = set.myDevice(obj,value)
             obj.myDevice = value
@@ -84,7 +84,9 @@ classdef AChanGroup < hgsetget
         function obj = set.myHWProperties(obj, value)
             obj.myHWProperties = value;
         end
-        function obj = set.myA
+        function obj = set.myAdaptor(obj, value)
+            obj.myAdaptor = value;
+        end
 %%%%%%%%%%%%%%%%%% ADD GET METHODS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function value = get.myDevice(obj)
             value = obj.myDevice;
@@ -93,7 +95,7 @@ classdef AChanGroup < hgsetget
             value = obj.myNumChannels;
         end
         function value = get.myAChans(obj)
-            value{:} = obj.myAChans;
+            value = obj.myAChans;
         end
         function value = get.myName(obj)
             value = obj.myName;
@@ -102,27 +104,30 @@ classdef AChanGroup < hgsetget
             value = obj.myDisplay(obj)
         end
         function value = get.myChanNames(obj)
-            value{:} = obj.myChanNames;
+            value = obj.myChanNames;
         end
         function value = get.myHWProperties(obj)
-            value = obj.myHWProperties
+            value = obj.myHWProperties;
+        end
+        function value = get.myAdaptor(obj)
+            value = obj.myAdaptor;
         end
        
 %%%%%%%%%%%%%%%%%%SMART DESTRUCTOR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% ACTIVE/BUILDER Functions%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function bool = addAChan(obj, newChanID, newChanName)
-            %ADDACHAN Adds a new AChan object to this device
+            %ADDACHAN Adds a new AChan object to this Group
             %   newChanID - new channel number
             %   newChanName - new channel name
             
             %Try to add to device
             try
-                addchannel(obj.myDevice, newChanID);
-                out = daqhwinfo(obj.myDevice);
-                newAChan = AChan(newChanID, newChanName, out.AdaptorName);
-                set(obj, 'myAChans', [obj.myAChans; newAChan]);
-                numChan = obj.myNumChannels;
-                set(obj, 'myNumChannels', numChan+1);
+                newAChan = AnalogChannel.AChan(newChanID, newChanName, obj.myAdaptor);
+                if ~isempty(obj.myAChans)
+                    obj.myAChans = {obj.myAChans; newAChan};
+                else
+                    obj.myAChans = newAChan;
+                end
                 bool = 1;
             catch exception
                 bool = 0;
@@ -138,7 +143,7 @@ classdef AChanGroup < hgsetget
             
             %Check to see if a DAQ Device object is still around, if so
             %delete and clear it.
-            if isvalid(obj.myDevice)
+            if isobject(obj.myDevice)
                 delete(obj.myDevice);
                 clear(obj.myDevice); %is this ok?
             end
@@ -148,7 +153,9 @@ classdef AChanGroup < hgsetget
             set(obj.myDevice, propNames, propValues); % Setting Global Properties
             
             
-            channelNames{:} = obj.myAChans{:}.myName; 
+            for k = 1:length(obj.myAChans)
+                channelNames{k} = obj.myAChans{k}.myName;
+            end
             addchannels(obj.myDevice, 0:obj.myNumChannels, channelNames)% Adds correct number of channels
             
             ID{:} = obj.myAChans{:}.myIDnum;
