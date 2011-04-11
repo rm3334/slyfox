@@ -11,6 +11,7 @@ classdef AChanGroup < hgsetget
     
     properties (SetAccess = private)
         myDevice = [];
+        myTempData = [];
     end
     
     properties (Dependent)
@@ -47,9 +48,9 @@ classdef AChanGroup < hgsetget
 
                 %%%%%%%%%%%%% Steps 2 - safely create device
                 for k=1:obj.myNumChannels
-                    obj.addAChan(k-1,obj.myChanNames{k}); % k-1 is for NI cards
+                    obj.myAChans = obj.addAChan(k-1,obj.myChanNames{k}); % k-1 is for NI cards
                 end
-                obj.buildNewDAQSession;
+                obj.myDevice = obj.buildNewDAQSession;
             end
         end
 %%%%%%%%%%%%%%%%%% SET METHODS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -89,6 +90,9 @@ classdef AChanGroup < hgsetget
         end
         function obj = set.myAdaptor(obj, value)
             obj.myAdaptor = value;
+        end     
+        function obj = set.myTempData(obj, value)
+            obj.myTempData = value;
         end
 %%%%%%%%%%%%%%%%%% ADD GET METHODS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function value = get.myDevice(obj)
@@ -115,10 +119,13 @@ classdef AChanGroup < hgsetget
         function value = get.myAdaptor(obj)
             value = obj.myAdaptor;
         end
+        function value = get.myTempData(obj)
+            value = obj.myTempData;
+        end
        
 %%%%%%%%%%%%%%%%%%SMART DESTRUCTOR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% ACTIVE/BUILDER Functions%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function bool = addAChan(obj, newChanID, newChanName)
+        function newAChans = addAChan(obj, newChanID, newChanName)
             %ADDACHAN Adds a new AChan object to this Group
             %   newChanID - new channel number
             %   newChanName - new channel name
@@ -127,9 +134,9 @@ classdef AChanGroup < hgsetget
             try
                 newAChan = AnalogChannel.AChan(newChanID, newChanName, obj.myAdaptor);
                 if ~isempty(obj.myAChans)
-                    obj.myAChans = {get(obj, 'myAChans'); newAChan};
+                    newAChans = [obj.myAChans {newAChan}]
                 else
-                    obj.myAChans = newAChan;
+                    newAChans = {newAChan};
                 end
                 bool = 1;
             catch exception
@@ -137,7 +144,7 @@ classdef AChanGroup < hgsetget
                 error('Channel could not be added to device object');
             end
         end
-        function buildNewDAQSession(obj)
+        function daqdevice = buildNewDAQSession(obj)
             %BUILDNEWDAQSESSION Builds new DAQ and DAQ channels
             %   This needs to be done whenever you want to change the the
             %   output data as there is no "FLUSH DATA" function for the
@@ -148,48 +155,48 @@ classdef AChanGroup < hgsetget
             %delete and clear it.
             if isobject(obj.myDevice)
                 delete(obj.myDevice);
-                clear(obj.myDevice); %is this ok?
             end
             propNames = keys(obj.myHWProperties);
             propValues = values(obj.myHWProperties, propNames);
-            obj.myDevice = analogoutput(obj.myAdaptor, obj.myName);
-            set(obj.myDevice, propNames, propValues); % Setting Global Properties
+            daqdevice = analogoutput(obj.myAdaptor, obj.myName);
+            set(daqdevice, propNames, propValues); % Setting Global Properties
             
             channelNames = cell(size(obj.myAChans));
             for k = 1:length(obj.myAChans)
                 channelNames{k} = obj.myAChans{k}.myName;
             end
-            addchannel(obj.myDevice, 0:obj.myNumChannels-1, channelNames);% -1 for NI cards
+            addchannel(daqdevice, 0:obj.myNumChannels-1, channelNames);% -1 for NI cards
             
             ID = cell(size(obj.myAChans));
             for k = 1:length(obj.myAChans)
-                ID{k} = obj.myAChans{k}.myIDnum
+                ID{k} = obj.myAChans{k}.myIDnum;
             end
             
             %Sets Channel DefaultVoltageValue
-            obj.myDevice.OutOfDataMode = 'DefaultValue'; 
+            daqdevice.OutOfDataMode = 'DefaultValue'; 
             defaultVval = cell(size(obj.myAChans));
             for k = 1:length(obj.myAChans)
                 defaultVval{k} = obj.myAChans{k}.myDefaultVoltageValue;
             end
             for k = 1:length(obj.myAChans)
-                obj.myDevice.Channel(ID{k}+1).DefaultChannelValue = defaultVval{k}; %+1 for NI cards
+                daqdevice.Channel(ID{k}+1).DefaultChannelValue = defaultVval{k}; %+1 for NI cards
             end
-            
+            set(daqdevice, 'StopFcn', {@reloadData, obj});
         end
         function bool = uploadData(obj) %%%%% NOT DONE YET
-            try
+%             try
                 if strcmp(get(obj.myDevice, 'Running'), 'On')
                     stop(obj.myDevice);
                 end
-                buildNewDAQSession(obj)
+                obj.myDevice = buildNewDAQSession(obj);
                 data = obj.assembleOutputData();
+                obj.myTempData = data;
                 putdata(obj.myDevice, data);
                 bool = 1;
-                start(obj.myDevice);
-            catch exception
-                bool = 0;
-            end
+                start(obj.myDevice)
+%             catch exception
+%                 bool = 0;
+%             end
         end
 % function loadAChanGroup - should be public WRONG? - MAYBE SHOULD BE AS
 % HIGH LEVEL AS POSSIBLE
@@ -204,7 +211,11 @@ classdef AChanGroup < hgsetget
     methods (Access = private)
         
         function tEnd = findLongestWaveform(obj)
-            times(:) = obj.myAChans(:).myWaveformTime %not ; for debugging purposes
+            n = length(obj.myAChans);
+            times = zeros([1 n]);
+            for k = 1:n
+                times(k) = obj.myAChans{k}.myWaveformTime;
+            end
             tEnd = max(times);
         end
         
@@ -232,7 +243,7 @@ classdef AChanGroup < hgsetget
             numChannels = obj.myNumChannels;
             data = zeros([samples numChannels]); %Preallocate for speed
             for k = 1:numChannels
-                data(:,k) = obj.myAChans(k).sampleWaveform(sampleRate, tEnd);
+                data(:,k) = obj.myAChans{k}.sampleWaveform(sampleRate, tEnd);
             end %Populate each column of data
         end
     end
