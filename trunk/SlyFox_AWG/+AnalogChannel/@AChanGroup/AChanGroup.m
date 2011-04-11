@@ -26,9 +26,11 @@ classdef AChanGroup < hgsetget
         myAdaptor = 'nidaqmx';
         myHWProperties = containers.Map(...
             {'SampleRate',...
-            'TriggerType'},...
+            'TriggerType',...
+            'HwDigitalTriggerSource'},...
             {50000,...
-            'HwDigital'});
+            'HwDigital',...
+            'PFI0'});
     end
     
     methods
@@ -39,7 +41,7 @@ classdef AChanGroup < hgsetget
                 obj.myNumChannels = varargin{1};
                 obj.myName = varargin{2};
                 obj.myChanNames = varargin{3};
-                obj.myAdaptor = varargin{4}
+                obj.myAdaptor = varargin{4};
                 obj.myHWProperties = varargin{5};
                 obj.myAChans = [];
 
@@ -66,7 +68,7 @@ classdef AChanGroup < hgsetget
             end
         end % myName set function
         function obj = set.myChanNames(obj, value)
-            if ~iscellstr(value) || length(value) ~= obj.myNumChannels
+            if ~iscellstr(value)
                 error('Channel Names must be a Cell Array of Strings')
             else
                 obj.myChanNames = value;
@@ -80,7 +82,7 @@ classdef AChanGroup < hgsetget
             obj.myAChans = value;
         end
         function obj = set.myDevice(obj,value)
-            obj.myDevice = value
+            obj.myDevice = value;
         end
         function obj = set.myHWProperties(obj, value)
             obj.myHWProperties = value;
@@ -102,7 +104,7 @@ classdef AChanGroup < hgsetget
             value = obj.myName;
         end
         function value = get.myDisplay(obj)
-            value = obj.myDisplay(obj)
+            value = obj.myDisplay(obj);
         end
         function value = get.myChanNames(obj)
             value = obj.myChanNames;
@@ -125,7 +127,7 @@ classdef AChanGroup < hgsetget
             try
                 newAChan = AnalogChannel.AChan(newChanID, newChanName, obj.myAdaptor);
                 if ~isempty(obj.myAChans)
-                    obj.myAChans = {obj.myAChans; newAChan};
+                    obj.myAChans = {get(obj, 'myAChans'); newAChan};
                 else
                     obj.myAChans = newAChan;
                 end
@@ -174,23 +176,13 @@ classdef AChanGroup < hgsetget
                 obj.myDevice.Channel(ID{k}+1).DefaultChannelValue = defaultVval{k}; %+1 for NI cards
             end
             
-            %Sets Hardware Trigger Channel
-            TrigChannels = cell(size(obj.myAChans));
-            for k = 1:length(obj.myAChans)
-                TrigChannels{k} = obj.myAChans{k}.myTriggerPort;
-            end
-            for k = 1:length(obj.myAChans)
-                tempChannelOBJ = obj.myDevice.Channel(ID{k} + 1);
-                set(tempChannelOBJ)
-                tempChannelOBJ.HwDigitalTriggerSource = TrigChannels{k}; % +1 for NI cards
-            end
         end
         function bool = uploadData(obj) %%%%% NOT DONE YET
             try
                 if strcmp(get(obj.myDevice, 'Running'), 'On')
                     stop(obj.myDevice);
                 end
-                %%%%NEED TO SET HW PROPERTIES AND CHANNEL TRIGGERS
+                buildNewDAQSession(obj)
                 data = obj.assembleOutputData();
                 putdata(obj.myDevice, data);
                 bool = 1;
