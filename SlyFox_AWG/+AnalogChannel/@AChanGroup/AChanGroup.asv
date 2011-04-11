@@ -26,9 +26,11 @@ classdef AChanGroup < hgsetget
         myAdaptor = 'nidaqmx';
         myHWProperties = containers.Map(...
             {'SampleRate',...
-            'TriggerType'},...
+            'TriggerType',...
+            'HwDigitalTriggerSource'},...
             {50000,...
-            'HwDigital'});
+            'HwDigital',...
+            'PFI0'});
     end
     
     methods
@@ -174,20 +176,13 @@ classdef AChanGroup < hgsetget
                 obj.myDevice.Channel(ID{k}+1).DefaultChannelValue = defaultVval{k}; %+1 for NI cards
             end
             
-            %Sets Hardware Trigger Channel
-            TrigChannels = cell(size(obj.myAChans));
-            for k = 1:length(obj.myAChans)
-                TrigChannels{k} = obj.myAChans{k}.myTriggerPort;
-            end
-            for k = 1:length(obj.myAChans)
-                obj.myDevice.Channel(ID{k} + 1).HwDigitalTriggerSource = TrigChannels{k}; % +1 fo
-            end
         end
         function bool = uploadData(obj) %%%%% NOT DONE YET
             try
                 if strcmp(get(obj.myDevice, 'Running'), 'On')
                     stop(obj.myDevice);
                 end
+                buildNew
                 %%%%NEED TO SET HW PROPERTIES AND CHANNEL TRIGGERS
                 data = obj.assembleOutputData();
                 putdata(obj.myDevice, data);
