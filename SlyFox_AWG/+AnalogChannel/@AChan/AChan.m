@@ -88,7 +88,7 @@ classdef AChan < hgsetget
         function waveformTime = get.myWaveformTime(obj)
             switch(obj.myWaveformType)
                 case 'Linear'
-                    waveformTime = obj.myWaveform(end,2);
+                    waveformTime = obj.myWaveform(end,1);
                 case 'Function'
                     waveformTime = obj.myWaveform{end}{2}(2);
             end
