@@ -134,7 +134,7 @@ classdef AChanGroup < hgsetget
             try
                 newAChan = AnalogChannel.AChan(newChanID, newChanName, obj.myAdaptor);
                 if ~isempty(obj.myAChans)
-                    newAChans = [obj.myAChans {newAChan}]
+                    newAChans = [obj.myAChans {newAChan}];
                 else
                     newAChans = {newAChan};
                 end
