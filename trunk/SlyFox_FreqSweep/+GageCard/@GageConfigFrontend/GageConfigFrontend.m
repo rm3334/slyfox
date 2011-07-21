@@ -8,11 +8,13 @@ classdef GageConfigFrontend
     properties
         myPanel = uiextras.TabPanel();
         myGageConfig = GageCard.GageConfig();
+        myTopFigure = [];
     end
     
     methods
-        function obj = GageConfigFrontend(f)
-            obj.myPanel.Parent = f;
+        function obj = GageConfigFrontend(top,f)
+            obj.myTopFigure = top;
+            set(obj.myPanel, 'Parent', f);
             acqP = uiextras.HBox('Parent', obj.myPanel, 'Tag', 'acqPanel');
                 sampRateBP = uiextras.BoxPanel(...
                     'Parent', acqP, ...
@@ -115,11 +117,76 @@ classdef GageConfigFrontend
 
             
             ch1P = uiextras.Grid('Parent',obj.myPanel, 'Tag', 'Ch1Panel');
+                chanRange1BP = uiextras.BoxPanel(...
+                    'Parent', ch1P, ...
+                    'Tag', 'chanRange1BP', ...
+                    'Title', 'Channel Input Range');
+                chanRange1VB = uiextras.VBox(...
+                    'Parent', chanRange1BP);
+                uicontrol(...
+                    'Parent', chanRange1VB, ...
+                    'Style', 'popupmenu', ...
+                    'Tag', 'chanRange1', ...
+                    'String', {'±500mV', '±1V','±2V','±5V','±10V'}, ...
+                    'BackgroundColor', 'White', ...
+                    'Callback', @obj.updateGageConfig);
+                uiextras.Empty('Parent', chanRange1VB);
+                set(chanRange1VB, 'Sizes', [-1 -9], 'Spacing', 5);
+                
+                chanImp1BP = uiextras.BoxPanel(...
+                    'Parent', ch1P, ...
+                    'Tag', 'chanImp1BP', ...
+                    'Title', 'Channel Input Impedance');
+                chanImp1VB = uiextras.VBox(...
+                    'Parent', chanImp1BP);
+                uicontrol(...
+                    'Parent', chanImp1VB, ...
+                    'Style', 'popupmenu', ...
+                    'Tag', 'chanImp1', ...
+                    'String', {'50 Ohms', '1 MOhm'}, ...
+                    'BackgroundColor', 'White', ...
+                    'Callback', @obj.updateGageConfig);
+                uiextras.Empty('Parent', chanImp1VB);
+                set(chanImp1VB, 'Sizes', [-1 -9], 'Spacing', 5);
             ch2P = uiextras.Grid('Parent',obj.myPanel, 'Tag', 'Ch2Panel');
+            chanRange2BP = uiextras.BoxPanel(...
+                    'Parent', ch2P, ...
+                    'Tag', 'chanRange2BP', ...
+                    'Title', 'Channel Input Range');
+                chanRange2VB = uiextras.VBox(...
+                    'Parent', chanRange2BP);
+                uicontrol(...
+                    'Parent', chanRange2VB, ...
+                    'Style', 'popupmenu', ...
+                    'Tag', 'chanRange2', ...
+                    'String', {'±500mV', '±1V','±2V','±5V','±10V'}, ...
+                    'BackgroundColor', 'White', ...
+                    'Callback', @obj.updateGageConfig);
+                uiextras.Empty('Parent', chanRange2VB);
+                set(chanRange2VB, 'Sizes', [-1 -9], 'Spacing', 5);
+                
+                chanImp2BP = uiextras.BoxPanel(...
+                    'Parent', ch2P, ...
+                    'Tag', 'chanImp2BP', ...
+                    'Title', 'Channel Input Impedance');
+                chanImp2VB = uiextras.VBox(...
+                    'Parent', chanImp2BP);
+                uicontrol(...
+                    'Parent', chanImp2VB, ...
+                    'Style', 'popupmenu', ...
+                    'Tag', 'chanImp2', ...
+                    'String', {'50 Ohms', '1 MOhm'}, ...
+                    'BackgroundColor', 'White', ...
+                    'Callback', @obj.updateGageConfig);
+                uiextras.Empty('Parent', chanImp2VB);
+                set(chanImp2VB, 'Sizes', [-1 -9], 'Spacing', 5);
             obj.myPanel.TabNames = {'Acquire', 'Trigger', 'Ch1', 'Ch2'};
+            myHandles = guihandles(top);
+            guidata(top, myHandles);
+            obj.loadState();
         end
         function updateGageConfig(hObject, eventData, varargin)
-            myHandles = guihandles(hObject.myPanel.Parent);
+            myHandles = guidata(hObject.myTopFigure);
             l3 = get(myHandles.sampleRate, 'String');
             i3 = get(myHandles.sampleRate, 'Value');
             myGageConfig.acqInfo.SampleRate = str2double(l3{i3});
@@ -137,11 +204,87 @@ classdef GageConfigFrontend
             l2 = get(myHandles.trigSource,'String');
             i2 = get(myHandles.trigSource,'Value');
             if i2==1
-                 myGageConfig.trig.Slope =  CsMl_Translate(l2{i2}, 'Source');
+                 myGageConfig.trig.Source =  CsMl_Translate(l2{i2}, 'Source');
             else
-                 myGageConfig.trig.Slope =  str2double(l2{i2});
+                 myGageConfig.trig.Source =  str2double(l2{i2});
             end
-
+            i3 = get(myHandles.chanRange1, 'Value');
+            switch i3
+                case 1
+                    tempRange = 1000;
+                case 2
+                    tempRange = 2000;
+                case 3
+                    tempRange = 4000;
+                case 4
+                    tempRange = 10000;
+                otherwise
+                    tempRange = 20000;
+            end
+            myGageConfig.chan(1).InputRange = tempRange;
+            i4 = get(myHandles.chanImp1, 'Value');
+            switch i4
+                case 1
+                    myGageConfig.chan(1).Impedance = 50;
+                case 2
+                    myGageConfig.chan(1).Impedance = 1000000;
+            end
+            i3 = get(myHandles.chanRange2, 'Value');
+            switch i3
+                case 1
+                    tempRange = 1000;
+                case 2
+                    tempRange = 2000;
+                case 3
+                    tempRange = 4000;
+                case 4
+                    tempRange = 10000;
+                otherwise
+                    tempRange = 20000;
+            end
+            myGageConfig.chan(2).InputRange = tempRange;
+            i4 = get(myHandles.chanImp2, 'Value');
+            switch i4
+                case 1
+                    myGageConfig.chan(2).Impedance = 50;
+                case 2
+                    myGageConfig.chan(2).Impedance = 1000000;
+            end
+            guidata(hObject.myTopFigure, myHandles);
+        end
+        function saveState(hObject)
+            myHandles = guidata(hObject.myTopFigure);
+            gageState.sampleRate = get(myHandles.sampleRate, 'Value');
+            gageState.numPoints = get(myHandles.numPoints, 'String');
+            gageState.segCounts = get(myHandles.segCounts, 'String');
+            gageState.trigSlope = get(myHandles.trigSlope, 'Value');
+            gageState.trigLevel = get(myHandles.trigLevel, 'String');
+            gageState.trigSource = get(myHandles.trigSource, 'Value');
+            gageState.chanRange1 = get(myHandles.chanRange1, 'Value');
+            gageState.chanImp1 = get(myHandles.chanImp1, 'Value');
+            gageState.chanRange2 = get(myHandles.chanRange2, 'Value');
+            gageState.chanImp2 = get(myHandles.chanImp2, 'Value');
+            save gageState
+        end
+        function loadState(obj)
+            try
+                load gageState
+                myHandles = guidata(obj.myTopFigure);
+                set(myHandles.sampleRate, 'Value', gageState.sampleRate);
+                set(myHandles.numPoints, 'String', gageState.numPoints);
+                set(myHandles.segCounts, 'String', gageState.segCounts);
+                set(myHandles.trigSlope, 'Value', gageState.trigSlope);
+                set(myHandles.trigLevel, 'String', gageState.trigLevel);
+                set(myHandles.trigSource, 'Value', gageState.trigSource);
+                set(myHandles.chanRange1, 'Value', gageState.chanRange1);
+                set(myHandles.chanImp1, 'Value', gageState.chanImp1);
+                set(myHandles.chanRange2, 'Value', gageState.chanRange2);
+                set(myHandles.chanImp2, 'Value', gageState.chanImp2);
+                guidata(obj.myTopFigure, myHandles);
+                obj.updateGageConfig(1);
+            catch
+                disp('No saved state for GageCardFrontend Exists')
+            end
         end
     end
     
