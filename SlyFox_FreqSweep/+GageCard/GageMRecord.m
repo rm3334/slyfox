@@ -43,6 +43,8 @@ function [data,time,ret] = GageMRecord(a)
         end
         if flag
             % Get timestamp information
+            
+            time = sprintf('%10.0f',java.lang.System.currentTimeMillis());
             transfer.Channel = 1;
             transfer.Mode = CsMl_Translate('TimeStamp', 'TxMode');
             transfer.Length = acqInfo.SegmentCount;
@@ -74,12 +76,12 @@ function [data,time,ret] = GageMRecord(a)
             MaxChannelNumber = length(format_string);
             format_string = sprintf('%%s_CH%%0%dd-%%0%dd.dat', MaxChannelNumber, MaxSegmentNumber);
 
-
+            data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
             for channel = 1:ChannelSkip:sysinfo.ChannelCount
                 transfer.Channel = channel;
                 for i = 1:acqInfo.SegmentCount
                     transfer.Segment = i;
-                    [ret, data, actual] = CsMl_Transfer(handle, transfer);
+                    [ret, datatemp, actual] = CsMl_Transfer(handle, transfer);
                     CsMl_ErrorHandler(ret, 1, handle);
 
                     % Note: to optimize the transfer loop, everything from
@@ -88,10 +90,10 @@ function [data,time,ret] = GageMRecord(a)
 
                     % Adjust the size so only the actual length of data is saved to the
                     % file
-                    len= size(data, 2);
+                    len= size(datatemp, 2);
                     if len > actual.ActualLength
-                        data(actual.ActualLength:end) = [];
-                        len = size(data, 2);
+                        datatemp(actual.ActualLength:end) = [];
+                        len = size(datatemp, 2);
                     end;      
             %         figure
 %                     plot(data)
@@ -112,12 +114,13 @@ function [data,time,ret] = GageMRecord(a)
             % 
             %         filename = sprintf(format_string, 'MulRec', transfer.Channel, i);
             %         CsMl_SaveFile(filename, data, info);
+            data(channel, i, :) = datatemp;
                 end;
             end;   
             disp('Data transferred successfully');
         else
             disp('Acquisition stopped');
-            data = [];
+            time = 0;
         end
             ret = CsMl_FreeSystem(handle);
 end

@@ -12,11 +12,17 @@
 clear all
 f = figure();
 setappdata(gcf, 'run', 1);
-tp = uiextras.TabPanel('Parent', f)
-g1 = GageCard.GageConfigFrontend(f,tp)
-f1 = FreqSynth(f,tp)
-tp.TabNames = {'Gage', 'FreqSynth'}
-%%
-setappdata(gcf, 'run', 1);
-
-GageCard.GageMRecord(g1.myGageConfig);
+pan = uiextras.Panel('Parent', f); 
+tp = uiextras.TabPanel('Parent', pan);
+g1 = GageCard.GageConfigFrontend(f,tp);
+f1 = FreqSynth(f,tp);
+fs1 = FreqSweeper(f,tp,f1);
+tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper'};
+% %%
+% setappdata(gcf, 'run', 1);
+% 
+% [data, time, ret] = GageCard.GageMRecord(g1.myGageConfig);
+% %%
+% tic
+% sum(data,3);
+% toc
