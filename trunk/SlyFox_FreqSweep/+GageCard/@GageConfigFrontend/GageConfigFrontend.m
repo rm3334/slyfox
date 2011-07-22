@@ -189,24 +189,24 @@ classdef GageConfigFrontend
             myHandles = guidata(hObject.myTopFigure);
             l3 = get(myHandles.sampleRate, 'String');
             i3 = get(myHandles.sampleRate, 'Value');
-            myGageConfig.acqInfo.SampleRate = str2double(l3{i3});
+            hObject.myGageConfig.acqInfo.SampleRate = str2double(l3{i3});
             if str2double(get(myHandles.numPoints, 'String'))/64 ~= 0
                 set(myHandles.numPoints, 'String', num2str(64*round(str2double(get(myHandles.numPoints, 'String'))/64)))
             end
-            myGageConfig.acqInfo.Depth = str2double(get(myHandles.numPoints, 'String'));
+            hObject.myGageConfig.acqInfo.Depth = str2double(get(myHandles.numPoints, 'String'));
     
-            myGageConfig.acqInfo.SegmentSize = str2double(get(myHandles.numPoints, 'String'));
-            myGageConfig.acqInfo.SegmentCounts = str2double(get(myHandles.segCounts, 'String'));
+            hObject.myGageConfig.acqInfo.SegmentSize = str2double(get(myHandles.numPoints, 'String'));
+            hObject.myGageConfig.acqInfo.SegmentCount = str2double(get(myHandles.segCounts, 'String'));
             l1 = get(myHandles.trigSlope,'String');
             i1 = get(myHandles.trigSlope,'Value');
-            myGageConfig.trig.Slope =  CsMl_Translate(l1{i1}, 'Slope');
-            myGageConfig.trig.Level =  str2double(get(myHandles.trigLevel, 'String'));
+            hObject.myGageConfig.trig.Slope =  CsMl_Translate(l1{i1}, 'Slope');
+            hObject.myGageConfig.trig.Level =  str2double(get(myHandles.trigLevel, 'String'));
             l2 = get(myHandles.trigSource,'String');
             i2 = get(myHandles.trigSource,'Value');
             if i2==1
-                 myGageConfig.trig.Source =  CsMl_Translate(l2{i2}, 'Source');
+                 hObject.myGageConfig.trig.Source =  CsMl_Translate(l2{i2}, 'Source');
             else
-                 myGageConfig.trig.Source =  str2double(l2{i2});
+                 hObject.myGageConfig.trig.Source =  str2double(l2{i2});
             end
             i3 = get(myHandles.chanRange1, 'Value');
             switch i3
@@ -221,13 +221,13 @@ classdef GageConfigFrontend
                 otherwise
                     tempRange = 20000;
             end
-            myGageConfig.chan(1).InputRange = tempRange;
+            hObject.myGageConfig.chan(1).InputRange = tempRange;
             i4 = get(myHandles.chanImp1, 'Value');
             switch i4
                 case 1
-                    myGageConfig.chan(1).Impedance = 50;
+                    hObject.myGageConfig.chan(1).Impedance = 50;
                 case 2
-                    myGageConfig.chan(1).Impedance = 1000000;
+                    hObject.myGageConfig.chan(1).Impedance = 1000000;
             end
             i3 = get(myHandles.chanRange2, 'Value');
             switch i3
@@ -242,13 +242,13 @@ classdef GageConfigFrontend
                 otherwise
                     tempRange = 20000;
             end
-            myGageConfig.chan(2).InputRange = tempRange;
+            hObject.myGageConfig.chan(2).InputRange = tempRange;
             i4 = get(myHandles.chanImp2, 'Value');
             switch i4
                 case 1
-                    myGageConfig.chan(2).Impedance = 50;
+                    hObject.myGageConfig.chan(2).Impedance = 50;
                 case 2
-                    myGageConfig.chan(2).Impedance = 1000000;
+                    hObject.myGageConfig.chan(2).Impedance = 1000000;
             end
             guidata(hObject.myTopFigure, myHandles);
         end
