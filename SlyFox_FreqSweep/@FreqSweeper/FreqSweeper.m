@@ -408,6 +408,12 @@ classdef FreqSweeper
         function scanData = analyzeRawDataBLUE(obj, data)
             scanData = mean(data,3);
         end
+        function quit(obj)
+            obj.myGageConfigFrontend = [];
+            obj.myFreqSynth = [];
+            obj.myTopFigure = [];
+            delete(obj.myPanel);
+        end
         function saveState(obj)
             myHandles = guidata(obj.myTopFigure);
             FreqSweeperState.startFrequency = get(myHandles.startFrequency, 'String');
@@ -426,7 +432,7 @@ classdef FreqSweeper
                 set(myHandles.stopFrequency, 'String', FreqSweeperState.stopFrequency);
                 set(myHandles.startScan, 'Value', FreqSweeperState.saveScan);
                 set(myHandles.saveDir, 'String', FreqSweeperState.saveDir);
-                guidate(obj.myTopFigure, myHandles);
+                guidata(obj.myTopFigure, myHandles);
             catch
                 disp('No saved state for FreqSweeper Exists');
             end

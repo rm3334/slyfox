@@ -147,6 +147,14 @@ classdef FreqSynth < hgsetget
                 errordlg('Frequency? Never heard of her')
             end
         end
+        function quit(obj)
+            delete(obj.myPanel);
+            obj.myTopFigure = [];
+            try
+                obj.close()
+            catch
+            end
+        end
         function loadState(obj)
             try
                 load FreqSynthState

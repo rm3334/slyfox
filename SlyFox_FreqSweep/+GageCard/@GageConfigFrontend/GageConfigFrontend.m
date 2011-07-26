@@ -252,6 +252,10 @@ classdef GageConfigFrontend
             end
             guidata(hObject.myTopFigure, myHandles);
         end
+        function quit(obj)
+            obj.myGageConfig = [];
+            delete(obj.myPanel);
+        end
         function saveState(hObject)
             myHandles = guidata(hObject.myTopFigure);
             gageState.sampleRate = get(myHandles.sampleRate, 'Value');
