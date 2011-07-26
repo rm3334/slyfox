@@ -17,9 +17,12 @@ setappdata(gcf, 'topPanel', pan);
 tp = uiextras.TabPanel('Parent', pan);
 g1 = GageCard.GageConfigFrontend(f,tp);
 f1 = FreqSynth(f,tp);
-fs1 = FreqSweeper(f,tp,f1);
+fs1 = FreqSweeper(f,tp,f1, g1);
 tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper'};
 tp.TabSize = 100;
+mm = uimenu('Label', 'File');
+sm = uimenu(mm, 'Label', 'Save...');
+lm = uimenu(mm, 'Label', 'Load...');
 % pan.Position = [1 1 1900 1020];
 set(f, 'ResizeFcn', @resizeTopPanel);
 % %%

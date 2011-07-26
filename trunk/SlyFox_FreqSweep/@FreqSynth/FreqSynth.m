@@ -130,11 +130,13 @@ classdef FreqSynth < hgsetget
             delete(obj.myGPIBobject);
             obj.myGPIBobject = [];
         end
-        function setFrequency(obj, newFreqStr)
+        function ret = setFrequency(obj, newFreqStr)
             try
                 fprintf(obj.myGPIBobject, [obj.myFreqCommand, ' ', newFreqStr]);
+                ret = 1;
             catch
                 errordlg('Abandon hope, could not set frequency.')
+                ret = 0;
             end
         end
         function curFreq = readFrequency(obj)
