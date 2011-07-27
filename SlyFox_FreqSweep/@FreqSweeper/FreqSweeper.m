@@ -329,17 +329,20 @@ classdef FreqSweeper
                     setappdata(obj.myTopFigure, 'run', 0);
                     break;
                 end
+                if ~getappdata(obj.myTopFigure, 'run')
+                    break;
+                end
 
                 %6. Call AnalyzeRawData
-                scanDataCH1 = obj.analyzeRawData(data(1,:,:));
-                scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:,:));
+                scanDataCH1 = obj.analyzeRawData(data(1,:));
+                scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                 %7. Clear the Raw Plots, Plot the Raw Plots
-                plot(myHandles.rGSAxes, taxis, reshape(data(1,1,:), [1 depth]));
-                plot(myHandles.rEAxes, taxis, reshape(data(1,2,:), [1 depth]));
-                plot(myHandles.rBGAxes, taxis, reshape(data(1,3,:), [1 depth]));
-                plot(myHandles.rBGSAxes, taxis, reshape(data(2,1,:), [1 depth]));
-                plot(myHandles.rBEAxes, taxis, reshape(data(2,2,:), [1 depth]));
-                plot(myHandles.rBBGAxes, taxis, reshape(data(2,3,:), [1 depth]));
+                plot(myHandles.rGSAxes, taxis(1:length(data{1,1})), reshape(data{1,1}, [1 length(data{1,1})]));
+                plot(myHandles.rEAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
+                plot(myHandles.rBGAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
+                plot(myHandles.rBGSAxes, taxis(1:length(data{2,1})), reshape(data{2,1}, [1 length(data{2,1})]));
+                plot(myHandles.rBEAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
+                plot(myHandles.rBBGAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
                 %8. Update Scan Plots
                 x = freqList(1:i) - freqList(1);
                 tempScanData = getappdata(obj.myTopFigure, 'scanData');
@@ -403,10 +406,10 @@ classdef FreqSweeper
             path = [basePath filesep folderPath];
         end
         function scanData = analyzeRawData(obj, data)
-            scanData = sum(data,3);
+            scanData = cellfun(@sum, data);
         end
         function scanData = analyzeRawDataBLUE(obj, data)
-            scanData = mean(data,3);
+            scanData = cellfun(@mean, data);
         end
         function quit(obj)
             obj.myGageConfigFrontend = [];

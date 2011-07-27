@@ -1,4 +1,4 @@
-function [data,time,ret] = GageMRecord(a)
+function [datatemp,time,ret] = GageMRecord(a)
     %GAGEMRECORD Performs a multiple record on a Gagecard
     %   This helper functions intializes, collects, transfers, and closes a
     %   gagecard during a multiple record event. It is heavily based off
@@ -76,12 +76,18 @@ function [data,time,ret] = GageMRecord(a)
             MaxChannelNumber = length(format_string);
             format_string = sprintf('%%s_CH%%0%dd-%%0%dd.dat', MaxChannelNumber, MaxSegmentNumber);
 
-            data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
+%             if strcmp(sysinfo.BoardName, 'CS1610')
+%                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth+1); %assuming no skipped channels
+%                 disp('special cs1610')
+%             else
+%                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
+%             end
+            datatemp = cell(sysinfo.ChannelCount, acqInfo.SegmentCount);
             for channel = 1:ChannelSkip:sysinfo.ChannelCount
                 transfer.Channel = channel;
                 for i = 1:acqInfo.SegmentCount
                     transfer.Segment = i;
-                    [ret, datatemp, actual] = CsMl_Transfer(handle, transfer);
+                    [ret, datatemp{channel, i}, actual] = CsMl_Transfer(handle, transfer);
                     CsMl_ErrorHandler(ret, 1, handle);
 
                     % Note: to optimize the transfer loop, everything from
@@ -90,10 +96,10 @@ function [data,time,ret] = GageMRecord(a)
 
                     % Adjust the size so only the actual length of data is saved to the
                     % file
-                    len= size(datatemp, 2);
+                    len= size(datatemp{channel, i}, 2);
                     if len > actual.ActualLength
-                        datatemp(actual.ActualLength:end) = [];
-                        len = size(datatemp, 2);
+                        datatemp{channel, i}(actual.ActualLength:end) = [];
+                        len = size(datatemp{channel, i}, 2);
                     end;      
             %         figure
 %                     plot(data)
@@ -114,13 +120,14 @@ function [data,time,ret] = GageMRecord(a)
             % 
             %         filename = sprintf(format_string, 'MulRec', transfer.Channel, i);
             %         CsMl_SaveFile(filename, data, info);
-            data(channel, i, :) = datatemp;
                 end;
             end;   
             disp('Data transferred successfully');
         else
             disp('Acquisition stopped');
             time = 0;
+            datatemp = [];
+            
         end
             ret = CsMl_FreeSystem(handle);
 end
