@@ -1,4 +1,4 @@
-function [datatemp,time,ret] = GageMRecord(a)
+function [datatemp,time,ret] = GageMRecord(a, handle)
     %GAGEMRECORD Performs a multiple record on a Gagecard
     %   This helper functions intializes, collects, transfers, and closes a
     %   gagecard during a multiple record event. It is heavily based off
@@ -10,7 +10,6 @@ function [datatemp,time,ret] = GageMRecord(a)
         CsMl_ErrorHandler(systems);
         [ret, handle] = CsMl_GetSystem;
         CsMl_ErrorHandler(ret);
-
         [ret, sysinfo] = CsMl_GetSystemInfo(handle);
 
 %         s = sprintf('-----Board name: %s\n', sysinfo.BoardName);
@@ -83,6 +82,7 @@ function [datatemp,time,ret] = GageMRecord(a)
 %                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
 %             end
             datatemp = cell(sysinfo.ChannelCount, acqInfo.SegmentCount);
+            disp('test2')
             for channel = 1:ChannelSkip:sysinfo.ChannelCount
                 transfer.Channel = channel;
                 for i = 1:acqInfo.SegmentCount

@@ -332,23 +332,22 @@ classdef FreqSweeper
                 if ~getappdata(obj.myTopFigure, 'run')
                     break;
                 end
-
                 %6. Call AnalyzeRawData
                 scanDataCH1 = obj.analyzeRawData(data(1,:));
                 scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                 %7. Clear the Raw Plots, Plot the Raw Plots
-                plot(myHandles.rGSAxes, taxis(1:length(data{1,1})), reshape(data{1,1}, [1 length(data{1,1})]));
-                plot(myHandles.rEAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
-                plot(myHandles.rBGAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
-                plot(myHandles.rBGSAxes, taxis(1:length(data{2,1})), reshape(data{2,1}, [1 length(data{2,1})]));
-                plot(myHandles.rBEAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
-                plot(myHandles.rBBGAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
+                plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
+                plot(myHandles.rEAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
+                plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), reshape(data{1,4}, [1 length(data{1,4})]));
+                plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
+                plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
+                plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), reshape(data{2,4}, [1 length(data{2,4})]));
                 %8. Update Scan Plots
                 x = freqList(1:i) - freqList(1);
                 tempScanData = getappdata(obj.myTopFigure, 'scanData');
                 tempNormData = getappdata(obj.myTopFigure, 'normData');
-                tempScanData(1:3,i) = double(scanDataCH1);
-                tempScanData(4:6,i) = double(scanDataCH2);
+                tempScanData(1:3,i) = double(scanDataCH1(2:end));
+                tempScanData(4:6,i) = double(scanDataCH2(2:end));
                 %NORMALIZED counts are (E - bg)/(E + G - 2bg)
                 tempNormData(i) = (tempScanData(2,i) - tempScanData(3,i)) / (tempScanData(2,i) + tempScanData(1,i) - 2*tempScanData(3,i));
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
