@@ -8,10 +8,9 @@ CsMl_ErrorHandler(ret, 1, handle);
 acqInfo.SampleRate = 10000000;
 acqInfo.ExtClock = 0;
 acqInfo.Mode = CsMl_Translate('Dual', 'Mode');
-acqInfo.SegmentCount = 4
-disp('poop')
-acqInfo.Depth = 4096;
-acqInfo.SegmentSize = 4096;
+acqInfo.SegmentCount = 3
+acqInfo.Depth = 49984;
+acqInfo.SegmentSize = 49984;
 acqInfo.TriggerTimeout = 10000000;
 acqInfo.TriggerDelay = 0;
 acqInfo.TriggerHoldoff = 0;
