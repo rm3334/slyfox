@@ -324,12 +324,19 @@ classdef FreqSweeper
                 jProgBar.setValue(i);
                 drawnow;
                 %5. Call Gage Card to gather data
-                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig);
+                if i==1
+                       systems = CsMl_Initialize;
+                       CsMl_ErrorHandler(systems);
+                       [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds
+                       CsMl_ErrorHandler(ret);
+                end
+                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle);
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
                     break;
                 end
                 if ~getappdata(obj.myTopFigure, 'run')
+                    ret = CsMl_FreeSystem(handle);
                     break;
                 end
                 %6. Call AnalyzeRawData
@@ -364,6 +371,9 @@ classdef FreqSweeper
                     temp = [curFrequency tempNormData(i) tempScanData(1,i) tempScanData(2,i) tempScanData(3,i) str2double(time) tempScanData(4,i) tempScanData(6,i) tempScanData(5,i)];
                     fprintf(fid, '%8.6f\t', temp);
                     fprintf(fid, '\r\n');
+                end
+                if i == length(freqList) || ~getappdata(obj.myTopFigure, 'run')
+                   ret = CsMl_FreeSystem(handle);
                 end
             end
             %9.5 Close Frequency Synthesizer and Data file
