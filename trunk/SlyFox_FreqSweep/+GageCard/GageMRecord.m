@@ -6,10 +6,6 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
     %   it must be passed a GageConfig object. Throughout the waiting part
     %   of the execution it will consult the appdata of the gcf to see if
     %   it should abandon waiting for the gagecard to be triggered.
-        systems = CsMl_Initialize;
-        CsMl_ErrorHandler(systems);
-        [ret, handle] = CsMl_GetSystem;
-        CsMl_ErrorHandler(ret);
         [ret, sysinfo] = CsMl_GetSystemInfo(handle);
 
 %         s = sprintf('-----Board name: %s\n', sysinfo.BoardName);
@@ -129,5 +125,4 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
             datatemp = [];
             
         end
-            ret = CsMl_FreeSystem(handle);
 end
