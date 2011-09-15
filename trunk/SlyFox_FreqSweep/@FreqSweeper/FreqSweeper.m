@@ -353,10 +353,11 @@ classdef FreqSweeper
                 x = freqList(1:i) - freqList(1);
                 tempScanData = getappdata(obj.myTopFigure, 'scanData');
                 tempNormData = getappdata(obj.myTopFigure, 'normData');
-                tempScanData(1:3,i) = double(scanDataCH1(2:end));
+                tempScanData(1:2,i) = double(scanDataCH1(2:3) - scanDataCH1(4));
+                tempScanData(3,i) = double(scanDataCH1(4));
                 tempScanData(4:6,i) = double(scanDataCH2(2:end));
                 %NORMALIZED counts are (E - bg)/(E + G - 2bg)
-                tempNormData(i) = (tempScanData(2,i) - tempScanData(3,i)) / (tempScanData(2,i) + tempScanData(1,i) - 2*tempScanData(3,i));
+                tempNormData(i) = (tempScanData(2,i)) / (tempScanData(2,i) + tempScanData(1,i));
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
                 plot(myHandles.sNormAxes, x, tempNormData(1:i));
