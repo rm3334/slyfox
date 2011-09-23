@@ -8,13 +8,15 @@ classdef FreqSynth < hgsetget
         myGPIBinstrumentAddress = 7;
         myFreqCommand = 'FREQ';
         myPanel = uiextras.Panel();
+        myDEBUGmode = 0;
         myTopFigure = [];
         myGPIBobject = [];
     end
     
     methods
-        function obj = FreqSynth(top,f)
+        function obj = FreqSynth(top,f,DEBUGMODE)
             obj.myTopFigure = top;
+            obj.myDEBUGmode = DEBUGMODE;
             set(obj.myPanel, 'Parent', f);
             h1 = uiextras.Grid('Parent', obj.myPanel, 'Tag', 'freqGrid');
             
@@ -116,27 +118,39 @@ classdef FreqSynth < hgsetget
                     delete(gtest)
                 catch
                 end
-                set(myHandles.testGPIBreply, 'String', 'ERROR')
+                if hObject.myDEBUGmode
+                    set(myHandles.testGPIBreply, 'String', 'DEBUGMODE')
+                else
+                    set(myHandles.testGPIBreply, 'String', 'ERROR')
+                end
             end
         end
         function initialize(obj)
-            obj.updateFreqSynth(1);
-            g = gpib(obj.myGPIBvendor, obj.myGPIBboard, obj.myGPIBinstrumentAddress);
-            fopen(g);
-            obj.myGPIBobject = g;
+            if ~obj.myDEBUGmode
+                obj.updateFreqSynth(1);
+                g = gpib(obj.myGPIBvendor, obj.myGPIBboard, obj.myGPIBinstrumentAddress);
+                fopen(g);
+                obj.myGPIBobject = g;
+            end
         end
         function close(obj)
-            fclose(obj.myGPIBobject);
-            delete(obj.myGPIBobject);
-            obj.myGPIBobject = [];
+            if ~obj.myDEBUGmode
+                fclose(obj.myGPIBobject);
+                delete(obj.myGPIBobject);
+                obj.myGPIBobject = [];
+            end
         end
         function ret = setFrequency(obj, newFreqStr)
             try
                 fprintf(obj.myGPIBobject, [obj.myFreqCommand, ' ', newFreqStr]);
                 ret = 1;
             catch
-                errordlg('Abandon hope, could not set frequency.')
-                ret = 0;
+                if ~obj.myDEBUGmode
+                    errordlg('Abandon hope, could not set frequency.')
+                    ret = 0;
+                else
+                    ret = 1;
+                end
             end
         end
         function curFreq = readFrequency(obj)
@@ -144,7 +158,11 @@ classdef FreqSynth < hgsetget
                 fprintf(obj.myGPIBobject, [obj.myFreqCommand, '?'])
                 curFreq = fscanf(obj.myGPIBobject);
             catch
-                errordlg('Frequency? Never heard of her')
+                if ~obj.myDEBUGmode
+                    errordlg('Frequency? Never heard of her')
+                else
+                    curFreq = 10;
+                end
             end
         end
         function quit(obj)
