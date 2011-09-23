@@ -78,7 +78,6 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
 %                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
 %             end
             datatemp = cell(sysinfo.ChannelCount, acqInfo.SegmentCount);
-            disp('test2')
             for channel = 1:ChannelSkip:sysinfo.ChannelCount
                 transfer.Channel = channel;
                 for i = 1:acqInfo.SegmentCount
@@ -118,7 +117,6 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
             %         CsMl_SaveFile(filename, data, info);
                 end;
             end;   
-            disp('Data transferred successfully');
         else
             disp('Acquisition stopped');
             time = 0;

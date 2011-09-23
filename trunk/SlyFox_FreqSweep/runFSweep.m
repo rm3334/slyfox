@@ -1,3 +1,3 @@
 run './Main/AddPath.m'
-FrequencySweeperMain();
+FrequencySweeperMain(0);
 %Testing commit

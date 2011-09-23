@@ -360,12 +360,30 @@ classdef FreqSweeper
                 tempNormData(i) = (tempScanData(2,i)) / (tempScanData(2,i) + tempScanData(1,i));
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
-                plot(myHandles.sNormAxes, x, tempNormData(1:i));
-                plot(myHandles.sEAxes, x, tempScanData(2,1:i));
-                plot(myHandles.sGAxes, x, tempScanData(1,1:i));
-                plot(myHandles.sBGAxes, x, tempScanData(3,1:i));
-                plot(myHandles.sBGSAxes, x, tempScanData(4,1:i));
-                plot(myHandles.sBEAxes, x, tempScanData(5,1:i));
+
+                if i ==1 %First time you have to plot....the rest of the time we will "refreshdata"
+                    tempH(1) = plot(myHandles.sNormAxes, x, tempNormData(1:i));
+                    tempH(2) = plot(myHandles.sEAxes, x, tempScanData(2,1:i));
+                    tempH(3) = plot(myHandles.sGAxes, x, tempScanData(1,1:i));
+                    tempH(4) = plot(myHandles.sBGAxes, x, tempScanData(3,1:i));
+                    tempH(5) = plot(myHandles.sBGSAxes, x, tempScanData(4,1:i));
+                    tempH(6) = plot(myHandles.sBEAxes, x, tempScanData(5,1:i));
+                else
+                    set(tempH(1), 'XData', x, 'YData', tempNormData(1:i));
+                    set(tempH(2), 'XData', x, 'YData', tempScanData(2,1:i));
+                    set(tempH(3), 'XData', x, 'YData', tempScanData(1,1:i));
+                    set(tempH(4), 'XData', x, 'YData', tempScanData(3,1:i));
+                    set(tempH(5), 'XData', x, 'YData', tempScanData(4,1:i));
+                    set(tempH(6), 'XData', x, 'YData', tempScanData(5,1:i));
+                    refreshdata(tempH);
+                end
+                
+                if i == 4
+                    % Create Interactive Draggable cursors
+                    dualcursor([],[],[],[], myHandles.sNormAxes)
+                elseif i > 4
+                    dualcursor('update', [], [], [], myHandles.sNormAxes);
+                end
                 %9. Check Save and Write Data to file.
                 if get(myHandles.saveScan, 'Value')
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
