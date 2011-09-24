@@ -17,19 +17,67 @@ classdef FreqSweeper
             obj.myFreqSynth = freqSynth;
             obj.myGageConfigFrontend = gageConfigFE;
             
+            %%%%Layout Manager Stuff
+            %Splits the Window into 3 main Sections
             hsplit = uiextras.HBox(...
                 'Parent', obj.myPanel, ...
                 'Tag', 'hsplit', ...
                 'Spacing', 5, ...
                 'Padding', 5);
-                
+            
+                %%First Section is for controls of
+                %Frequency/Cursors/Starting and Stopping
                 uiVB = uiextras.VBox(...
                     'Parent', hsplit, ...
                     'Tag', 'uiVB', ...
                     'Spacing', 5, ...
                     'Padding', 5);
                 
-                    uiextras.Empty('Parent', uiVB);
+                    %Spacer Box
+                    uiextras.Empty('Parent', uiVB); 
+                    %CursorButtons Box
+                    cursorButtonVB = uiextras.VBox(...
+                        'Parent', uiVB);
+                        cursorReadoffsHB = uiextras.HBox(...
+                            'Parent', cursorButtonVB, ...
+                            'Spacing', 5, ...
+                            'Padding', 5);
+                            uicontrol(...
+                                    'Parent', cursorReadoffsHB,...
+                                    'Style', 'edit', ...
+                                    'Tag', 'c1Freq',...
+                                    'String', '0');
+                            uicontrol(...
+                                    'Parent', cursorReadoffsHB,...
+                                    'Style', 'pushbutton', ...
+                                    'Tag', 'grabCursorButton',...
+                                    'String', 'Grab', ...
+                                    'Callback', @obj.grabCursorButton_Callback);
+                            uicontrol(...
+                                    'Parent', cursorReadoffsHB,...
+                                    'Style', 'pushbutton', ...
+                                    'Tag', 'setCursorButton',...
+                                    'String', 'Set', ...
+                                    'Callback', @obj.setCursorButton_Callback);
+                            uicontrol(...
+                                    'Parent', cursorReadoffsHB,...
+                                    'Style', 'edit', ...
+                                    'Tag', 'c2Freq',...
+                                    'String', '1');
+                        cursorButtonHB = uiextras.HBox(...
+                            'Parent', cursorButtonVB, ...
+                            'Spacing', 5, ...
+                            'Padding', 5);
+                            uiextras.Empty('Parent', cursorButtonHB);
+                            uicontrol(...
+                                    'Parent', cursorButtonHB,...
+                                    'Style', 'checkbox', ...
+                                    'Tag', 'cursorToggle',...
+                                    'Value', 1, ...
+                                    'String', 'Use Cursors', ...
+                                    'Callback', @obj.cursorToggle_Callback);
+                            uiextras.Empty('Parent', cursorButtonHB);
+                    %Start/Stop Button Box
                     startStopVB = uiextras.VBox(...
                         'Parent', uiVB);
                         uiextras.Empty('Parent', startStopVB);
@@ -53,6 +101,7 @@ classdef FreqSweeper
                             set(startStopHB, 'Sizes', [-2 -1 -2]);
                         uiextras.Empty('Parent', startStopVB);
                         set(startStopVB, 'Sizes', [-1 -2 -1]);
+                    %Frequency Parameter Box
                     freqParamHB = uiextras.HBox(...
                         'Parent', uiVB, ...
                         'Spacing', 5, ...
@@ -135,6 +184,8 @@ classdef FreqSweeper
                                 'FontUnits', 'normalized', ...
                                 'FontSize', 0.6); 
                             uiextras.Empty('Parent', stopFreqVB);
+                            
+                    %ProgressBar Box
                     jProgBarPanel = uipanel(...
                         'Parent', uiVB, ...
                         'Tag', 'jProgBarPanel', ...
@@ -155,6 +206,7 @@ classdef FreqSweeper
                         catch
                            error('Cannot display Java-base scroll-bar!');
                         end
+                    %SavePath Box
                     savePathVB = uiextras.VBox(...
                         'Parent', uiVB, ...
                         'Spacing', 5, ...
@@ -182,9 +234,17 @@ classdef FreqSweeper
                                 'Tag', 'saveDir');
                             set(pathHB, 'Sizes', [60 -1]);
                         set(savePathVB, 'Sizes', [-2 -1]);
-                    
+                    %Spacer Box
                     uiextras.Empty('Parent', uiVB);
-                    set(uiVB, 'Sizes', [-1 -1 -1 -1 -1 -4]);
+                    
+                    %Spacer
+                    %CursorButton Box
+                    %Start/Stop
+                    %Frequency
+                    %ProgressBar
+                    %SavePath
+                    %Big Spacer
+                    set(uiVB, 'Sizes', [-1 -0.5 -1 -1 -1 -1 -4]);
 
                 scanPlotsVB = uiextras.VBox(...
                     'Parent', hsplit, ...
@@ -305,6 +365,7 @@ classdef FreqSweeper
             temp = zeros(6,length(freqList));
             setappdata(obj.myTopFigure, 'scanData', temp);
             setappdata(obj.myTopFigure, 'normData', zeros(1, length(freqList)));
+            set(myHandles.setCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Start Frequency Loop / Check 'Run'
@@ -378,11 +439,17 @@ classdef FreqSweeper
                     refreshdata(tempH);
                 end
                 
-                if i == 4
+                if i == 4 && get(myHandles.cursorToggle, 'Value')
                     % Create Interactive Draggable cursors
-                    dualcursor([],[],[],[], myHandles.sNormAxes)
-                elseif i > 4
-                    dualcursor('update', [], [], [], myHandles.sNormAxes);
+                    dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes);
+                elseif i > 4 && get(myHandles.cursorToggle, 'Value')
+                    %Need to double check because of the cursor toggle
+                    %button
+                    if isempty(dualcursor(myHandles.sNormAxes))
+                        dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes);
+                    else
+                        dualcursor('update', [.65 1.08;.9 1.08], [], @(x, y) '', myHandles.sNormAxes);
+                    end
                 end
                 %9. Check Save and Write Data to file.
                 if get(myHandles.saveScan, 'Value')
@@ -416,6 +483,17 @@ classdef FreqSweeper
             set(hProgBar, 'Position', [floor(0.1*figpos(3)) floor(0.32*figpos(4)) floor(0.8*figpos(3)) floor(0.36*figpos(4))]);
             set(src,'Units',old_units);
         end
+        function cursorToggle_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);
+            if ~get(myHandles.cursorToggle, 'Value')
+                try
+                    dualcursor('off',[.65 1.08;.9 1.08],[],[], myHandles.sNormAxes)
+                catch
+                end
+            elseif ~isempty(getappdata(obj.myTopFigure, 'scanData'))
+                dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes)
+            end
+        end
         function stopButton_Callback(obj, src, eventData)
             setappdata(obj.myTopFigure, 'run', 0);
         end
@@ -424,6 +502,31 @@ classdef FreqSweeper
             dirPath = uigetdir(['Z:\Sr3\data']);
             set(myHandles.saveDir, 'String', dirPath);
             guidata(obj.myTopFigure, myHandles);
+        end
+        function grabCursorButton_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);
+            if get(myHandles.cursorToggle, 'Value')
+                val = dualcursor(myHandles.sNormAxes);
+                c1F = num2str(str2double(get(myHandles.startFrequency, 'String')) + val(1));
+                c2F = num2str(str2double(get(myHandles.startFrequency, 'String')) + val(3));
+                set(myHandles.c1Freq, 'String',c1F);
+                set(myHandles.c2Freq, 'String',c2F);
+            end
+        end
+        function setCursorButton_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);
+            % Set cursor will now transfer values of grab to start/stop
+            % frequency
+            % % % % % % % % %             if get(myHandles.cursorToggle, 'Value')
+            % % % % % % % % %                 val = dualcursor(myHandles.sNormAxes);
+            % % % % % % % % %                 c1F = -str2double(get(myHandles.startFrequency, 'String')) + str2double(get(myHandles.c1Freq, 'String'));
+            % % % % % % % % %                 c2F = -str2double(get(myHandles.startFrequency, 'String')) + str2double(get(myHandles.c2Freq, 'String'));
+            % % % % % % % % %                 dualcursor([c1F c2F],[.65 1.08;.9 1.08],[],[], myHandles.sNormAxes);
+            % % % % % % % % %             end
+            val = dualcursor(myHandles.sNormAxes);
+            set(myHandles.startFrequency, 'String', get(myHandles.c1Freq, 'String'));
+            set(myHandles.stopFrequency, 'String', get(myHandles.c2Freq, 'String'));
+            set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
         end
         function [path, fileName] = createFileName(obj)
             myHandles = guidata(obj.myTopFigure);
