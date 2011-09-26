@@ -34,7 +34,28 @@ classdef FreqSweeper
                     'Padding', 5);
                 
                     %Spacer Box
-                    uiextras.Empty('Parent', uiVB); 
+                    uiextras.Empty('Parent', uiVB);
+                    %Fit Readout box
+                    fitButtonHB = uiextras.HBox(...
+                            'Parent', uiVB, ...
+                            'Spacing', 5, ...
+                            'Padding', 5);
+                            uicontrol(...
+                                'Parent', fitButtonHB,...
+                                'Style', 'pushbutton', ...
+                                'Tag', 'fitLorentzian',...
+                                'String', 'Fit Lorentzian', ...
+                                'Callback', @obj.fitLorentzian_Callback);
+                            fitResultsCenteringVB = uiextras.VBox(...
+                                'Parent', fitButtonHB);
+                                uiextras.Empty('Parent', fitResultsCenteringVB);
+                                uicontrol(...
+                                    'Parent', fitResultsCenteringVB,...
+                                    'Style', 'text',...
+                                    'Tag', 'fitResults',...
+                                    'FontWeight', 'bold',...
+                                    'String', 'FWHM:');
+                                uiextras.Empty('Parent', fitResultsCenteringVB);
                     %CursorButtons Box
                     cursorButtonVB = uiextras.VBox(...
                         'Parent', uiVB);
@@ -238,13 +259,14 @@ classdef FreqSweeper
                     uiextras.Empty('Parent', uiVB);
                     
                     %Spacer
+                    %FitReadout
                     %CursorButton Box
                     %Start/Stop
                     %Frequency
                     %ProgressBar
                     %SavePath
                     %Big Spacer
-                    set(uiVB, 'Sizes', [-1 -0.5 -1 -1 -1 -1 -4]);
+                    set(uiVB, 'Sizes', [-1 -0.5 -0.5 -1 -1 -1 -1 -4]);
 
                 scanPlotsVB = uiextras.VBox(...
                     'Parent', hsplit, ...
@@ -369,6 +391,7 @@ classdef FreqSweeper
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Start Frequency Loop / Check 'Run'
+            set(myHandles.curFreq, 'BackgroundColor', 'green');
             for i=1:length(freqList)
                 if ~getappdata(obj.myTopFigure, 'run')
                     break;
@@ -472,6 +495,9 @@ classdef FreqSweeper
                 setappdata(obj.myTopFigure, 'run', 1);
                 drawnow;
             end
+            %Make obvious that the scan stopped
+            set(myHandles.curFreq, 'BackgroundColor', 'red');
+            
             guidata(obj.myTopFigure, myHandles);
         end
         function resizeJProgressBarHolder(obj, src, eventData)
@@ -527,6 +553,27 @@ classdef FreqSweeper
             set(myHandles.startFrequency, 'String', get(myHandles.c1Freq, 'String'));
             set(myHandles.stopFrequency, 'String', get(myHandles.c2Freq, 'String'));
             set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
+        end
+        function fitLorentzian_Callback(obj, src, eventData)
+            %This absolutely needs to be cleaned up.
+            myHandles = guidata(obj.myTopFigure);
+            val = dualcursor(myHandles.sNormAxes);
+            if ~isempty(val)
+                scannedVals = getappdata(obj.myTopFigure, 'normData');
+                fullx = str2double(get(myHandles.startFrequency, 'String')):str2double(get(myHandles.stepFrequency, 'String')):str2double(get(myHandles.stopFrequency, 'String'));
+                fullx = fullx - str2double(get(myHandles.startFrequency, 'String'));
+                ValsToFit = scannedVals(fullx >= val(1) & fullx <= val(3));
+                nu = val(1):str2double(get(myHandles.stepFrequency, 'String')):val(3);
+
+                opts = optimset('Algorithm', 'levenberg-marquardt', 'TolFun',1e-8, 'TolX',1e-6);
+                Coefs = lsqnonlin(@(x) ValsToFit - x(1).*(1./(1 + ((nu-x(3))/x(2)).^2)), [10 abs(val(3)-val(1))/2 abs(val(3)+ val(1))/2], [0 0 abs(val(1))],[100 2*abs(val(3)-val(1)) abs(val(3))], opts);
+                hold(myHandles.sNormAxes);
+                nuFine = val(1):0.1:val(3);
+                y = Coefs(1).*(1./(1 + ((nuFine-Coefs(3))/Coefs(2)).^2));
+                plot(myHandles.sNormAxes, nuFine, y, 'r');
+                set(myHandles.fitResults, 'String', sprintf('FWHM: %f Hz', 2*Coefs(2)))
+                hold(myHandles.sNormAxes);
+            end
         end
         function [path, fileName] = createFileName(obj)
             myHandles = guidata(obj.myTopFigure);
