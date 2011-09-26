@@ -4,7 +4,7 @@ function FrequencySweeperMain(DEBUGMODE )
 %   GUI. Need to figure out GageCard AddPath.m
 %   By Ben Bloom 07/25/2011 18:44
 
-    f = figure('Menubar', 'none', 'Toolbar', 'none');
+    f = figure('Menubar', 'none', 'Toolbar', 'none', 'NumberTitle', 'off', 'Name', 'Frequency Sweeper');
     setappdata(gcf, 'run', 1);
     pan = uiextras.Panel('Parent', f, 'Tag', 'toppanel');
     setappdata(gcf, 'topPanel', pan);
