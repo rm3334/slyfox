@@ -387,7 +387,7 @@ classdef FreqSweeper
             temp = zeros(6,length(freqList));
             setappdata(obj.myTopFigure, 'scanData', temp);
             setappdata(obj.myTopFigure, 'normData', zeros(1, length(freqList)));
-            set(myHandles.setCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
+            set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Start Frequency Loop / Check 'Run'
@@ -537,6 +537,7 @@ classdef FreqSweeper
                 c2F = num2str(str2double(get(myHandles.startFrequency, 'String')) + val(3));
                 set(myHandles.c1Freq, 'String',c1F);
                 set(myHandles.c2Freq, 'String',c2F);
+                set(myHandles.setCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
             end
         end
         function setCursorButton_Callback(obj, src, eventData)
