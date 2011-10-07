@@ -94,7 +94,7 @@ classdef DDS_Frontend < hgsetget
                         uicontrol(...
                             'Parent', FSKHBcontrol, ...
                             'Style', 'popupmenu', ...
-                            'Tag', ['FSKsetting' num2str(obj.myBoardAddr)], ...
+                            'Tag', 'FSKsetting', ...
                             'FontUnits', 'normalized', ...
                             'FontSize', 0.2, ...
                             'String', {'Send F1&F2', ...
@@ -173,28 +173,22 @@ classdef DDS_Frontend < hgsetget
                     params = struct('FTW1', ftw);
                     
                     iSet = obj.myDDS.createInstructionSet(myMode, params);
-                    fwrite(obj.mySerial, iSet{1});
+                    fwrite(obj.mySerial, iSet);
                     fscanf(obj.mySerial);
                 case 'FSK'
-                    if get(myHandles.(['FSKsetting'  num2str(obj.myBoardAddr)]), 'Value') == 1
+                    if get(myHandles.FSKsetting, 'Value') == 1
                         freq1 = str2double(get(myHandles.(['fskFTW1' num2str(obj.myBoardAddr)]), 'String')); 
                         freq2 = str2double(get(myHandles.(['fskFTW2' num2str(obj.myBoardAddr)]), 'String')); 
                         [oFreq, ftw] = obj.myDDS.calculateFTW([freq1 freq2]);
-                        params = struct('FTW1', ftw(1,:), 'FTW2', ftw(2, :), 'WriteMode', 1);
-                        
-                        iSet = obj.myDDS.createInstructionSet(myMode, params);
-                        fwrite(obj.mySerial, iSet{1});
-                        fscanf(obj.mySerial)
-                        fwrite(obj.mySerial, iSet{2});
-                        fscanf(obj.mySerial)
+                        params = struct('FTW1', ftw(1), 'FTW2', ftw(2), 'WriteMode', 1)
                     end
             end
             
             if ~strcmp(myMode, obj.myDDS.myMode)
                 params = struct('NEWMODE', myMode);
                 iSet = obj.myDDS.createInstructionSet('CHANGEMODE', params);
-                fwrite(obj.mySerial, iSet{1});
-                fscanf(obj.mySerial)
+                fwrite(obj.mySerial, iSet);
+                fscanf(obj.mySerial);
             end
         end
     end

@@ -169,8 +169,8 @@ void Port_Init(void) {
   pinMode(pinIOReset_1, OUTPUT);
   pinMode(pinCS_1, OUTPUT);
   
-  pinMode(pinFSK_0, OUTPUT);
-  pinMode(pinFSK_1, OUTPUT);
+  pinMode(pinFSK_0, INPUT);
+  pinMode(pinFSK_1, INPUT);
 }
 
 void DDS0_Init(void) {
