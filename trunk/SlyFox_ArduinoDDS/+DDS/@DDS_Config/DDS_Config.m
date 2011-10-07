@@ -64,7 +64,7 @@ classdef DDS_Config < hgsetget
             q = quantizer('ufixed','round', [48 0]);
             ftwRAW = (desiredFrequency*2^48)/obj.mySysClk;
             ftw = num2hex(q, ftwRAW);
-            outFreq = obj.mySysClk/(hex2num(ftw));
+            outFreq = obj.mySysClk/(hex2num(q, ftw(end:-1:1)));
         end
         
         function instrCell = createInstructionSet(obj, selectedMode, params)
@@ -117,6 +117,37 @@ classdef DDS_Config < hgsetget
                         instrSet = [instrSet; uint8(checkSumLow)];
                         instrCell{setCount} = instrSet;
                         setCount = setCount + 1;
+                    end
+                    if params.WriteMode == 4
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 7]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec(obj.myHWProps(params.WriteRegister)))]; %Address of register on the DDS to write to.
+                        FTW = params.FTW;
+                        for i=1:2:length(FTW)
+                            instrSet = [instrSet; uint8(hex2dec(FTW(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                        end
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
+                        setCount = setCount + 1;
+                        
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(';')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 2]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec('01'))]; %Command Code for Switch FSK
+                        if strcmp(params.WriteRegister, 'FTW1_Reg')
+                            instrSet = [instrSet; uint8(0)]; %FSK set to FTW1
+                        else
+                            instrSet = [instrSet; uint8(1)]; %FSK set to FTW2
+                        end
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
                     end
                       
                     

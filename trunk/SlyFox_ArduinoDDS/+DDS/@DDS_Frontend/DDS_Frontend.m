@@ -14,6 +14,7 @@ classdef DDS_Frontend < hgsetget
         myBoardAddr;
         myCurrentMode = 1;
         myAvailableModes = {'Single Tone', 'FSK', 'Ramped FSK', 'Chirp', 'BPSK'};
+        myCurrentRegister = 1;
     end
     
     methods
@@ -91,16 +92,21 @@ classdef DDS_Frontend < hgsetget
                     'Padding', 5);
                     FSKHBcontrol = uiextras.HBox('Parent', FSKVB);
                         uiextras.Empty('Parent', FSKHBcontrol);
-                        uicontrol(...
-                            'Parent', FSKHBcontrol, ...
-                            'Style', 'popupmenu', ...
-                            'Tag', ['FSKsetting' num2str(obj.myBoardAddr)], ...
-                            'FontUnits', 'normalized', ...
-                            'FontSize', 0.2, ...
-                            'String', {'Send F1&F2', ...
-                                'Send F1', ...
-                                'Send F2', ...
-                                'Pseudo-Single Tone'});
+                        fskSetVB = uiextras.VBox('Parent', FSKHBcontrol);
+                            uiextras.Empty('Parent', fskSetVB);
+                            uicontrol(...
+                                'Parent', fskSetVB, ...
+                                'Style', 'popupmenu', ...
+                                'Tag', ['FSKsetting' num2str(obj.myBoardAddr)], ...
+                                'FontUnits', 'normalized', ...
+                                'FontSize', 0.2, ...
+                                'String', {'Send F1&F2', ...
+                                    'Send F1', ...
+                                    'Send F2', ...
+                                    'Pseudo-Single Tone'}, ...
+                                'Callback', @obj.FSKsetting_Callback);
+                            uiextras.Empty('Parent', fskSetVB);
+                            fskSetVB.Sizes = [-1 -3 -1];
                         uiextras.Empty('Parent', FSKHBcontrol);
                     FSKHB0 = uiextras.HBox('Parent', FSKVB, ...
                         'Spacing', 5, ...
@@ -150,7 +156,7 @@ classdef DDS_Frontend < hgsetget
                     uiextras.Empty('Parent', FSKVB);
                     FSKVB.Sizes = [-2 -1 -2 -1 -2];
                 rFSKGrid = uiextras.VBox('Parent', modeTabPanel);
-                CHIRPGrid = uiextras.VBox('Parent', modeTabPanel);
+                CHIRPVB = uiextras.VBox('Parent', modeTabPanel);
                 BPSKGrid = uiextras.VBox('Parent', modeTabPanel);
             modeTabPanel.TabNames = obj.myAvailableModes;
             modeTabPanel.SelectedChild = 1;
@@ -160,6 +166,16 @@ classdef DDS_Frontend < hgsetget
         function modeTabPanel_Callback(obj, src, eventData)
             obj.myCurrentMode = eventData.SelectedChild;
         end
+        
+        function FSKsetting_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);
+            if get(myHandles.(['FSKsetting' num2str(obj.myBoardAddr)]), 'Value') == 4
+                set(myHandles.(['fskFTW2' num2str(obj.myBoardAddr)]), 'Enable', 'off');
+            else
+                set(myHandles.(['fskFTW2' num2str(obj.myBoardAddr)]), 'Enable', 'on');
+            end
+        end
+        
         function sendCommand_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
             myMode = obj.myAvailableModes{obj.myCurrentMode};
@@ -174,20 +190,49 @@ classdef DDS_Frontend < hgsetget
                     
                     iSet = obj.myDDS.createInstructionSet(myMode, params);
                     fwrite(obj.mySerial, iSet{1});
-                    fscanf(obj.mySerial);
+                    fscanf(obj.mySerial)
                 case 'FSK'
-                    if get(myHandles.(['FSKsetting'  num2str(obj.myBoardAddr)]), 'Value') == 1
-                        freq1 = str2double(get(myHandles.(['fskFTW1' num2str(obj.myBoardAddr)]), 'String')); 
-                        freq2 = str2double(get(myHandles.(['fskFTW2' num2str(obj.myBoardAddr)]), 'String')); 
-                        [oFreq, ftw] = obj.myDDS.calculateFTW([freq1 freq2]);
-                        params = struct('FTW1', ftw(1,:), 'FTW2', ftw(2, :), 'WriteMode', 1);
+                    fskWriteMode = get(myHandles.(['FSKsetting'  num2str(obj.myBoardAddr)]), 'Value');
+                    if fskWriteMode ~= 4
+                         freq1 = str2double(get(myHandles.(['fskFTW1' num2str(obj.myBoardAddr)]), 'String')); 
+                         freq2 = str2double(get(myHandles.(['fskFTW2' num2str(obj.myBoardAddr)]), 'String')); 
+                         [oFreq, ftw] = obj.myDDS.calculateFTW([freq1 freq2]);
+                         params = struct('FTW1', ftw(1,:), 'FTW2', ftw(2, :), 'WriteMode', fskWriteMode);
+
+                         iSet = obj.myDDS.createInstructionSet(myMode, params);
+                    else
+                        freq1 = str2double(get(myHandles.(['fskFTW1' num2str(obj.myBoardAddr)]), 'String'));
+                        [oFreq, ftw] = obj.myDDS.calculateFTW(freq1);
+                        params = struct('FTW', ftw, 'WriteRegister', ['FTW' num2str(obj.myCurrentRegister) '_Reg'], 'WriteMode', fskWriteMode);
                         
                         iSet = obj.myDDS.createInstructionSet(myMode, params);
-                        fwrite(obj.mySerial, iSet{1});
-                        fscanf(obj.mySerial)
-                        fwrite(obj.mySerial, iSet{2});
-                        fscanf(obj.mySerial)
                     end
+                    switch fskWriteMode
+                        case 1 % Send F1&F2
+                            fwrite(obj.mySerial, iSet{1});
+                            fscanf(obj.mySerial)
+                            fwrite(obj.mySerial, iSet{2});
+                            fscanf(obj.mySerial)
+                        case 2 % Send F1
+                            fwrite(obj.mySerial, iSet{1});
+                            fscanf(obj.mySerial);
+                        case 3 % Send F2
+                            fwrite(obj.mySerial, iSet{1});
+                            fscanf(obj.mySerial);
+                        case 4 % Pseudo-Single Tone
+                            fwrite(obj.mySerial, iSet{1});
+                            iSet{1}
+                            fscanf(obj.mySerial)
+                            iSet{2}
+                            fwrite(obj.mySerial, iSet{2});
+                            fscanf(obj.mySerial)
+                            if obj.myCurrentRegister == 1
+                                obj.myCurrentRegister = 2;
+                            else
+                                obj.myCurrentRegister = 1;
+                            end
+                    end
+                    
             end
             
             if ~strcmp(myMode, obj.myDDS.myMode)

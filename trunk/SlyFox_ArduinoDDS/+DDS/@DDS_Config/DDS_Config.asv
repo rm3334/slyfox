@@ -103,13 +103,14 @@ classdef DDS_Config < hgsetget
                         setCount = setCount + 1;
                     end
                     if params.WriteMode == 1 || params.WriteMode == 3
+                        instrSet = [];
                         instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
                         instrSet = [instrSet; obj.myBoardAddress]; %which board to use
                         instrSet = [instrSet; 7]; %Number of Bytes in Instruction after this point
                         instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('FTW2_Reg')))]; %Address of register on the DDS to write to.
                         FTW2 = params.FTW2;
                         for i=1:2:length(FTW2)
-                            instrSet = [instrSet; uint8(hex2dec(FTW1(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                            instrSet = [instrSet; uint8(hex2dec(FTW2(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
                         end
 
                         checkSumLow = obj.createCheckSum(instrSet);
@@ -117,13 +118,39 @@ classdef DDS_Config < hgsetget
                         instrCell{setCount} = instrSet;
                         setCount = setCount + 1;
                     end
-                    
-                            
+                    if params.WriteMode == 4
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 7]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec(obj.myHWProps(params.WriteRegister)))]; %Address of register on the DDS to write to.
+                        FTW = params.FTW;
+                        for i=1:2:length(FTW)
+                            instrSet = [instrSet; uint8(hex2dec(FTW(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                        end
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
+                        setCount = setCount + 1;
+                        
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(';')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 3]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec('01'))]; %Command Code for Switch FSK
+                        if(strcmp(params.WriteRegister, 'FTW1_Reg' ))
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
+                    end
+                      
                     
                 case 'CHANGEMODE'
                     instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
                     instrSet = [instrSet; obj.myBoardAddress]; %which board to use
-                    instrSet = [instrSet; 6]; %Number of Bytes in Instruction after this point
+                    instrSet = [instrSet; 5]; %Number of Bytes in Instruction after this point
                     instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('ConfigReg')))]; %Address of register on the DDS to write to.
                     
                     q = quantizer('ufixed','round', [32 0]);
@@ -135,7 +162,7 @@ classdef DDS_Config < hgsetget
                     newModeBin = mCodes{modeIdx};
                     configBin(obj.myHWProps('ConfigModePos')) = newModeBin;
                     newConfig = bin2num(q, configBin);
-                    configHex = num2hex(q, newConfig);
+                    configHex = num2hex(q, newConfig)
                     
                     for i=1:2:length(configHex)
                         instrSet = [instrSet; uint8(hex2dec(configHex(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time

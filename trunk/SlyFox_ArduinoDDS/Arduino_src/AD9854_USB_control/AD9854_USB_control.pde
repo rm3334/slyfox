@@ -37,6 +37,7 @@ byte checksumReceived;  //data checksum should be
 byte serialStatus;  //idle or receiving
 byte dataStatus;  //ready or not ready
 byte serialInputCount; //how many bytes received
+boolean DDScommand; // True if command sent was a DDS command that needs to be passed through
 byte commandLength;
 byte Command[20];
 byte chiptoWrite;
@@ -57,6 +58,13 @@ void loop() {
     // read the incoming byte:
     incomingByte = Serial.read();
     if (incomingByte==':' && serialStatus==SERIAL_IDLE && dataStatus==DATA_NOT_READY) {
+      DDScommand = true;
+      serialInputCount=0;
+      serialStatus=SERIAL_RECEIVING;
+      checksumCalculated=0;
+    }
+    else if (incomingByte==';' && serialStatus==SERIAL_IDLE && dataStatus==DATA_NOT_READY) {
+      DDScommand = false;
       serialInputCount=0;
       serialStatus=SERIAL_RECEIVING;
       checksumCalculated=0;
@@ -84,7 +92,7 @@ void loop() {
       }
     }
   }  
-  if (dataStatus==DATA_READY) {
+  if (DDScommand && dataStatus==DATA_READY) {
     if (lowByte(checksumCalculated)==checksumReceived) {
       Serial.println("Roger that!");
       if (chiptoWrite==0) {
@@ -104,14 +112,48 @@ void loop() {
         digitalWrite(pinCS_1,HIGH);
       }
     }
-    else {
-//      Serial.println(lowByte(checksumCalculated));
-//      Serial.println(lowByte(checksumReceieved));
+    else{
       Serial.println("Checksum error!");
+    }
+  }
+    else if(dataStatus==DATA_READY){
+      if (lowByte(checksumCalculated)==checksumReceived) {
+        Serial.println("Roger that ArduinoCMD!");
+        //Command Byte for Strobing FSK pin
+        if (Command[0]==0x01)
+        {
+          if(chiptoWrite == 0)
+          {
+              pinMode(pinFSK_0, OUTPUT);
+              if(Command[1] == 0x00)
+              {
+                digitalWrite(pinFSK_0, LOW);
+              }
+              else
+              {
+                digitalWrite(pinFSK_0, HIGH);
+              }
+          }
+          else
+          {
+              pinMode(pinFSK_1, OUTPUT);
+              if(Command[1] == 0x00)
+              {
+                digitalWrite(pinFSK_1, LOW);
+              }
+              else
+              {
+                digitalWrite(pinFSK_1, HIGH);
+              }
+          }
+        }
+      }
+      else{  
+        Serial.println("NON-DDS Checksum error!");
+      }
     }
     dataStatus=DATA_NOT_READY;
   }
-}
 
 void Master_Reset_0(void) {
   digitalWrite(pinMasterReset_0,HIGH);
