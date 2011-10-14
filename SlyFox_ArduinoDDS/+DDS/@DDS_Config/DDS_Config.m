@@ -80,9 +80,15 @@ classdef DDS_Config < hgsetget
             end
             q = quantizer('fixed','round', [48 0]);
             stepRes = hex2num(q, DFTWp)*(obj.mySysClk*10^6)/2^48; %This gives the stepResolution in hertz
-            desiredFrequency = (abs(desiredSlope)*10^-3)/ stepRes
-            desiredPeriod = 1/desiredFrequency
-            N = round(desiredPeriod*obj.mySysClk*10^6) - 1
+            desiredFrequency = (abs(desiredSlope)*10^-3)/ stepRes;
+            desiredPeriod = 1/desiredFrequency;
+            N = round(desiredPeriod*obj.mySysClk*10^6) - 1;
+            if N < 1
+                N = 1;
+            elseif N > 2^20 - 1
+                N = 2^20 - 1;
+            end
+                
             q = quantizer('ufixed','round', [24 0]);
             RRW = num2hex(q, N);
             rampRateReal = hex2num(q, RRW);
