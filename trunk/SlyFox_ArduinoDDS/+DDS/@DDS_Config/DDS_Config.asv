@@ -66,7 +66,7 @@ classdef DDS_Config < hgsetget
             q = quantizer('ufixed','round', [48 0]);
             ftwRAW = (desiredFrequency*2^48)/obj.mySysClk;
             ftw = num2hex(q, ftwRAW);
-            outFreq = hex2num(q, ftw)*(obj.mySysClk*10^6)/2^48;
+            outFreq = obj.mySysClk/(hex2num(q, ftw(end:-1:1)));
         end
         
         function [realSlope, RRW, DFTW] = calculateRRW(obj, desiredSlope)
@@ -93,7 +93,7 @@ classdef DDS_Config < hgsetget
 %             end
             desiredFrequency = (abs(desiredSlope)*10^-3)/ stepRes
             desiredPeriod = 1/desiredFrequency
-            N = round(desiredPeriod*obj.mySysClk*10^6) - 1
+            N = round(desiredPeriod*obj.mySysClk*10^6) - 1;
             q = quantizer('ufixed','round', [24 0]);
             RRW = num2hex(q, N);
             rampRateReal = hex2num(q, RRW);

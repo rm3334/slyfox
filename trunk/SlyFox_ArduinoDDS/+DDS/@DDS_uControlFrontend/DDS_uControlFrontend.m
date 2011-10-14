@@ -125,6 +125,21 @@ classdef DDS_uControlFrontend < hgsetget
             end
             guidata(obj.myTopFigure, myHandles);
         end
+        
+        function quit(obj)
+            myHandles = guidata(obj.myTopFigure);
+            success = 0;
+            try
+                fclose(obj.mySerial);
+                success = 1;
+                delete(obj.mySerial);
+                obj.myDDS0.mySerial = [];
+                obj.myDDS1.mySerial = [];
+                disp('Close Success!')
+            catch
+                disp('Error: Close Failed');
+            end
+        end
     end
     
 end
