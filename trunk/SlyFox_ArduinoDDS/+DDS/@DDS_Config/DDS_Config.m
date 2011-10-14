@@ -70,7 +70,7 @@ classdef DDS_Config < hgsetget
         end
         
         function [realSlope, RRW, DFTW] = calculateRRW(obj, desiredSlope)
-            % Here I will assume that we want the smallest DFTW possible
+%             % Here I will assume that we want the smallest DFTW possible
             DFTWp = '000000000001';
             DFTWn = 'FFFFFFFFFFFF';
             if desiredSlope > 0
@@ -80,17 +80,6 @@ classdef DDS_Config < hgsetget
             end
             q = quantizer('fixed','round', [48 0]);
             stepRes = hex2num(q, DFTWp)*(obj.mySysClk*10^6)/2^48; %This gives the stepResolution in hertz
-            % This is method 1 which I believe has bad resolution.
-%             maxPeriod = 2^20*1/(obj.mySysClk*10^6); % (Measured in seconds)Taken from p22 of 52 of AD9854 datasheet
-%             
-%             minSlope = stepRes*1000/(maxPeriod);% in mHz/s
-%             
-%             rampRateRatio = round(abs(desiredSlope)/minSlope);
-%             rampRateDec = round((2^20-1)/rampRateRatio);
-%             if ~rampRateDec
-%                 rampRateDec = 1;
-%                 rampRateRatio = 2^20;
-%             end
             desiredFrequency = (abs(desiredSlope)*10^-3)/ stepRes
             desiredPeriod = 1/desiredFrequency
             N = round(desiredPeriod*obj.mySysClk*10^6) - 1
@@ -99,6 +88,19 @@ classdef DDS_Config < hgsetget
             rampRateReal = hex2num(q, RRW);
 %             realSlope = sign(desiredSlope)*(rampRateRatio)*minSlope;
             realSlope = sign(desiredSlope)*stepRes*10^3*obj.mySysClk*10^6/(rampRateReal+1); % measured in mHz
+            % GENETIC ALGORITHM FOR FINDING THE OPTIMAL DFTW and RRW
+%             
+%             %x = ga(fitnessfcn,nvars,A,b,[],[],LB,UB,nonlcon,IntCon)
+%             %Needs to be simplified 
+%             %fun = @(x) (abs(desiredSlope - x(1)*(obj.mySysClk*10^6)/2^48*10^3*obj.mySysClk*10^6/(x(2)+1)))
+%             fun = @(x) abs(desiredSlope - x(1)*(obj.mySysClk^2*10^15)/(2^48*(x(2)+1)));
+%             LB = [-(2^47 - 1); 1];
+%             UB = [(2^47-1); (2^20-1)];
+%             x = ga(fun,2,[],[],[],[],LB,UB,[],[1 2]) % variables 1 and 2 are integers
+%             stepRes2 = x(1)*(obj.mySysClk*10^6)/2^48
+%             realSlope2 = stepRes2*10^3*obj.mySysClk*10^6/(x(2)+1)
+%             updatePeriod2 = (obj.mySysClk*10^6/(x(2)+1))^-1
+%             updatePeriod = (obj.mySysClk*10^6/(rampRateReal+1))^-1
         end
         
         function instrCell = createInstructionSet(obj, selectedMode, params)
