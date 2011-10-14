@@ -170,8 +170,7 @@ classdef DDS_Frontend < hgsetget
                                 'FontUnits', 'normalized', ...
                                 'FontSize', 0.2, ...
                                 'String', {'Send Base Frequency', ...
-                                'Send Slope'}, ...
-                                'Callback', @obj.CHIRPsetting_Callback);
+                                'Send Slope'});
                             uiextras.Empty('Parent', chirpSetVB);
                             chirpSetVB.Sizes = [-1 -3 -1];
                         uiextras.Empty('Parent', CHIRPHBcontrol);
@@ -314,9 +313,16 @@ classdef DDS_Frontend < hgsetget
                         case 2 %Send Slope
                             desiredSlope = str2double(get(myHandles.(['chirpSlope' num2str(obj.myBoardAddr)]), 'String'));
                             [realSlope, RRW, DFTW] = obj.myDDS.calculateRRW(desiredSlope);
-                            params = struct('RRW', RRW, 'DFTW', DFTW);
-                            iSet = obj.myDDS.creatInstructionSet(myMode, params);
+                            params = struct('RRW', RRW, 'DFTW', DFTW, 'WriteMode', chirpWriteMode);
+                            iSet = obj.myDDS.createInstructionSet(myMode, params);
+                            fwrite(obj.mySerial, iSet{1});
+                            fscanf(obj.mySerial)
+                            fwrite(obj.mySerial, iSet{2});
+                            fscanf(obj.mySerial)
+                            fwrite(obj.mySerial, iSet{3});
+                            fscanf(obj.mySerial)
                             set(myHandles.(['chirpSlope' num2str(obj.myBoardAddr)]), 'String', num2str(realSlope));
+                    end
             end
             
             if ~strcmp(myMode, obj.myDDS.myMode)

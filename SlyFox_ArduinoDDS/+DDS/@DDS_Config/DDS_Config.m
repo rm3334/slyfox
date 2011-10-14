@@ -71,22 +71,29 @@ classdef DDS_Config < hgsetget
         
         function [realSlope, RRW, DFTW] = calculateRRW(obj, desiredSlope)
             % Here I will assume that we want the smallest DFTW possible
+            DFTWp = '000000000001';
+            DFTWn = 'FFFFFFFFFFFF';
             if desiredSlope > 0
-                DFTW = '000000000001';
+                DFTW = DFTWp;
             else
-                DFTW = '800000000001';
+                DFTW = DFTWn;
             end
-            q = quantizer('ufixed','round', [47 0]);
-            stepRes = (obj.mySysClk*10^6)/hex2num(q, DFTW(end:-1:1)); %This gives the stepResolution in hertz
-            minPeriod = 2*1/(obj.mySysClk*10^6); % (Measured in seconds)Taken from p22 of 52 of AD9854 datasheet
+            q = quantizer('ufixed','round', [48 0]);
+            stepRes = (obj.mySysClk*10^6)/hex2num(q, DFTWp(end:-1:1)); %This gives the stepResolution in hertz
+            maxPeriod = 2^20*1/(obj.mySysClk*10^6); % (Measured in seconds)Taken from p22 of 52 of AD9854 datasheet
             
-            minSlope = stepRes/(minPeriod);% in mHz/s
+            minSlope = stepRes*1000/(maxPeriod);% in mHz/s
             
-            rampRateDec = round(desiredSlope/minSlope) - 1;
+            rampRateRatio = round(abs(desiredSlope)/minSlope);
+            rampRateDec = round((2^20-1)/rampRateRatio);
+            if ~rampRateDec
+                rampRateDec = 1;
+                rampRateRatio = 2^20;
+            end
             q = quantizer('ufixed','round', [24 0]);
             RRW = num2hex(q, rampRateDec);
-            rampRateReal = hex2num(q, RRW);
-            realSlope = (rampRateReal+1)*minSlope;
+            rampRateReal = hex2num(q, RRW)
+            realSlope = sign(desiredSlope)*(rampRateRatio)*minSlope;
         end
         
         function instrCell = createInstructionSet(obj, selectedMode, params)
@@ -201,9 +208,9 @@ classdef DDS_Config < hgsetget
                         mCodes = obj.myHWProps('ModeCodes');
                         newModeBin = mCodes{modeIdx};
                         configBin(obj.myHWProps('ConfigModePos')) = newModeBin;
-                        configBin(obj.myHWProps('ClrACC2Pos')) = 1;
+                        configBin(obj.myHWProps('ClrACC2Pos')) = '1';
                         newConfig = bin2num(q, configBin);
-                        configHex = num2hex(q, newConfig);
+                        configHex = num2hex(q, newConfig)
 
                         for i=1:2:length(configHex)
                             instrSet = [instrSet; uint8(hex2dec(configHex(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
@@ -221,9 +228,9 @@ classdef DDS_Config < hgsetget
                         instrSet = [instrSet; 5]; %Number of Bytes in Instruction after this point
                         instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('ConfigReg')))]; %Address of register on the DDS to write to.
                         
-                        configBin(obj.myHWProps('ClrACC2Pos')) = 0;
+                        configBin(obj.myHWProps('ClrACC2Pos')) = '0';
                         newConfig = bin2num(q, configBin);
-                        configHex = num2hex(q, newConfig);
+                        configHex = num2hex(q, newConfig)
                         
                         for i=1:2:length(configHex)
                             instrSet = [instrSet; uint8(hex2dec(configHex(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
@@ -236,9 +243,47 @@ classdef DDS_Config < hgsetget
                         setCount = setCount +  1; 
                         
                         obj.myMode = selectedMode;
+                    else %set slope mode
+                        instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 7]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('DeltaFW_Reg')))]; %Address of register on the DDS to write to.
+                        DFTW = params.DFTW;
+                        for i=1:2:length(DFTW)
+                            instrSet = [instrSet; uint8(hex2dec(DFTW(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                        end
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
+                        setCount = setCount + 1;
                         
-                    else
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 4]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('RampRate_Reg')))]; %Address of register on the DDS to write to.
+                        RRW = params.RRW;
+                        for i=1:2:length(RRW)
+                            instrSet = [instrSet; uint8(hex2dec(RRW(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                        end
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
+                        setCount = setCount + 1;
                         
+                        instrSet = [];
+                        instrSet = [instrSet; uint8(';')]; %tells the microprocessor to enter passthrough mode
+                        instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                        instrSet = [instrSet; 2]; %Number of Bytes in Instruction after this point
+                        instrSet = [instrSet; uint8(hex2dec('01'))]; %Command Code for Switch FSK/HOLD
+                        
+                        instrSet = [instrSet; uint8(0)]; %Set Hold to zero
+
+                        checkSumLow = obj.createCheckSum(instrSet);
+                        instrSet = [instrSet; uint8(checkSumLow)];
+                        instrCell{setCount} = instrSet;
                     end
                     
                 case 'CHANGEMODE'
