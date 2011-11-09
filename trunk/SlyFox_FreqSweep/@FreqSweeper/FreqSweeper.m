@@ -97,7 +97,14 @@ classdef FreqSweeper
                                     'Value', 1, ...
                                     'String', 'Use Cursors', ...
                                     'Callback', @obj.cursorToggle_Callback);
+                            uicontrol(...
+                                    'Parent', cursorButtonHB,...
+                                    'Style', 'checkbox', ...
+                                    'Tag', 'ignoreFirstToggle',...
+                                    'Value', 1, ...
+                                    'String', 'Ignore First Data Point');
                             uiextras.Empty('Parent', cursorButtonHB);
+                            set(cursorButtonHB, 'Sizes', [-1 -3 -3 -1]);
                     %Start/Stop Button Box
                     startStopVB = uiextras.VBox(...
                         'Parent', uiVB);
@@ -388,6 +395,7 @@ classdef FreqSweeper
             setappdata(obj.myTopFigure, 'scanData', temp);
             setappdata(obj.myTopFigure, 'normData', zeros(1, length(freqList)));
             set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
+            set(myHandles.grabCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Start Frequency Loop / Check 'Run'
@@ -444,24 +452,33 @@ classdef FreqSweeper
                 tempNormData(i) = (tempScanData(2,i)) / (tempScanData(2,i) + tempScanData(1,i));
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
-
-                if i ==1 %First time you have to plot....the rest of the time we will "refreshdata"
-                    tempH(1) = plot(myHandles.sNormAxes, x, tempNormData(1:i));
-                    tempH(2) = plot(myHandles.sEAxes, x, tempScanData(2,1:i));
-                    tempH(3) = plot(myHandles.sGAxes, x, tempScanData(1,1:i));
-                    tempH(4) = plot(myHandles.sBGAxes, x, tempScanData(3,1:i));
-                    tempH(5) = plot(myHandles.sBGSAxes, x, tempScanData(4,1:i));
-                    tempH(6) = plot(myHandles.sBEAxes, x, tempScanData(5,1:i));
-                else
-                    set(tempH(1), 'XData', x, 'YData', tempNormData(1:i));
-                    set(tempH(2), 'XData', x, 'YData', tempScanData(2,1:i));
-                    set(tempH(3), 'XData', x, 'YData', tempScanData(1,1:i));
-                    set(tempH(4), 'XData', x, 'YData', tempScanData(3,1:i));
-                    set(tempH(5), 'XData', x, 'YData', tempScanData(4,1:i));
-                    set(tempH(6), 'XData', x, 'YData', tempScanData(5,1:i));
+                
+                plotstart = 1;
+                firstplot = 1;
+                if get(myHandles.ignoreFirstToggle, 'Value')
+                    plotstart = 2;
+                    firstplot = 2;
+                end
+                    
+                
+                if i == firstplot  %First time you have to plot....the rest of the time we will "refreshdata"
+                    tempH(1) = plot(myHandles.sNormAxes, x(plotstart:end), tempNormData(plotstart:i), '-ok', 'LineWidth', 3);
+                    tempH(2) = plot(myHandles.sEAxes, x(plotstart:end), tempScanData(2,plotstart:i), 'r', 'LineWidth', 2);
+                    tempH(3) = plot(myHandles.sGAxes, x(plotstart:end), tempScanData(1,plotstart:i), 'b', 'LineWidth', 2);
+                    tempH(4) = plot(myHandles.sBGAxes, x(plotstart:end), tempScanData(3,plotstart:i));
+                    tempH(5) = plot(myHandles.sBGSAxes, x(plotstart:end), tempScanData(4,plotstart:i));
+                    tempH(6) = plot(myHandles.sBEAxes, x(plotstart:end), tempScanData(5,plotstart:i));
+                elseif i > firstplot
+                    set(tempH(1), 'XData', x(plotstart:end), 'YData', tempNormData(plotstart:i));
+                    set(tempH(2), 'XData', x(plotstart:end), 'YData', tempScanData(2,plotstart:i));
+                    set(tempH(3), 'XData', x(plotstart:end), 'YData', tempScanData(1,plotstart:i));
+                    set(tempH(4), 'XData', x(plotstart:end), 'YData', tempScanData(3,plotstart:i));
+                    set(tempH(5), 'XData', x(plotstart:end), 'YData', tempScanData(4,plotstart:i));
+                    set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
                     refreshdata(tempH);
                 end
                 
+                %This is for creating cursors
                 if i == 4 && get(myHandles.cursorToggle, 'Value')
                     % Create Interactive Draggable cursors
                     dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes);
@@ -474,6 +491,8 @@ classdef FreqSweeper
                         dualcursor('update', [.65 1.08;.9 1.08], [], @(x, y) '', myHandles.sNormAxes);
                     end
                 end
+                
+                
                 %9. Check Save and Write Data to file.
                 if get(myHandles.saveScan, 'Value')
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
@@ -554,6 +573,7 @@ classdef FreqSweeper
             set(myHandles.startFrequency, 'String', get(myHandles.c1Freq, 'String'));
             set(myHandles.stopFrequency, 'String', get(myHandles.c2Freq, 'String'));
             set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
+            set(myHandles.grabCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
         end
         function fitLorentzian_Callback(obj, src, eventData)
             %This absolutely needs to be cleaned up.
