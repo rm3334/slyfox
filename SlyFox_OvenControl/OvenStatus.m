@@ -16,6 +16,7 @@ resTemp = res.readTemp();
 
 while isnan(nozTemp) || isnan(resTemp)
         pause(5);
+        errors = 0;
         if errors > 25
             error('Lost communication');
         end
