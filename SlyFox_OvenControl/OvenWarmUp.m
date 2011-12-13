@@ -59,7 +59,7 @@ hold on
 
 %%
 % Loop
-while currentNozSet > endNozSet && currentResSet > endResSet
+while currentNozSet < endNozSet && currentResSet < endResSet
     pause(TimeBetweenReads);
     
     nozTemp = [nozTemp noz.readTemp()];
