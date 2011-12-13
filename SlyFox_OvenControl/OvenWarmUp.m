@@ -88,14 +88,14 @@ while currentNozSet < endNozSet && currentResSet < endResSet
     end
     
     if stepup
-        if currentResSet + 50 < endResSet
-            currentResSet = currentResSet + 50;
+        if currentResSet + 60 < endResSet
+            currentResSet = currentResSet + 60;
         else
             currentResSet = endResSet;
         end
         
-        if currentNozSet + 60 < endNozSet
-            currentNozSet = currentNozSet + 60;
+        if currentNozSet + 50 < endNozSet
+            currentNozSet = currentNozSet + 50;
         else
             currentNozSet = endNozSet;
         end
