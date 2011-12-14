@@ -27,6 +27,12 @@ catch err
     res = OmegaTempController('yesromega1.colorado.edu',2000);
 end
 
+%% Check to make sure it is ok to run
+fid = fopen('matlab_status_output.log');
+txt = fread(fid, '*char')';
+if(~strcmp(txt, 'idle'))
+    exit;
+end
 %%
 % Initialization
 
@@ -45,6 +51,10 @@ resSuc = res.setTemp(currentResSet);
 noz.reset();
 res.reset();
 pause(10);
+
+fid = fopen('matlab_status_output.log', 'w');
+fprintf(fid, '%s\n', 'Heating');
+fclose('all');
 
 for i=1:2
     nozTemp = [nozTemp noz.readTemp()];
@@ -118,3 +128,7 @@ while currentNozSet < endNozSet && currentResSet < endResSet
     end
 
 end
+
+fid = fopen('matlab_status_output.log', 'w');
+fprintf(fid, '%s\n', 'idle');
+fclose('all');
