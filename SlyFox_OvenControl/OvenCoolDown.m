@@ -1,7 +1,5 @@
 %%
 %Variables
-currentNozSet = 510;
-currentResSet = 400;
 
 endNozSet = 250;
 endResSet = 100;
@@ -36,6 +34,23 @@ if(~strcmp(txt, 'idle'))
 end
 %%
 % Initialization
+
+%assusmes starts at good temperature
+currentNozSet = noz.readTemp();
+currentResSet = res.readTemp();
+
+errors = 0;
+while isnan(currentNozSet) || isnan(currentResSet)
+        pause(5);
+        if errors > 25
+            error('Lost communication');
+        end
+        currentNozSet = noz.readTemp();
+        currentResSet = res.readTemp();
+        errors = errors + 1;
+        
+end
+
 
 nozSuc = noz.setTemp(currentNozSet);
 resSuc = res.setTemp(currentResSet);
