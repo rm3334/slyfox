@@ -30,7 +30,7 @@ classdef OmegaTempController
          end
          
          function success = setTemp(obj, newTempNum)
-            temp = dec2hex(newTempNum*10,4);
+            temp = dec2hex(round(newTempNum*10),4);
             
             try
                 fopen(obj.myTCPIP);
