@@ -148,5 +148,5 @@ while currentNozSet > endNozSet && currentResSet > endResSet
 end
 
 fid = fopen('matlab_status_output.log', 'w');
-fprintf(fid, '%s\n', 'idle');
+fprintf(fid, '%s', 'idle');
 fclose('all');
