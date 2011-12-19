@@ -1,3 +1,3 @@
 @echo off
-matlab -automation -r "cd('C:\Users\Ben\Documents\MATLAB\SlyFox\SlyFox_OvenControl'); OvenCoolDown; quit"
+matlab -automation -r "cd('Z:\Sr3\slyfox\Slyfox_OvenControl'); OvenCoolDown; quit"
 exit
