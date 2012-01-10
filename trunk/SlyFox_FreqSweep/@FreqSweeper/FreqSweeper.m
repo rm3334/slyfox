@@ -212,7 +212,31 @@ classdef FreqSweeper
                                 'FontUnits', 'normalized', ...
                                 'FontSize', 0.6); 
                             uiextras.Empty('Parent', stopFreqVB);
-                            
+                    %Direction/Constant Box
+                    directionConstantHB = uiextras.HBox(...
+                        'Parent', uiVB, ...
+                        'Spacing', 5, ...
+                        'Padding', 1);
+                        uiextras.Empty('Parent', directionConstantHB);
+                        directionConstantVB = uiextras.VBox(...
+                            'Parent', directionConstantHB, ...
+                            'Spacing', 5, ...
+                            'Padding', 1);
+                            uicontrol( ...
+                                'Parent', directionConstantVB, ...
+                                'Style', 'checkbox', ...
+                                'String', 'Flip Scan Direction', ...
+                                'Tag', 'flipScan', ...
+                                'Value', 0);
+                            uicontrol( ...
+                                'Parent', directionConstantVB, ...
+                                'Style', 'checkbox', ...
+                                'String', 'Hold at Start Frequency', ...
+                                'Tag', 'holdFreq', ...
+                                'Value', 0);
+                            set(directionConstantVB, 'Sizes', [-1 -1]);
+                        uiextras.Empty('Parent', directionConstantHB);
+                        set(directionConstantHB, 'Sizes', [-1 -3 -1]);
                     %ProgressBar Box
                     jProgBarPanel = uipanel(...
                         'Parent', uiVB, ...
@@ -270,10 +294,11 @@ classdef FreqSweeper
                     %CursorButton Box
                     %Start/Stop
                     %Frequency
+                    %Direction/Constant Box
                     %ProgressBar
                     %SavePath
                     %Big Spacer
-                    set(uiVB, 'Sizes', [-1 -0.5 -0.5 -1 -1 -1 -1 -4]);
+                    set(uiVB, 'Sizes', [-1 -0.5 -0.5 -1 -1 -1 -1 -1 -3]);
 
                 scanPlotsVB = uiextras.VBox(...
                     'Parent', hsplit, ...
@@ -356,11 +381,25 @@ classdef FreqSweeper
             myHandles = guidata(obj.myTopFigure);
             
             %1. Create Frequency List
-            startFrequency = str2double(get(myHandles.startFrequency, 'String'));
-            stepFrequency = str2double(get(myHandles.stepFrequency, 'String'));
-            stopFrequency = str2double(get(myHandles.stopFrequency, 'String'));
-            freqList = startFrequency:stepFrequency:stopFrequency;
-            curFrequency = freqList(1);
+                %Check to see if you want to scan, or you want to hold the
+                %Frequency
+                if ~get(myHandles.holdFreq, 'Value')
+                        %Check to see if direciton of scan is flipped
+                        if ~get(myHandles.flipScan, 'Value')
+                            startFrequency = str2double(get(myHandles.startFrequency, 'String'));
+                            stepFrequency = str2double(get(myHandles.stepFrequency, 'String'));
+                            stopFrequency = str2double(get(myHandles.stopFrequency, 'String'));
+                        else
+                            startFrequency = str2double(get(myHandles.stopFrequency, 'String')); %FLIPPED
+                            stepFrequency = -1*str2double(get(myHandles.stepFrequency, 'String')); %FLIPPED
+                            stopFrequency = str2double(get(myHandles.startFrequency, 'String')); %FLIPPED
+                        end
+                    freqList = startFrequency:stepFrequency:stopFrequency;
+                    curFrequency = freqList(1);
+                else
+                    freqList = 1:10000;
+                    curFrequency = str2double(get(myHandles.startFrequency, 'String'));
+                end
             %1a. Initialize Progress Bar
             jProgBar = getappdata(obj.myTopFigure, 'jProgBar');
             jProgBar.setMaximum(length(freqList));
@@ -405,7 +444,10 @@ classdef FreqSweeper
                     break;
                 end
                 %3. Set Frequency (Display + Synthesizer)
-                curFrequency = freqList(i);
+                    %Check to see if you are scanning the frequency
+                    if ~get(myHandles.holdFreq, 'Value')
+                        curFrequency = freqList(i);
+                    end
                 ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -552,8 +594,15 @@ classdef FreqSweeper
             myHandles = guidata(obj.myTopFigure);
             if get(myHandles.cursorToggle, 'Value')
                 val = dualcursor(myHandles.sNormAxes);
-                c1F = num2str(str2double(get(myHandles.startFrequency, 'String')) + val(1));
-                c2F = num2str(str2double(get(myHandles.startFrequency, 'String')) + val(3));
+                xLow = min([val(1) val(3)]);
+                xHigh = max([val(1) val(3)]);
+                if ~get(myHandles.flipScan, 'Value')
+                    c1F = num2str(str2double(get(myHandles.startFrequency, 'String')) + xLow);
+                    c2F = num2str(str2double(get(myHandles.startFrequency, 'String')) + xHigh);
+                else
+                    c1F = num2str(str2double(get(myHandles.stopFrequency, 'String')) + xLow);
+                    c2F = num2str(str2double(get(myHandles.stopFrequency, 'String')) + xHigh);
+                end
                 set(myHandles.c1Freq, 'String',c1F);
                 set(myHandles.c2Freq, 'String',c2F);
                 set(myHandles.setCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
@@ -579,17 +628,24 @@ classdef FreqSweeper
             %This absolutely needs to be cleaned up.
             myHandles = guidata(obj.myTopFigure);
             val = dualcursor(myHandles.sNormAxes);
+            xLow = min([val(1) val(3)]);
+            xHigh = max([val(1) val(3)]);
             if ~isempty(val)
                 scannedVals = getappdata(obj.myTopFigure, 'normData');
-                fullx = str2double(get(myHandles.startFrequency, 'String')):str2double(get(myHandles.stepFrequency, 'String')):str2double(get(myHandles.stopFrequency, 'String'));
-                fullx = fullx - str2double(get(myHandles.startFrequency, 'String'));
-                ValsToFit = scannedVals(fullx >= val(1) & fullx <= val(3));
-                nu = val(1):str2double(get(myHandles.stepFrequency, 'String')):val(3);
+                if ~get(myHandles.flipScan, 'Value')
+                    fullx = str2double(get(myHandles.startFrequency, 'String')):str2double(get(myHandles.stepFrequency, 'String')):str2double(get(myHandles.stopFrequency, 'String'));
+                    fullx = fullx - str2double(get(myHandles.startFrequency, 'String'));               
+                else %FLIPPED
+                    fullx = str2double(get(myHandles.stopFrequency, 'String')):(-1*str2double(get(myHandles.stepFrequency, 'String'))):str2double(get(myHandles.startFrequency, 'String'));
+                    fullx = fullx - str2double(get(myHandles.stopFrequency, 'String'));
+                end
+                ValsToFit = scannedVals(fullx >= xLow & fullx <= xHigh);
+                nu = xLow:str2double(get(myHandles.stepFrequency, 'String')):xHigh;
 
                 opts = optimset('Algorithm', 'levenberg-marquardt', 'TolFun',1e-8, 'TolX',1e-6);
-                Coefs = lsqnonlin(@(x) ValsToFit - x(1).*(1./(1 + ((nu-x(3))/x(2)).^2)), [10 abs(val(3)-val(1))/2 abs(val(3)+ val(1))/2], [0 0 abs(val(1))],[100 2*abs(val(3)-val(1)) abs(val(3))], opts);
+                Coefs = lsqnonlin(@(x) ValsToFit - x(1).*(1./(1 + ((nu-x(3))/x(2)).^2)), [10 abs(xHigh-xLow)/2 abs(xHigh + xLow)/2], [0 0 xLow],[100 2*abs(xHigh-xLow) xHigh], opts);
                 hold(myHandles.sNormAxes);
-                nuFine = val(1):0.1:val(3);
+                nuFine = xLow:0.1:xHigh;
                 y = Coefs(1).*(1./(1 + ((nuFine-Coefs(3))/Coefs(2)).^2));
                 plot(myHandles.sNormAxes, nuFine, y, 'r');
                 set(myHandles.fitResults, 'String', sprintf('FWHM: %f Hz', 2*Coefs(2)))
