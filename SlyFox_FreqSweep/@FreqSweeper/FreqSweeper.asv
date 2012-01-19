@@ -380,7 +380,6 @@ classdef FreqSweeper
         function startButton_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
             set(myHandles.startButton, 'Enable', 'off');
-            set(myHandles.stopButton, 'Enable', 'on');
             set(myHandles.saveScan, 'Enable', 'off');
             set(myHandles.flipScan, 'Enable', 'off');
             set(myHandles.holdFreq, 'Enable', 'off');
@@ -492,17 +491,15 @@ classdef FreqSweeper
                 x = freqList(1:i) - freqList(1);
                 tempScanData = getappdata(obj.myTopFigure, 'scanData');
                 tempNormData = getappdata(obj.myTopFigure, 'normData');
-                tempSummedData = getappdata(obj.myTopFigure, 'summedData');
                 tempScanData(1:2,i) = double(scanDataCH1(2:3) - scanDataCH1(4));
                 tempScanData(3,i) = double(scanDataCH1(4));
                 tempScanData(4:6,i) = double(scanDataCH2(2:end));
                 %NORMALIZED counts are (E - bg)/(E + G - 2bg)
                 tempNormData(i) = (tempScanData(2,i)) / (tempScanData(2,i) + tempScanData(1,i));
                 %SUMMED counts
-                tempSummedData(i) = tempScanData(2,i)+tempScanData(1,i);
+                temp
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
-                setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 
                 
                 plotstart = 1;
@@ -518,15 +515,15 @@ classdef FreqSweeper
                     tempH(2) = plot(myHandles.sEAxes, x(plotstart:end), tempScanData(2,plotstart:i), '-or', 'LineWidth', 2);
                     tempH(3) = plot(myHandles.sGAxes, x(plotstart:end), tempScanData(1,plotstart:i), '-ob', 'LineWidth', 2);
                     tempH(4) = plot(myHandles.sBGAxes, x(plotstart:end), tempScanData(3,plotstart:i));
-                    tempH(5) = plot(myHandles.sSummedAxes, x(plotstart:end), tempSummedData(plotstart:i), '-og', 'LineWidth', 2);
-%                     tempH(6) = plot(myHandles.sBEAxes, x(plotstart:end), tempScanData(5,plotstart:i));
+                    tempH(5) = plot(myHandles.sBGSAxes, x(plotstart:end), tempScanData(4,plotstart:i));
+                    tempH(6) = plot(myHandles.sBEAxes, x(plotstart:end), tempScanData(5,plotstart:i));
                 elseif i > firstplot
                     set(tempH(1), 'XData', x(plotstart:end), 'YData', tempNormData(plotstart:i));
                     set(tempH(2), 'XData', x(plotstart:end), 'YData', tempScanData(2,plotstart:i));
                     set(tempH(3), 'XData', x(plotstart:end), 'YData', tempScanData(1,plotstart:i));
                     set(tempH(4), 'XData', x(plotstart:end), 'YData', tempScanData(3,plotstart:i));
-                    set(tempH(5), 'XData', x(plotstart:end), 'YData', tempSummedData(plotstart:i));
-%                     set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
+                    set(tempH(5), 'XData', x(plotstart:end), 'YData', tempScanData(4,plotstart:i));
+                    set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
                     refreshdata(tempH);
                 end
                 
@@ -569,14 +566,12 @@ classdef FreqSweeper
             %Make obvious that the scan stopped
             set(myHandles.curFreq, 'BackgroundColor', 'red');
             set(myHandles.startButton, 'Enable', 'on');
-            set(myHandles.stopButton, 'Enable', 'off');
             set(myHandles.saveScan, 'Enable', 'on');
             set(myHandles.flipScan, 'Enable', 'on');
             set(myHandles.holdFreq, 'Enable', 'on');
             
             guidata(obj.myTopFigure, myHandles);
-            
-            clear variables %Fixing memory leak?
+            clear variables
             clear mex
         end
         function resizeJProgressBarHolder(obj, src, eventData)
