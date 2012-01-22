@@ -1,4 +1,4 @@
-classdef FreqSweeper
+classdef FreqSweeper < handle
     %FREQSWEEPER Sweeps Frequency of FreqSynth and Plots Results
     %   Creates a nice user interface to watch a frequency sweep take place
     %   and edit its characteristics.
@@ -11,11 +11,9 @@ classdef FreqSweeper
     end
     
     methods
-        function obj = FreqSweeper(top,f,freqSynth, gageConfigFE)
+        function obj = FreqSweeper(top,f)
             obj.myTopFigure = top;
             obj.myPanel.Parent = f;
-            obj.myFreqSynth = freqSynth;
-            obj.myGageConfigFrontend = gageConfigFE;
             
             %%%%Layout Manager Stuff
             %Splits the Window into 3 main Sections
@@ -382,6 +380,12 @@ classdef FreqSweeper
                 myHandles = guihandles(obj.myTopFigure);
                 guidata(obj.myTopFigure, myHandles);
                 obj.loadState();
+        end
+        function setFreqSynth(obj, fs)
+            obj.myFreqSynth = fs;
+        end
+        function setGageConfigFrontend(obj, gc)
+            obj.myGageConfigFrontend = gc;
         end
         function startButton_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);

@@ -1,4 +1,4 @@
-classdef PID
+classdef PID < handle
     %PID PID controller
     %   This is a simple PID that holds that values of its gains, and the
     %   last summed error, and has functions for computing correction
