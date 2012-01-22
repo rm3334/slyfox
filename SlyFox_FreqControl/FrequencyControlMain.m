@@ -12,7 +12,9 @@ function FrequencyControlMain(DEBUGMODE )
     %Build Objects
     g1 = GageCard.GageConfigFrontend(f,tp);
     f1 = FreqSynth(f,tp, DEBUGMODE);
-    fs1 = FreqSweeper(f,tp,f1, g1);
+    fs1 = FreqSweeper(f,tp);
+        fs1.setFreqSynth(f1);
+        fs1.setGageConfigFrontend(g1);
     tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper'};
     tp.TabSize = 100;
 

@@ -2,7 +2,7 @@ function FrequencySweeperMain(DEBUGMODE )
 %FREQUENCYSWEEPERMAIN Main Function for Frequency Sweeper Program
 %   This constructs the relevant objects and creates a Frequency Sweeper
 %   GUI. Need to figure out GageCard AddPath.m
-%   By Ben Bloom 07/25/2011 18:44
+%   By Ben Bloom 01/22/2012 15:18
 
     f = figure('Menubar', 'none', 'Toolbar', 'none', 'NumberTitle', 'off', 'Name', 'Frequency Sweeper');
     setappdata(gcf, 'run', 1);
@@ -12,7 +12,9 @@ function FrequencySweeperMain(DEBUGMODE )
     %Build Objects
     g1 = GageCard.GageConfigFrontend(f,tp);
     f1 = FreqSynth(f,tp, DEBUGMODE);
-    fs1 = FreqSweeper(f,tp,f1, g1);
+    fs1 = FreqSweeper(f,tp);
+        fs1.setFreqSynth(f1);
+        fs1.setGageConfigFrontend(g1);
     tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper'};
     tp.TabSize = 100;
 
