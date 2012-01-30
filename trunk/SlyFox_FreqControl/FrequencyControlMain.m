@@ -15,7 +15,11 @@ function FrequencyControlMain(DEBUGMODE )
     fs1 = FreqSweeper(f,tp);
         fs1.setFreqSynth(f1);
         fs1.setGageConfigFrontend(g1);
-    tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper'};
+    fL = FreqLocker(f, tp);
+        fL.setFreqSynth(f1);
+        fL.setGageConfigFrontend(g1);
+        fL.setFreqSweeper(fs1);
+    tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper', 'FreqLocker'};
     tp.TabSize = 100;
 
     mm = uimenu('Label', 'File');
@@ -27,18 +31,21 @@ function FrequencyControlMain(DEBUGMODE )
         g1.saveState();
         f1.saveState();
         fs1.saveState();
+        fL.saveState();
     end
 
     function menuLoadFcn(src, event)
         g1.loadState();
         f1.loadState();
         fs1.loadState();
+        fL.loadState();
     end
 
     function windowClose(src,event)
         g1.quit();
         f1.quit();
         fs1.quit();
+        fL.quit();
         delete(pan);
 %         delete(tp);
         delete(f);
