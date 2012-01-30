@@ -290,9 +290,13 @@ classdef FreqSweeper < handle
                                 'Tag', 'saveDir');
                             set(pathHB, 'Sizes', [60 -1]);
                         set(savePathVB, 'Sizes', [-2 -1]);
-                    %Spacer Box
-                    uiextras.Empty('Parent', uiVB);
-                    
+                    %Locking Error Signal Box
+%                     uiextras.Empty('Parent', uiVB);
+                    errPlot = axes( 'Parent', uiVB, ...
+                        'Tag', 'errPlot', ...
+                        'ActivePositionProperty', 'OuterPosition');
+                        title(errPlot, 'Locking Error Signal');
+                        
                     %Spacer
                     %FitReadout
                     %CursorButton Box
@@ -301,7 +305,7 @@ classdef FreqSweeper < handle
                     %Direction/Constant Box
                     %ProgressBar
                     %SavePath
-                    %Big Spacer
+                    %Locking Error Signal
                     set(uiVB, 'Sizes', [-1 -0.5 -0.5 -1 -1 -1 -1 -1 -3]);
 
                 scanPlotsVB = uiextras.VBox(...

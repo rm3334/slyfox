@@ -10,7 +10,7 @@ classdef PID < handle
         myKp = 0;       %Proportional Gain
         myKi = 0;       %Integral Gain
         myKd = 0;       %Derivative Gain
-        myORange = 1;  %Clamped Output Range
+        myORange = 100;  %Clamped Output Range
         myIntE = 0;  %Record of ALL Previous Errors
         myE0 = 0;    %Previous output error
         myT0 = 0;   %Previous Evaluation Time
@@ -24,19 +24,20 @@ classdef PID < handle
             obj.myKi = Ki;
             obj.myKd = Kd;
             obj.myORange = oRange;
+            obj.myT0
         end
         
         %Calculates correction factor for Error for this Iteration and Updates Records
         %Nice Pseudocode from Wikipedia
         function u = calculate(obj, e1, t1)
             e1 = obj.myPolarity*e1;
-            dt = t1 - obj.myT0;
+            timeDiff = t1 - obj.myT0;
             
             if obj.myT0 ~= 0
                 %Calculate Integral
-                obj.myIntE = obj.myIntE + e1*dt;
+                obj.myIntE = obj.myIntE + e1*timeDiff;
                 %Calculate Derivative
-                derivative = (e1 - obj.myE0)/dt;
+                derivative = (e1 - obj.myE0)/timeDiff;
             else
                 derivative = 0;
             end
@@ -56,6 +57,11 @@ classdef PID < handle
             %Update last Error and last Time.
             obj.myE0 = e1;
             obj.myT0 = t1;
+        end
+        function clear(obj)
+            obj.myIntE = 0;
+            obj.myE0 = 0;
+            obj.myT0 = 0;
         end
         
     end
