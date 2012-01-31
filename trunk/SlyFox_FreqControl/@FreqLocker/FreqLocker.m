@@ -342,9 +342,9 @@ classdef FreqLocker < hgsetget
                         seqPlace = mod(seqPlace + 1,2);
                         if runNum ~= 2
                             if seqPlace == 0
-                                obj.myPID1.myPolarity = -1;
-                            else
                                 obj.myPID1.myPolarity = 1;
+                            else
+                                obj.myPID1.myPolarity = -1;
                             end
                             obj.updatePIDvalues();
                             obj.checkPIDenables();
