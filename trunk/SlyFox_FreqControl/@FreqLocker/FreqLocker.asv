@@ -364,19 +364,18 @@ classdef FreqLocker < hgsetget
                     end
                     
                     %Do some Plotting
-                    firstplot = 1;
-                    if get(myHandles.ignoreFirstToggle, 'Value') && plotstart < 3
-                        plotstart = 2;
-                        firstplot = 2;
-                    end
                     clearPlots = getappdata(obj.myTopFigure, 'clearPlots');
                     if clearPlots
                         plotstart = runNum - 1;
                         disp('plots cleared')
                         setappdata(obj.myTopFigure, 'clearPlots', 0);
                     end
-                    if runNum == 2 || clearPlots
-                        clearPlots
+                    firstplot = 1;
+                    if get(myHandles.ignoreFirstToggle, 'Value')
+                        plotstart = 2;
+                        firstplot = 2;
+                    end
+                    if runNum == 2 
                         tempH(1) = plot(myHandles.sNormAxes, tempNormData(plotstart:runNum), 'ok', 'LineWidth', 3);
                         tempH(2) = plot(myHandles.sEAxes, tempScanData(2,plotstart:runNum), 'or', 'LineWidth', 2);
                         tempH(3) = plot(myHandles.sGAxes, tempScanData(1,plotstart:runNum), 'ob', 'LineWidth', 2);
@@ -384,6 +383,7 @@ classdef FreqLocker < hgsetget
                         tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(plotstart:runNum), 'og', 'LineWidth', 2);
                         tempH(6) = plot(myHandles.errPlot, tempPID1Data(plotstart:runNum), 'ok', 'LineWidth', 2);
                     elseif runNum > 2
+                        plo
                         set(tempH(1), 'YData', tempNormData(plotstart:runNum));
                         set(tempH(2), 'YData', tempScanData(2,plotstart:runNum));
                         set(tempH(3), 'YData', tempScanData(1,plotstart:runNum));
@@ -392,7 +392,7 @@ classdef FreqLocker < hgsetget
                         set(tempH(6), 'YData', tempPID1Data(plotstart:runNum));
                         refreshdata(tempH);
                     end
-                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                    obj.myPID1gui.updateMyPlots(calcErr1, runNum);
                     if seqPlace == 0
                         set(myHandles.lockStatus, 'String', 'L1');
                     else
