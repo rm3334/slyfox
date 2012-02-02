@@ -15,6 +15,7 @@ classdef FreqLocker < hgsetget
         myFreqSynth = [];
         myGageConfigFrontend = [];
         myFreqSweeper = [];
+        myuControl = [];
         myPID1 = [];
         myPID1gui = [];
         myPID2 = [];
@@ -192,6 +193,9 @@ classdef FreqLocker < hgsetget
         function setFreqSweeper(obj, fs)
             obj.myFreqSweeper = fs;
         end
+        function setuControl(obj, uC)
+            obj.myuControl = uC;
+        end
         function startAcquire_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
             set(myHandles.stopAcquire, 'Enable', 'on');
@@ -344,8 +348,7 @@ classdef FreqLocker < hgsetget
                     %Calculate Error for PID1
                     calcErr1 = tempNormData(runNum) - prevExc;
                     tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
-                    tempPID1Data(runNum) = calcErr1;
-                    setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                    
                     
                     if runNum >= 2
                         prevExc = tempNormData(runNum);
@@ -355,6 +358,7 @@ classdef FreqLocker < hgsetget
                                 obj.myPID1.myPolarity = 1;
                             else
                                 obj.myPID1.myPolarity = -1;
+                                calcErr1 = -1*calcErr1;
                             end
                             obj.updatePIDvalues();
                             obj.checkPIDenables();
@@ -362,6 +366,9 @@ classdef FreqLocker < hgsetget
                             newCenterFreq = newCenterFreq + calcCorr1;
                         end
                     end
+                    
+                    tempPID1Data(runNum) = calcErr1;
+                    setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                     
                     %Do some Plotting
                     firstplot = 1;

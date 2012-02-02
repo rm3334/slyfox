@@ -12,14 +12,17 @@ function FrequencyControlMain(DEBUGMODE )
     %Build Objects
     g1 = GageCard.GageConfigFrontend(f,tp);
     f1 = FreqSynth(f,tp, DEBUGMODE);
+    ard = uControlFrontend(f, tp);
     fs1 = FreqSweeper(f,tp);
         fs1.setFreqSynth(f1);
         fs1.setGageConfigFrontend(g1);
+        fs1.setuControl(ard)
     fL = FreqLocker(f, tp);
         fL.setFreqSynth(f1);
         fL.setGageConfigFrontend(g1);
         fL.setFreqSweeper(fs1);
-    tp.TabNames = {'Gage', 'FreqSynth', 'FreqSweeper', 'FreqLocker'};
+        fL.setuControl(ard)
+    tp.TabNames = {'Gage', 'FreqSynth',  'Arduino', 'FreqSweeper', 'FreqLocker'};
     tp.TabSize = 100;
 
     mm = uimenu('Label', 'File');
@@ -46,6 +49,7 @@ function FrequencyControlMain(DEBUGMODE )
         f1.quit();
         fs1.quit();
         fL.quit();
+        ard.quit();
         delete(pan);
 %         delete(tp);
         delete(f);

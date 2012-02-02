@@ -30,7 +30,6 @@ classdef PID < handle
         %Calculates correction factor for Error for this Iteration and Updates Records
         %Nice Pseudocode from Wikipedia
         function u = calculate(obj, e1, t1)
-            e1 = obj.myPolarity*e1;
             timeDiff = t1 - obj.myT0;
             
             if obj.myT0 ~= 0
