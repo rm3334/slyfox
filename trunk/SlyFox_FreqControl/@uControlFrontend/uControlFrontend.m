@@ -120,7 +120,7 @@ classdef uControlFrontend < hgsetget
                 delete(obj.mySerial);
                 disp('Close Success!')
             catch
-                disp('Error: Close Failed');
+                disp('Error: Close Arduino Failed');
             end
         end
     end
