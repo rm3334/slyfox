@@ -484,7 +484,7 @@ classdef FreqLocker < hgsetget
                           %3 = right side of line 2
             %Initialize Liquid Crystal Waveplate
             if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
-                fprintf(obj.myuControl.mySerial, 'L');
+                fprintf(obj.myuControl.mySerial, 'H');
                 %fscanf(obj.myuControl.mySerial)
             end
             
@@ -561,13 +561,13 @@ classdef FreqLocker < hgsetget
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
                         case 0
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myuControl.mySerial, 'H');
                         case 1
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myuControl.mySerial, 'H');
                         case 2
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myuControl.mySerial, 'L');
                         case 3
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myuControl.mySerial, 'L');
                     end
                 end
                 if ~ret
