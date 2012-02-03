@@ -438,7 +438,7 @@ classdef FreqSweeper < handle
                 end
                 %Initialize Liquid Crystal Waveplate
                 if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
-                    fprintf(obj.myuControl.mySerial, 'H')
+                    fprintf(obj.myuControl.mySerial, 'L')
                     %fscanf(obj.myuControl.mySerial)
                 end
             %1a. Initialize Progress Bar
@@ -509,10 +509,10 @@ classdef FreqSweeper < handle
                 %IMMEDIATELY CHANGE THE LIQUID CRYSTAL WAVEPLATE IF NEED BE
                 if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     if ~mod(i+1,2)
-                        fprintf(obj.myuControl.mySerial, 'L');
+                        fprintf(obj.myuControl.mySerial, 'H');
                         %fscanf(obj.myuControl.mySerial)
                     else
-                        fprintf(obj.myuControl.mySerial, 'H');
+                        fprintf(obj.myuControl.mySerial, 'L');
                         %fscanf(obj.myuControl.mySerial)
                     end
                 end
