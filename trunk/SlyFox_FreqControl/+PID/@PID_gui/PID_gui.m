@@ -120,9 +120,9 @@ classdef PID_gui < hgsetget
             myHandles = guidata(obj.myTopFigure);
             tempPIDData = getappdata(obj.myTopFigure, ['PID' obj.myName 'Data']);
             if isempty(obj.myPlotHandle) || plotstart > 2 % this should really be fixed
-                obj.myPlotHandle = plot(myHandles.(['err_PID' obj.myName]), tempPIDData(plotstart:runNum), 'ok', 'LineWidth', 3);
+                obj.myPlotHandle = plot(myHandles.(['err_PID' obj.myName]), tempPIDData, 'ok', 'LineWidth', 3);
             elseif runNum > 2
-                set(obj.myPlotHandle, 'YData', tempPIDData(plotstart:runNum));
+                set(obj.myPlotHandle, 'YData', tempPIDData);
                 refreshdata(obj.myPlotHandle);
             end
             guidata(obj.myTopFigure, myHandles);

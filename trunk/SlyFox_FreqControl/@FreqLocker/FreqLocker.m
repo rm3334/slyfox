@@ -192,11 +192,6 @@ classdef FreqLocker < hgsetget
                            'Style', 'text', ...
                            'Tag', 'lockStatus', ...
                            'String', 'LockPoint');
-                       uicontrol(...
-                           'Parent', lockControl, ...
-                           'Style', 'pushbutton', ...
-                           'Callback', @obj.clearPlots_Callback, ...
-                           'String', 'Clear Plots');
             lockOutput = uiextras.Panel('Parent', obj.myPanel, ...
                 'Title', 'Locking Output');
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1]);
@@ -220,7 +215,6 @@ classdef FreqLocker < hgsetget
             set(myHandles.stopAcquire, 'Enable', 'on');
             set(myHandles.startAcquire, 'Enable', 'off');
             setappdata(obj.myTopFigure, 'run', 1);
-            setappdata(obj.myTopFigure, 'clearPlots', 0);
             
             obj.startLockingProtocol();
         end
@@ -230,9 +224,6 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             set(myHandles.startAcquire, 'Enable', 'on');
             set(myHandles.stopAcquire, 'Enable', 'off');
-        end
-        function clearPlots_Callback(obj, src, eventData)
-            setappdata(obj.myTopFigure, 'clearPlots', 1);
         end
         function grabFromSweeper_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
@@ -272,6 +263,17 @@ classdef FreqLocker < hgsetget
             runNum = 0;
             seqPlace = 0; %0 = left side of line 1
                           %1 = right side of line 1
+            
+            %AVOID MEMORY MOVEMENT SLOWDOWNS
+            bufferSize = 50;
+            tempScanData = zeros(6,bufferSize);
+            tempSummedData = zeros(1,bufferSize);
+            tempNormData = zeros(1,bufferSize);
+            tempPID1Data = zeros(1,bufferSize);
+            setappdata(obj.myTopFigure, 'normData', tempNormData);
+            setappdata(obj.myTopFigure, 'scanData', tempScanData);
+            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
             
             
             %Create stuff for raw Plotting Later on
@@ -359,13 +361,18 @@ classdef FreqLocker < hgsetget
                     tempScanData = getappdata(obj.myTopFigure, 'scanData');
                     tempNormData = getappdata(obj.myTopFigure, 'normData');
                     tempSummedData = getappdata(obj.myTopFigure, 'summedData');
-                    tempScanData(1:2,runNum) = double(scanDataCH1(2:3) - scanDataCH1(4));
-                    tempScanData(3,runNum) = double(scanDataCH1(4));
-                    tempScanData(4:6,runNum) = double(scanDataCH2(2:end));
+                    tSCdat12 = (double(scanDataCH1(2:3) - scanDataCH1(4)));
+                    tSCdat3 = double(scanDataCH1(4));
+                    tSCdat456 = double(scanDataCH2(2:end));
+                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12'];
+                    tempScanData(3,:) = [tempScanData(3, 2:end) tSCdat3];
+                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456'];
                     %NORMALIZED counts are (E - bg)/(E + G - 2bg)
-                    tempNormData(runNum) = (tempScanData(2,runNum)) / (tempScanData(2,runNum) + tempScanData(1,runNum));
+                    tNorm = (tSCdat12(2)) / (tSCdat12(2) + tSCdat12(1));
+                    tempNormData = [tempNormData(2:end) tNorm];
                     %SUMMED counts
-                    tempSummedData(runNum) = tempScanData(2,runNum)+tempScanData(1,runNum);
+                    tSum = tSCdat12(2) + tSCdat12(1);
+                    tempSummedData = [tempSummedData(2:end) tSum];
                     setappdata(obj.myTopFigure, 'normData', tempNormData);
                     setappdata(obj.myTopFigure, 'scanData', tempScanData);
                     setappdata(obj.myTopFigure, 'summedData', tempSummedData);
@@ -375,12 +382,12 @@ classdef FreqLocker < hgsetget
                     
                     %Do some PID magic!
                     %Calculate Error for PID1
-                    calcErr1 = tempNormData(runNum) - prevExc;
+                    calcErr1 = tNorm - prevExc;
                     tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
                     
                     
                     if runNum >= 2
-                        prevExc = tempNormData(runNum);
+                        prevExc = tNorm;
                         seqPlace = mod(seqPlace + 1,2);
                         if runNum ~= 2
                             if seqPlace == 0
@@ -396,7 +403,7 @@ classdef FreqLocker < hgsetget
                         end
                     end
                     
-                    tempPID1Data(runNum) = calcErr1;
+                    tempPID1Data = [tempPID1Data(2:end) calcErr1];
                     setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                     
                     %Do some Plotting
@@ -405,27 +412,20 @@ classdef FreqLocker < hgsetget
                         plotstart = 2;
                         firstplot = 2;
                     end
-                    clearPlots = getappdata(obj.myTopFigure, 'clearPlots');
-                    if clearPlots
-                        plotstart = runNum - 1;
-                        disp('plots cleared')
-                        setappdata(obj.myTopFigure, 'clearPlots', 0);
-                    end
-                    if runNum == 2 || clearPlots
-                        clearPlots
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(plotstart:runNum), 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,plotstart:runNum), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,plotstart:runNum), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,plotstart:runNum), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(plotstart:runNum), 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(plotstart:runNum), 'ok', 'LineWidth', 2);
+                    if runNum == 2
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
                     elseif runNum > 2
-                        set(tempH(1), 'YData', tempNormData(plotstart:runNum));
-                        set(tempH(2), 'YData', tempScanData(2,plotstart:runNum));
-                        set(tempH(3), 'YData', tempScanData(1,plotstart:runNum));
-                        set(tempH(4), 'YData', tempScanData(3,plotstart:runNum));
-                        set(tempH(5), 'YData', tempSummedData(plotstart:runNum));
-                        set(tempH(6), 'YData', tempPID1Data(plotstart:runNum));
+                        set(tempH(1), 'YData', tempNormData);
+                        set(tempH(2), 'YData', tempScanData(2,:));
+                        set(tempH(3), 'YData', tempScanData(1,:));
+                        set(tempH(4), 'YData', tempScanData(3,:));
+                        set(tempH(5), 'YData', tempSummedData);
+                        set(tempH(6), 'YData', tempPID1Data);
                         refreshdata(tempH);
                     end
                     obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
@@ -436,9 +436,8 @@ classdef FreqLocker < hgsetget
                     end
                     %9. Check Save and Write Data to file.
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
-                    temp = 0;
-                    temp = [curFrequency tempNormData(runNum) tempScanData(1,runNum) tempScanData(2,runNum) tempScanData(3,runNum) str2double(time) tempScanData(4,runNum) tempScanData(6,runNum) tempScanData(5,runNum)];
-                    
+
+                    temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];                    
                     if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum > 2
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreq];%err correctionApplied servoVal
@@ -478,6 +477,21 @@ classdef FreqLocker < hgsetget
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
             runNum = 0;
+            
+            %AVOID MEMORY MOVEMENT SLOWDOWNS
+            bufferSize = 50;
+            tempScanData = zeros(6,bufferSize);
+            tempSummedData = zeros(1,bufferSize);
+            tempNormData = zeros(1,bufferSize);
+            tempPID1Data = zeros(1,bufferSize);
+            tempPID2Data = zeros(1,bufferSize);
+            setappdata(obj.myTopFigure, 'normData', tempNormData);
+            setappdata(obj.myTopFigure, 'scanData', tempScanData);
+            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+            
+            
             seqPlace = 0; %0 = left side of line 1
                           %1 = right side of line 1
                           %2 = left side of line 2
@@ -592,13 +606,18 @@ classdef FreqLocker < hgsetget
                     tempScanData = getappdata(obj.myTopFigure, 'scanData');
                     tempNormData = getappdata(obj.myTopFigure, 'normData');
                     tempSummedData = getappdata(obj.myTopFigure, 'summedData');
-                    tempScanData(1:2,runNum) = double(scanDataCH1(2:3) - scanDataCH1(4));
-                    tempScanData(3,runNum) = double(scanDataCH1(4));
-                    tempScanData(4:6,runNum) = double(scanDataCH2(2:end));
+                    tSCdat12 = (double(scanDataCH1(2:3) - scanDataCH1(4)));
+                    tSCdat3 = double(scanDataCH1(4));
+                    tSCdat456 = double(scanDataCH2(2:end));
+                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12'];
+                    tempScanData(3,:) = [tempScanData(3, 2:end) tSCdat3];
+                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456'];
                     %NORMALIZED counts are (E - bg)/(E + G - 2bg)
-                    tempNormData(runNum) = (tempScanData(2,runNum)) / (tempScanData(2,runNum) + tempScanData(1,runNum));
+                    tNorm = (tSCdat12(2)) / (tSCdat12(2) + tSCdat12(1));
+                    tempNormData = [tempNormData(2:end) tNorm];
                     %SUMMED counts
-                    tempSummedData(runNum) = tempScanData(2,runNum)+tempScanData(1,runNum);
+                    tSum = tSCdat12(2) + tSCdat12(1);
+                    tempSummedData = [tempSummedData(2:end) tSum];
                     setappdata(obj.myTopFigure, 'normData', tempNormData);
                     setappdata(obj.myTopFigure, 'scanData', tempScanData);
                     setappdata(obj.myTopFigure, 'summedData', tempSummedData);
@@ -608,20 +627,20 @@ classdef FreqLocker < hgsetget
                     %Calculate Error for PID1
                     switch seqPlace
                         case {0, 1}
-                            calcErr1 = tempNormData(runNum) - prevExcL;
+                            calcErr1 = tNorm - prevExcL;
                             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
                         case {2, 3}
-                            calcErr2 = tempNormData(runNum) - prevExcH;
+                            calcErr2 = tNorm - prevExcH;
                             tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
                     end
                     
                     if runNum >= 2
                         switch seqPlace
                             case {0,1}
-                                prevExcL = tempNormData(runNum);
+                                prevExcL = tNorm;
                             case {2, 3}
                                 if runNum >= 4
-                                    prevExcH = tempNormData(runNum);
+                                    prevExcH = tNorm;
                                 end
                         end
                         switch seqPlace
@@ -654,10 +673,10 @@ classdef FreqLocker < hgsetget
                     
                     switch seqPlace
                         case {0,1}
-                            tempPID1Data(runNum) = calcErr1;
+                            tempPID1Data = [tempPID1Data(2:end) calcErr1];
                             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                         case {2,3}
-                            tempPID2Data(runNum) = calcErr2;
+                            tempPID2Data = [tempPID2Data(2:end) calcErr2];
                             setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
                     end
                     
@@ -667,27 +686,20 @@ classdef FreqLocker < hgsetget
                         plotstart = 2;
                         firstplot = 2;
                     end
-                    clearPlots = getappdata(obj.myTopFigure, 'clearPlots');
-                    if clearPlots
-                        plotstart = runNum - 1;
-                        disp('plots cleared')
-                        setappdata(obj.myTopFigure, 'clearPlots', 0);
-                    end
-                    if runNum == 2 || clearPlots
-                        clearPlots
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(plotstart:runNum), 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,plotstart:runNum), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,plotstart:runNum), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,plotstart:runNum), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(plotstart:runNum), 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(plotstart:end), 'ok', 'LineWidth', 2);
+                    if runNum == 2
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
                     elseif runNum > 2
-                        set(tempH(1), 'YData', tempNormData(plotstart:runNum));
-                        set(tempH(2), 'YData', tempScanData(2,plotstart:runNum));
-                        set(tempH(3), 'YData', tempScanData(1,plotstart:runNum));
-                        set(tempH(4), 'YData', tempScanData(3,plotstart:runNum));
-                        set(tempH(5), 'YData', tempSummedData(plotstart:runNum));
-                        set(tempH(6), 'YData', tempPID1Data(plotstart:end));
+                        set(tempH(1), 'YData', tempNormData);
+                        set(tempH(2), 'YData', tempScanData(2,:));
+                        set(tempH(3), 'YData', tempScanData(1,:));
+                        set(tempH(4), 'YData', tempScanData(3,:));
+                        set(tempH(5), 'YData', tempSummedData);
+                        set(tempH(6), 'YData', tempPID1Data);
                         refreshdata(tempH);
                     end
                     switch seqPlace
@@ -708,8 +720,7 @@ classdef FreqLocker < hgsetget
                     end
                     %9. Check Save and Write Data to file.
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
-                    temp = 0;
-                    temp = [curFrequency tempNormData(runNum) tempScanData(1,runNum) tempScanData(2,runNum) tempScanData(3,runNum) str2double(time) tempScanData(4,runNum) tempScanData(6,runNum) tempScanData(5,runNum)];
+                    temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
                     if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum > 2
