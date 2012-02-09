@@ -479,7 +479,7 @@ classdef FreqLocker < hgsetget
             runNum = 0;
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
+            bufferSize = 10;
             tempScanData = zeros(6,bufferSize);
             tempSummedData = zeros(1,bufferSize);
             tempNormData = zeros(1,bufferSize);
@@ -541,7 +541,6 @@ classdef FreqLocker < hgsetget
             plotstart = 1; %Needs to be out here so plots can be cleared
             while(getappdata(obj.myTopFigure, 'run'))
                 runNum = runNum + 1;
-                
                 %3. Set Frequency (Display + Synthesizer)
                 switch seqPlace
                     case 0 % left side of line 1
@@ -755,6 +754,7 @@ classdef FreqLocker < hgsetget
                     if runNum >= 2
                         seqPlace = mod(seqPlace + 1,4);
                     end
+                    
 
             end
             %9.5 Close Frequency Synthesizer and Data file
