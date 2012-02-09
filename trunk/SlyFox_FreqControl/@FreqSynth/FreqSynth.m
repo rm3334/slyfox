@@ -3,14 +3,12 @@ classdef FreqSynth < hgsetget
     %   Detailed explanation goes here
     
     properties
-        myGPIBvendor = 'ni'
-        myGPIBboard = 0;
-        myGPIBinstrumentAddress = 7;
         myFreqCommand = 'FREQ';
         myPanel = uiextras.Panel();
         myDEBUGmode = 0;
         myTopFigure = [];
-        myGPIBobject = [];
+        myVISAconstructor = [];
+        myVISAobject = [];
     end
     
     methods
@@ -18,24 +16,17 @@ classdef FreqSynth < hgsetget
             obj.myTopFigure = top;
             obj.myDEBUGmode = DEBUGMODE;
             set(obj.myPanel, 'Parent', f);
-            h1 = uiextras.Grid('Parent', obj.myPanel, 'Tag', 'freqGrid');
+            h0 = uiextras.VBox('Parent', obj.myPanel, 'Tag', 'freqGrid');
             
-            bAddrBP = uiextras.BoxPanel(...
-                'Parent', h1,...
-                'Tag', 'baddrBP',...
-                'Title', 'Board Address');
-                bAddrVB = uiextras.VBox(...
-                    'Parent', bAddrBP);
-                uicontrol(...
-                    'Parent', bAddrVB, ...
-                    'Style', 'edit', ...
-                    'Tag', 'boardAddress', ...
-                    'String', '0',...
-                    'BackgroundColor', 'White', ...
-                    'Callback', @obj.updateFreqSynth);
-                uiextras.Empty('Parent', bAddrVB);
-                set(bAddrVB, 'Sizes', [-1 -9], 'Spacing', 5);
+            info = instrhwinfo('visa', 'ni');
+            visaCMD = uicontrol(...
+                'Parent', h0, ...
+                'Tag', 'visaCMD', ...
+                'Style', 'popup', ...
+                'String', info.ObjectConstructorName, ...
+                'Callback', @obj.updateFreqSynth);
             
+            h1 = uiextras.HBox('Parent', h0, 'Tag', 'freqGrid');
             testBP = uiextras.BoxPanel(...
                 'Parent', h1,...
                 'Tag', 'testBP',...
@@ -47,32 +38,17 @@ classdef FreqSynth < hgsetget
                 uicontrol(...
                     'Parent', testHB,...
                     'Style', 'pushbutton', ...
-                    'Tag', 'testGPIB',...
+                    'Tag', 'testVISA',...
                     'String', '*IDN?',...
-                    'Callback', @obj.testGPIBcommunication);
+                    'Callback', @obj.testVISAcommunication);
                 uicontrol(...
                     'Parent', testHB,...
                     'Style', 'edit',...
-                    'Tag', 'testGPIBreply');
+                    'Tag', 'testVISAreply');
                 set(testHB, 'Sizes', [-1 -3], 'Spacing', 5);
                 uiextras.Empty('Parent', testVB);
                 set(testVB, 'Sizes', [-1 -9], 'Spacing', 5);
             
-            instAddrBP = uiextras.BoxPanel(...
-                'Parent', h1,...
-                'Tag', 'instaddrBP',...
-                'Title', 'Instrument Address');
-                instAddrVB = uiextras.VBox(...
-                    'Parent', instAddrBP);
-                uicontrol(...
-                    'Parent', instAddrVB, ...
-                    'Style', 'edit', ...
-                    'Tag', 'instrumentAddress', ...
-                    'String', '7',...
-                    'BackgroundColor', 'White', ...
-                    'Callback', @obj.updateFreqSynth);
-                uiextras.Empty('Parent', instAddrVB);
-                set(instAddrVB, 'Sizes', [-1 -9], 'Spacing', 5);
             
             freqComBP = uiextras.BoxPanel(...
                 'Parent', h1,...
@@ -90,59 +66,62 @@ classdef FreqSynth < hgsetget
                 uiextras.Empty('Parent', freqComVB);
                 set(freqComVB, 'Sizes', [-1 -9], 'Spacing', 5);
           
-            set( h1, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1] );
             myHandles = guihandles(top);
             guidata(top, myHandles);
             obj.loadState();
         end
         function updateFreqSynth(hObject, eventData, varargin)
             myHandles = guidata(hObject.myTopFigure);
-            hObject.myGPIBboard = str2double(get(myHandles.boardAddress, 'String'));
-            hObject.myGPIBinstrumentAddress = str2double(get(myHandles.instrumentAddress, 'String'));
+            tVal = get(myHandles.visaCMD, 'Value');
+            tStrings = get(myHandles.visaCMD, 'String');
+            if ~isempty(hObject.myVISAobject)
+                hObject.close();
+            end
+            hObject.myVISAconstructor = tStrings{tVal};
             hObject.myFreqCommand = get(myHandles.frequencyCommand, 'String');
         end
-        function testGPIBcommunication(hObject, eventData, varargin)
+        function testVISAcommunication(hObject, eventData, varargin)
             hObject.updateFreqSynth(1);
             myHandles = guidata(hObject.myTopFigure);
-            gtest = gpib(hObject.myGPIBvendor, hObject.myGPIBboard, hObject.myGPIBinstrumentAddress);
+            vtest = eval(hObject.myVISAconstructor);
             try
-                fopen(gtest);
-                fprintf(gtest, '*IDN?');
-                idn = fscanf(gtest);
-                set(myHandles.testGPIBreply, 'String', idn(1:35));
-                fclose(gtest);
-                delete(gtest);
-                clear gtest;
+                fopen(vtest);
+                fprintf(vtest, '*IDN?');
+                idn = fscanf(vtest);
+                set(myHandles.testVISAreply, 'String', idn(1:35));
+                fclose(vtest);
+                delete(vtest);
+                clear vtest;
             catch
                 try
-                    delete(gtest)
+                    delete(vtest)
                 catch
                 end
                 if hObject.myDEBUGmode
-                    set(myHandles.testGPIBreply, 'String', 'DEBUGMODE')
+                    set(myHandles.testVISAreply, 'String', 'DEBUGMODE')
                 else
-                    set(myHandles.testGPIBreply, 'String', 'ERROR')
+                    set(myHandles.testVISAreply, 'String', 'ERROR')
                 end
             end
         end
         function initialize(obj)
             if ~obj.myDEBUGmode
                 obj.updateFreqSynth(1);
-                g = gpib(obj.myGPIBvendor, obj.myGPIBboard, obj.myGPIBinstrumentAddress);
+                g = eval(hObject.myVISAconstructor);
                 fopen(g);
-                obj.myGPIBobject = g;
+                obj.myVISAobject = g;
             end
         end
         function close(obj)
             if ~obj.myDEBUGmode
-                fclose(obj.myGPIBobject);
-                delete(obj.myGPIBobject);
-                obj.myGPIBobject = [];
+                fclose(obj.myVISAobject);
+                delete(obj.myVISAobject);
+                obj.myVISAobject = [];
             end
         end
         function ret = setFrequency(obj, newFreqStr)
             try
-                fprintf(obj.myGPIBobject, [obj.myFreqCommand, ' ', newFreqStr]);
+                fprintf(obj.myVISAobject, [obj.myFreqCommand, ' ', newFreqStr]);
                 ret = 1;
             catch
                 if ~obj.myDEBUGmode
@@ -155,8 +134,8 @@ classdef FreqSynth < hgsetget
         end
         function curFreq = readFrequency(obj)
             try
-                fprintf(obj.myGPIBobject, [obj.myFreqCommand, '?'])
-                curFreq = fscanf(obj.myGPIBobject);
+                fprintf(obj.myVISAobject, [obj.myFreqCommand, '?'])
+                curFreq = fscanf(obj.myVISAobject);
             catch
                 if ~obj.myDEBUGmode
                     errordlg('Frequency? Never heard of her')
@@ -177,8 +156,7 @@ classdef FreqSynth < hgsetget
             try
                 load FreqSynthState
                 myHandles = guidata(obj.myTopFigure);
-                set(myHandles.boardAddress, 'String', FreqSynthState.myGPIBboard);
-                set(myHandles.instrumentAddress, 'String', FreqSynthState.myGPIBinstrumentAddress);
+                set(myHandles.visaCMD, 'Value', FreqSynthState.myVISAcmd);
                 set(myHandles.frequencyCommand, 'String', FreqSynthState.myFreqCommand);
                 obj.updateFreqSynth(1);
                 guidata(obj.myTopFigure, myHandles);
@@ -188,8 +166,7 @@ classdef FreqSynth < hgsetget
         end
         function saveState(obj)
             myHandles = guidata(obj.myTopFigure);
-            FreqSynthState.myGPIBboard = get(myHandles.boardAddress, 'String');
-            FreqSynthState.myGPIBinstrumentAddress = get(myHandles.instrumentAddress, 'String');
+            FreqSynthState.myVISAcmd = get(myHandles.visaCMD, 'Value');
             FreqSynthState.myFreqCommand = get(myHandles.frequencyCommand, 'String');
             save FreqSynthState
         end
