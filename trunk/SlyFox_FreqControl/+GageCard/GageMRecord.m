@@ -1,4 +1,4 @@
-function [datatemp,time,ret] = GageMRecord(a, handle)
+function [datatemp,time,ret] = GageMRecord(a, handle, runNum)
     %GAGEMRECORD Performs a multiple record on a Gagecard
     %   This helper functions intializes, collects, transfers, and closes a
     %   gagecard during a multiple record event. It is heavily based off
@@ -6,8 +6,9 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
     %   it must be passed a GageConfig object. Throughout the waiting part
     %   of the execution it will consult the appdata of the gcf to see if
     %   it should abandon waiting for the gagecard to be triggered.
-        [ret, sysinfo] = CsMl_GetSystemInfo(handle);
 
+        [ret, sysinfo] = CsMl_GetSystemInfo(handle);
+    if runNum ==1
 %         s = sprintf('-----Board name: %s\n', sysinfo.BoardName);
 %         disp(s);
 
@@ -24,6 +25,7 @@ function [datatemp,time,ret] = GageMRecord(a, handle)
 
         ret = CsMl_Commit(handle);
         CsMl_ErrorHandler(ret, 1, handle);
+    end
 
         [ret, acqInfo] = CsMl_QueryAcquisition(handle);
         ret = CsMl_Capture(handle);
