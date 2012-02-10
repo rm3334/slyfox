@@ -531,6 +531,7 @@ classdef FreqSweeper < handle
                     break;
                 end
                 %6. Call AnalyzeRawData
+                size(reshape(data{1,2}, [1 length(data{1,2})]))
                 scanDataCH1 = obj.analyzeRawData(data(1,:));
                 scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                 %7. Clear the Raw Plots, Plot the Raw Plots
@@ -612,23 +613,23 @@ classdef FreqSweeper < handle
                     set(tempH(4), 'XData', x(plotstart:i), 'YData', tempScanData(3,plotstart:i));
                     set(tempH(5), 'XData', x(plotstart:i), 'YData', tempSummedData(plotstart:i));
 % %                     set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
-%                     refreshdata(tempH); CAUSES CRAZY MEMORY LEAK?!?
+%                     refreshdata(tempH); %CAUSES CRAZY MEMORY LEAK?!?
                 end
                 
-                %This is for creating cursors
+%                 This is for creating cursors
                 if i == 4 && get(myHandles.cursorToggle, 'Value')
-                    % Create Interactive Draggable cursors
+%                     Create Interactive Draggable cursors
                     dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes);
                 elseif i > 4 && get(myHandles.cursorToggle, 'Value')
-                    %Need to double check because of the cursor toggle
-                    %button
+%                     Need to double check because of the cursor toggle
+%                     button
                     if isempty(dualcursor(myHandles.sNormAxes))
                         dualcursor([],[.65 1.08;.9 1.08],[],@(x, y) '', myHandles.sNormAxes);
                     else
                         dualcursor('update', [.65 1.08;.9 1.08], [], @(x, y) '', myHandles.sNormAxes);
                     end
                 end
-                
+                data = [];
                 
                 %9. Check Save and Write Data to file.
                 if get(myHandles.saveScan, 'Value')
