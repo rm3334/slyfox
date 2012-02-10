@@ -569,7 +569,7 @@ classdef FreqLocker < hgsetget
                        [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds....I should try and move this.
                        CsMl_ErrorHandler(ret);
                 end
-                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle);
+                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle, runNum);
                 %IMMEDIATELY READJUST LC WAVEPLATE
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
