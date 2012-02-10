@@ -107,7 +107,7 @@ classdef FreqSynth < hgsetget
         function initialize(obj)
             if ~obj.myDEBUGmode
                 obj.updateFreqSynth(1);
-                g = eval(hObject.myVISAconstructor);
+                g = eval(obj.myVISAconstructor);
                 fopen(g);
                 obj.myVISAobject = g;
             end
