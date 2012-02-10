@@ -436,6 +436,15 @@ classdef FreqSweeper < handle
                     i2 = ((1+(-1).^i1)/2).*(n - (i1-2)/2) + ((1-(-1).^i1)/2).*(i1+1)/2;
                     freqList = freqList(i2);
                 end
+                %Preallocate data
+                tempNormData = zeros(1, length(freqList));
+                tempSummedData = zeros(1, length(freqList));
+                tempScanData = zeros(6, length(freqList));
+                setappdata(obj.myTopFigure, 'normData', tempNormData);
+                setappdata(obj.myTopFigure, 'scanData', tempScanData);
+                setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+                x = freqList - freqList(1);
+                
                 %Initialize Liquid Crystal Waveplate
                 if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     fprintf(obj.myuControl.mySerial, 'H')
@@ -470,10 +479,7 @@ classdef FreqSweeper < handle
             depth = aInfo.Depth;
             taxis = 1:depth;
             taxis = 1/sampleRate*taxis;
-            %Create stuff for scan plotting.
-            temp = zeros(6,length(freqList));
-            setappdata(obj.myTopFigure, 'scanData', temp);
-            setappdata(obj.myTopFigure, 'normData', zeros(1, length(freqList)));
+
             set(myHandles.setCursorButton, 'Enable', 'off'); %Clicking set twice would be bad.
             set(myHandles.grabCursorButton, 'Enable', 'on'); %Clicking set twice would be bad.
             %2.5 Initialize Frequency Synthesizer
@@ -528,14 +534,40 @@ classdef FreqSweeper < handle
                 scanDataCH1 = obj.analyzeRawData(data(1,:));
                 scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                 %7. Clear the Raw Plots, Plot the Raw Plots
-                plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
-                plot(myHandles.rEAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
-                plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), reshape(data{1,4}, [1 length(data{1,4})]));
-                plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
-                plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
-                plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), reshape(data{2,4}, [1 length(data{2,4})]));
+                if i == 1
+                    tempH(7) = plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), ...
+                                reshape(data{1,2}, [1 length(data{1,2})]));
+
+                    tempH(8) = plot(myHandles.rEAxes, taxis(1:length(data{1,3})), ...
+                                reshape(data{1,3}, [1 length(data{1,3})]));
+
+                    tempH(9) = plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), ...
+                                reshape(data{1,4}, [1 length(data{1,4})]));
+
+                    tempH(10) = plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), ...
+                                reshape(data{2,2}, [1 length(data{2,2})]));
+
+                    tempH(11) = plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), ...
+                                reshape(data{2,3}, [1 length(data{2,3})]));
+
+                    tempH(12) = plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), ...
+                                reshape(data{2,4}, [1 length(data{2,4})]));
+                else
+                    set(tempH(7), 'XData',  taxis(1:length(data{1,2})));
+                    set(tempH(7), 'YData', reshape(data{1,2}, [1 length(data{1,2})]));
+                    set(tempH(8), 'XData',  taxis(1:length(data{1,3})));
+                    set(tempH(8), 'YData', reshape(data{1,3}, [1 length(data{1,3})]));
+                    set(tempH(9), 'XData',  taxis(1:length(data{1,4})));
+                    set(tempH(9), 'YData', reshape(data{1,4}, [1 length(data{1,4})]));
+                    set(tempH(10), 'XData',  taxis(1:length(data{2,2})));
+                    set(tempH(10), 'YData', reshape(data{2,2}, [1 length(data{2,2})]));
+                    set(tempH(11), 'XData',  taxis(1:length(data{2,3})));
+                    set(tempH(11), 'YData', reshape(data{2,3}, [1 length(data{2,3})]));
+                    set(tempH(12), 'XData',  taxis(1:length(data{2,4})));
+                    set(tempH(12), 'YData', reshape(data{2,4}, [1 length(data{2,4})]));
+
+                end
                 %8. Update Scan Plots
-                x = freqList(1:i) - freqList(1);
                 tempScanData = getappdata(obj.myTopFigure, 'scanData');
                 tempNormData = getappdata(obj.myTopFigure, 'normData');
                 tempSummedData = getappdata(obj.myTopFigure, 'summedData');
@@ -560,27 +592,27 @@ classdef FreqSweeper < handle
                     
                 
                 if i == firstplot && ~get(myHandles.backAndForthScan, 'Value')  %First time you have to plot....the rest of the time we will "refreshdata"
-                    tempH(1) = plot(myHandles.sNormAxes, x(plotstart:end), tempNormData(plotstart:i), '-ok', 'LineWidth', 3);
-                    tempH(2) = plot(myHandles.sEAxes, x(plotstart:end), tempScanData(2,plotstart:i), '-or', 'LineWidth', 2);
-                    tempH(3) = plot(myHandles.sGAxes, x(plotstart:end), tempScanData(1,plotstart:i), '-ob', 'LineWidth', 2);
-                    tempH(4) = plot(myHandles.sBGAxes, x(plotstart:end), tempScanData(3,plotstart:i), '-ob', 'LineWidth', 1);
-                    tempH(5) = plot(myHandles.sSummedAxes, x(plotstart:end), tempSummedData(plotstart:i), '-og', 'LineWidth', 2);
+                    tempH(1) = plot(myHandles.sNormAxes, x(plotstart:i), tempNormData(plotstart:i), '-ok', 'LineWidth', 3);
+                    tempH(2) = plot(myHandles.sEAxes, x(plotstart:i), tempScanData(2,plotstart:i), '-or', 'LineWidth', 2);
+                    tempH(3) = plot(myHandles.sGAxes, x(plotstart:i), tempScanData(1,plotstart:i), '-ob', 'LineWidth', 2);
+                    tempH(4) = plot(myHandles.sBGAxes, x(plotstart:i), tempScanData(3,plotstart:i), '-ob', 'LineWidth', 1);
+                    tempH(5) = plot(myHandles.sSummedAxes, x(plotstart:i), tempSummedData(plotstart:i), '-og', 'LineWidth', 2);
 %                     tempH(6) = plot(myHandles.sBEAxes, x(plotstart:end), tempScanData(5,plotstart:i));
                 elseif i == firstplot
-                    tempH(1) = plot(myHandles.sNormAxes, x(plotstart:end), tempNormData(plotstart:i), 'ok', 'LineWidth', 3);
-                    tempH(2) = plot(myHandles.sEAxes, x(plotstart:end), tempScanData(2,plotstart:i), 'or', 'LineWidth', 2);
-                    tempH(3) = plot(myHandles.sGAxes, x(plotstart:end), tempScanData(1,plotstart:i), 'ob', 'LineWidth', 2);
-                    tempH(4) = plot(myHandles.sBGAxes, x(plotstart:end), tempScanData(3,plotstart:i), 'ob', 'LineWidth', 1);
-                    tempH(5) = plot(myHandles.sSummedAxes, x(plotstart:end), tempSummedData(plotstart:i), 'og', 'LineWidth', 2);
+                    tempH(1) = plot(myHandles.sNormAxes, x(plotstart:i), tempNormData(plotstart:i), 'ok', 'LineWidth', 3);
+                    tempH(2) = plot(myHandles.sEAxes, x(plotstart:i), tempScanData(2,plotstart:i), 'or', 'LineWidth', 2);
+                    tempH(3) = plot(myHandles.sGAxes, x(plotstart:i), tempScanData(1,plotstart:i), 'ob', 'LineWidth', 2);
+                    tempH(4) = plot(myHandles.sBGAxes, x(plotstart:i), tempScanData(3,plotstart:i), 'ob', 'LineWidth', 1);
+                    tempH(5) = plot(myHandles.sSummedAxes, x(plotstart:i), tempSummedData(plotstart:i), 'og', 'LineWidth', 2);
 %                     tempH(6) = plot(myHandles.sBEAxes, x(plotstart:end), tempScanData(5,plotstart:i));
                 elseif i > firstplot
-                    set(tempH(1), 'XData', x(plotstart:end), 'YData', tempNormData(plotstart:i));
-                    set(tempH(2), 'XData', x(plotstart:end), 'YData', tempScanData(2,plotstart:i));
-                    set(tempH(3), 'XData', x(plotstart:end), 'YData', tempScanData(1,plotstart:i));
-                    set(tempH(4), 'XData', x(plotstart:end), 'YData', tempScanData(3,plotstart:i));
-                    set(tempH(5), 'XData', x(plotstart:end), 'YData', tempSummedData(plotstart:i));
-%                     set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
-                    refreshdata(tempH);
+                    set(tempH(1), 'XData', x(plotstart:i), 'YData', tempNormData(plotstart:i));
+                    set(tempH(2), 'XData', x(plotstart:i), 'YData', tempScanData(2,plotstart:i));
+                    set(tempH(3), 'XData', x(plotstart:i), 'YData', tempScanData(1,plotstart:i));
+                    set(tempH(4), 'XData', x(plotstart:i), 'YData', tempScanData(3,plotstart:i));
+                    set(tempH(5), 'XData', x(plotstart:i), 'YData', tempSummedData(plotstart:i));
+% %                     set(tempH(6), 'XData', x(plotstart:end), 'YData', tempScanData(5,plotstart:i));
+%                     refreshdata(tempH); CAUSES CRAZY MEMORY LEAK?!?
                 end
                 
                 %This is for creating cursors

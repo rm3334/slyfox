@@ -351,12 +351,39 @@ classdef FreqLocker < hgsetget
                     scanDataCH1 = obj.analyzeRawData(data(1,:));
                     scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                     %7. Clear the Raw Plots, Plot the Raw Plots
-                    plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
-                    plot(myHandles.rEAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
-                    plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), reshape(data{1,4}, [1 length(data{1,4})]));
-                    plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
-                    plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
-                    plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), reshape(data{2,4}, [1 length(data{2,4})]));
+                if runNum == 1
+                    tempH(7) = plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), ...
+                                reshape(data{1,2}, [1 length(data{1,2})]));
+
+                    tempH(8) = plot(myHandles.rEAxes, taxis(1:length(data{1,3})), ...
+                                reshape(data{1,3}, [1 length(data{1,3})]));
+
+                    tempH(9) = plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), ...
+                                reshape(data{1,4}, [1 length(data{1,4})]));
+
+                    tempH(10) = plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), ...
+                                reshape(data{2,2}, [1 length(data{2,2})]));
+
+                    tempH(11) = plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), ...
+                                reshape(data{2,3}, [1 length(data{2,3})]));
+
+                    tempH(12) = plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), ...
+                                reshape(data{2,4}, [1 length(data{2,4})]));
+                else
+                    set(tempH(7), 'XData',  taxis(1:length(data{1,2})));
+                    set(tempH(7), 'YData', reshape(data{1,2}, [1 length(data{1,2})]));
+                    set(tempH(8), 'XData',  taxis(1:length(data{1,3})));
+                    set(tempH(8), 'YData', reshape(data{1,3}, [1 length(data{1,3})]));
+                    set(tempH(9), 'XData',  taxis(1:length(data{1,4})));
+                    set(tempH(9), 'YData', reshape(data{1,4}, [1 length(data{1,4})]));
+                    set(tempH(10), 'XData',  taxis(1:length(data{2,2})));
+                    set(tempH(10), 'YData', reshape(data{2,2}, [1 length(data{2,2})]));
+                    set(tempH(11), 'XData',  taxis(1:length(data{2,3})));
+                    set(tempH(11), 'YData', reshape(data{2,3}, [1 length(data{2,3})]));
+                    set(tempH(12), 'XData',  taxis(1:length(data{2,4})));
+                    set(tempH(12), 'YData', reshape(data{2,4}, [1 length(data{2,4})]));
+
+                end
                     %8. Update Scan Plots
                     tempScanData = getappdata(obj.myTopFigure, 'scanData');
                     tempNormData = getappdata(obj.myTopFigure, 'normData');
@@ -452,6 +479,7 @@ classdef FreqLocker < hgsetget
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     fprintf(fid, '%8.6f\t', temp);
                     fprintf(fid, '\r\n');
+                    pause(0.05);
             end
             %9.5 Close Frequency Synthesizer and Data file
             obj.myPID1.clear();
@@ -595,12 +623,39 @@ classdef FreqLocker < hgsetget
                     scanDataCH1 = obj.analyzeRawData(data(1,:));
                     scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                     %7. Clear the Raw Plots, Plot the Raw Plots
-                    plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), reshape(data{1,2}, [1 length(data{1,2})]));
-                    plot(myHandles.rEAxes, taxis(1:length(data{1,3})), reshape(data{1,3}, [1 length(data{1,3})]));
-                    plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), reshape(data{1,4}, [1 length(data{1,4})]));
-                    plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), reshape(data{2,2}, [1 length(data{2,2})]));
-                    plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), reshape(data{2,3}, [1 length(data{2,3})]));
-                    plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), reshape(data{2,4}, [1 length(data{2,4})]));
+                    if runNum == 1
+                    tempH(7) = plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), ...
+                                reshape(data{1,2}, [1 length(data{1,2})]));
+
+                    tempH(8) = plot(myHandles.rEAxes, taxis(1:length(data{1,3})), ...
+                                reshape(data{1,3}, [1 length(data{1,3})]));
+
+                    tempH(9) = plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), ...
+                                reshape(data{1,4}, [1 length(data{1,4})]));
+
+                    tempH(10) = plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), ...
+                                reshape(data{2,2}, [1 length(data{2,2})]));
+
+                    tempH(11) = plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), ...
+                                reshape(data{2,3}, [1 length(data{2,3})]));
+
+                    tempH(12) = plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), ...
+                                reshape(data{2,4}, [1 length(data{2,4})]));
+                else
+                    set(tempH(7), 'XData',  taxis(1:length(data{1,2})));
+                    set(tempH(7), 'YData', reshape(data{1,2}, [1 length(data{1,2})]));
+                    set(tempH(8), 'XData',  taxis(1:length(data{1,3})));
+                    set(tempH(8), 'YData', reshape(data{1,3}, [1 length(data{1,3})]));
+                    set(tempH(9), 'XData',  taxis(1:length(data{1,4})));
+                    set(tempH(9), 'YData', reshape(data{1,4}, [1 length(data{1,4})]));
+                    set(tempH(10), 'XData',  taxis(1:length(data{2,2})));
+                    set(tempH(10), 'YData', reshape(data{2,2}, [1 length(data{2,2})]));
+                    set(tempH(11), 'XData',  taxis(1:length(data{2,3})));
+                    set(tempH(11), 'YData', reshape(data{2,3}, [1 length(data{2,3})]));
+                    set(tempH(12), 'XData',  taxis(1:length(data{2,4})));
+                    set(tempH(12), 'YData', reshape(data{2,4}, [1 length(data{2,4})]));
+
+                end
                     %8. Update Scan Plots
                     tempScanData = getappdata(obj.myTopFigure, 'scanData');
                     tempNormData = getappdata(obj.myTopFigure, 'normData');
