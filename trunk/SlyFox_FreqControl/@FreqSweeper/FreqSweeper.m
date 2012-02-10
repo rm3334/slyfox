@@ -505,7 +505,7 @@ classdef FreqSweeper < handle
                        [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds
                        CsMl_ErrorHandler(ret);
                 end
-                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle);
+                [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle, i);
                 %IMMEDIATELY CHANGE THE LIQUID CRYSTAL WAVEPLATE IF NEED BE
                 if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     if ~mod(i+1,2)
