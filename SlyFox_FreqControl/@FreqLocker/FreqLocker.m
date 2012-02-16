@@ -256,11 +256,15 @@ classdef FreqLocker < hgsetget
         end
         
         function startContinousLock(obj)
+            obj.startContinuousLock_initialize();
+            obj.startContinuousLock_takeNextPoint();
+        end
+        function startContinuousLock_initialize(obj)
             myHandles = guidata(obj.myTopFigure);
             prevExc = 0; %For use in calculating the present Error
             linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreq = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
-            runNum = 0;
+            runNum = 1;
             seqPlace = 0; %0 = left side of line 1
                           %1 = right side of line 1
             
@@ -270,11 +274,6 @@ classdef FreqLocker < hgsetget
             tempSummedData = zeros(1,bufferSize);
             tempNormData = zeros(1,bufferSize);
             tempPID1Data = zeros(1,bufferSize);
-            setappdata(obj.myTopFigure, 'normData', tempNormData);
-            setappdata(obj.myTopFigure, 'scanData', tempScanData);
-            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
-            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
-            
             
             %Create stuff for raw Plotting Later on
             aInfo = obj.myGageConfigFrontend.myGageConfig.acqInfo;
@@ -310,9 +309,47 @@ classdef FreqLocker < hgsetget
                         end
             end
             
-            plotstart = 1; %Needs to be out here so plots can be cleared
-            while(getappdata(obj.myTopFigure, 'run'))
-                runNum = runNum + 1;
+            setappdata(obj.myTopFigure, 'normData', tempNormData);
+            setappdata(obj.myTopFigure, 'scanData', tempScanData);
+            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'runNum', runNum);
+            setappdata(obj.myTopFigure, 'taxis', taxis);
+            setappdata(obj.myTopFigure, 'fid', fid);
+            setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+            setappdata(obj.myTopFigure, 'prevExc', prevExc);
+            setappdata(obj.myTopFigure, 'linewidth', linewidth);
+            setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+            guidata(obj.myTopFigure, myHandles);
+        end
+        function startContinuousLock_takeNextPoint(obj)
+            myHandles = guidata(obj.myTopFigure);
+            tempNormData = getappdata(obj.myTopFigure, 'normData');
+            tempScanData = getappdata(obj.myTopFigure, 'scanData');
+            tempSummedData = getappdata(obj.myTopFigure, 'summedData');
+            tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
+            runNum = getappdata(obj.myTopFigure, 'runNum');
+            taxis = getappdata(obj.myTopFigure, 'taxis');
+            fid = getappdata(obj.myTopFigure, 'fid');
+            seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
+            prevExc = getappdata(obj.myTopFigure, 'prevExc');
+            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            newCenterFreq = getappdata(obj.myTopFigure, 'newCenterFreq');
+            
+            if runNum==1
+                systems = CsMl_Initialize;
+                CsMl_ErrorHandler(systems);
+                [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds
+                CsMl_ErrorHandler(ret);
+            else
+                handle = getappdata(obj.myTopFigure, 'gageHandle');
+                tempH = getappdata(obj.myTopFigure, 'plottingHandles');
+            end
+            
+            pointDone = 0;
+            while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
+                plotstart = 1; %Needs to be out here so plots can be cleared
+                
                 
                 %3. Set Frequency (Display + Synthesizer)
                 switch seqPlace
@@ -332,12 +369,7 @@ classdef FreqLocker < hgsetget
                 %4. Update Progress Bar
                 drawnow;
                 %5. Call Gage Card to gather data
-                if runNum==1
-                       systems = CsMl_Initialize;
-                       CsMl_ErrorHandler(systems);
-                       [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds....I should try and move this.
-                       CsMl_ErrorHandler(ret);
-                end
+                
                 [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle, runNum);
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -385,9 +417,6 @@ classdef FreqLocker < hgsetget
 
                 end
                     %8. Update Scan Plots
-                    tempScanData = getappdata(obj.myTopFigure, 'scanData');
-                    tempNormData = getappdata(obj.myTopFigure, 'normData');
-                    tempSummedData = getappdata(obj.myTopFigure, 'summedData');
                     tSCdat12 = (double(scanDataCH1(2:3) - scanDataCH1(4)));
                     tSCdat3 = double(scanDataCH1(4));
                     tSCdat456 = double(scanDataCH2(2:end));
@@ -400,18 +429,11 @@ classdef FreqLocker < hgsetget
                     %SUMMED counts
                     tSum = tSCdat12(2) + tSCdat12(1);
                     tempSummedData = [tempSummedData(2:end) tSum];
-                    setappdata(obj.myTopFigure, 'normData', tempNormData);
-                    setappdata(obj.myTopFigure, 'scanData', tempScanData);
-                    setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                     
-                    
-                    %MAKE SAVE FUNCTIONS
                     
                     %Do some PID magic!
                     %Calculate Error for PID1
                     calcErr1 = tNorm - prevExc;
-                    tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
-                    
                     
                     if runNum >= 2
                         prevExc = tNorm;
@@ -431,7 +453,6 @@ classdef FreqLocker < hgsetget
                     end
                     
                     tempPID1Data = [tempPID1Data(2:end) calcErr1];
-                    setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                     
                     %Do some Plotting
                     firstplot = 1;
@@ -453,7 +474,6 @@ classdef FreqLocker < hgsetget
                         set(tempH(4), 'YData', tempScanData(3,:));
                         set(tempH(5), 'YData', tempSummedData);
                         set(tempH(6), 'YData', tempPID1Data);
-                        refreshdata(tempH);
                     end
                     obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
                     if seqPlace == 0
@@ -479,51 +499,106 @@ classdef FreqLocker < hgsetget
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     fprintf(fid, '%8.6f\t', temp);
                     fprintf(fid, '\r\n');
-                    pause(0.05);
+                    pointDone = 1;
             end
-            %9.5 Close Frequency Synthesizer and Data file
-            obj.myPID1.clear();
-            obj.myFreqSynth.close();
-            fclose('all'); % weird matlab thing, can't just close fid, won't work.
-            %10. If ~Run, make obvious and reset 'run'
-            if ~getappdata(obj.myTopFigure, 'run')
-                disp('Acquisistion Stopped');
-                set(myHandles.curFreq, 'String', 'STOPPED');
-                setappdata(obj.myTopFigure, 'run', 1);
+            if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
+                if runNum == 1
+                    setappdata(obj.myTopFigure, 'gageHandle', handle);
+                end
+                runNum = runNum + 1;
+                setappdata(obj.myTopFigure, 'normData', tempNormData);
+                setappdata(obj.myTopFigure, 'scanData', tempScanData);
+                setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+                setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                setappdata(obj.myTopFigure, 'runNum', runNum);
+                setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+                setappdata(obj.myTopFigure, 'prevExc', prevExc);
+                setappdata(obj.myTopFigure, 'linewidth', linewidth);
+                setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+                setappdata(obj.myTopFigure, 'plottingHandles', tempH);
+                
+                guidata(obj.myTopFigure, myHandles);
+                
+                %Destroy any timers that might exist
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
+                %Create startup timer - This HAS to be done this way in
+                %order to get around a plotting bug in Matlab specific to
+                %windows XP
+                t = timer('TimerFcn',@(x,y) startContinuousLock_takeNextPoint(obj), 'StartDelay', 0.1);
+                start(t);
+           else %close everything done
+
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
+                delete(timerfind);
+                %9.5 Close Frequency Synthesizer and Data file
+                obj.myPID1.clear();
+                obj.myFreqSynth.close();
+                fclose('all'); % weird matlab thing, can't just close fid, won't work.
+                %10. If ~Run, make obvious and reset 'run'
+                if ~getappdata(obj.myTopFigure, 'run')
+                    try
+                        ret = CsMl_FreeSystem(handle);
+                    catch
+                    end
+                    disp('Acquisistion Stopped');
+                    set(myHandles.curFreq, 'String', 'STOPPED');
+                    setappdata(obj.myTopFigure, 'run', 1);
+                    drawnow;
+                end
+                rmappdata(obj.myTopFigure, 'normData', tempNormData);
+                rmappdata(obj.myTopFigure, 'scanData', tempScanData);
+                rmappdata(obj.myTopFigure, 'summedData', tempSummedData);
+                rmappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                rmappdata(obj.myTopFigure, 'runNum', runNum);
+                rmappdata(obj.myTopFigure, 'taxis', taxis);
+                rmappdata(obj.myTopFigure, 'fid', fid);
+                rmappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+                rmappdata(obj.myTopFigure, 'prevExc', prevExc);
+                rmappdata(obj.myTopFigure, 'linewidth', linewidth);
+                rmappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+                rmappdata(obj.myTopFigure, 'gageHandle');
+                rmappdata(obj.myTopFigure, 'plottingHandles');
                 drawnow;
+                
+                guidata(obj.myTopFigure, myHandles);
+
+                clear variables
+                clear mex
             end
-            guidata(obj.myTopFigure, myHandles);
-            
-            clear variables
-            clear mex
         end
         function startContinuousMultiLock(obj)
+            obj.startContinuousMultiLock_initialize();
+            obj.startContinuousMultiLock_takeNextPoint();
+        end
+        function startContinuousMultiLock_initialize(obj)
             myHandles = guidata(obj.myTopFigure);
             prevExcL = 0; %For use in calculating the present Error for Low Freq Lock
             prevExcH = 0; %For use in calculating the present Error for Low Freq Lock
             linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
-            runNum = 0;
+            runNum = 1;
+            seqPlace = 0; %0 = left side of line 1
+                          %1 = right side of line 1
+                          %2 = left side of line 2
+                          %3 = right side of line 2
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 10;
+            bufferSize = 50;
             tempScanData = zeros(6,bufferSize);
             tempSummedData = zeros(1,bufferSize);
             tempNormData = zeros(1,bufferSize);
             tempPID1Data = zeros(1,bufferSize);
             tempPID2Data = zeros(1,bufferSize);
-            setappdata(obj.myTopFigure, 'normData', tempNormData);
-            setappdata(obj.myTopFigure, 'scanData', tempScanData);
-            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
-            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
-            setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
             
             
-            seqPlace = 0; %0 = left side of line 1
-                          %1 = right side of line 1
-                          %2 = left side of line 2
-                          %3 = right side of line 2
+            
             %Initialize Liquid Crystal Waveplate
             if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                 fprintf(obj.myuControl.mySerial, 'H');
@@ -565,10 +640,52 @@ classdef FreqLocker < hgsetget
                             disp('Could not open file to write to.');
                         end
             end
+            setappdata(obj.myTopFigure, 'normData', tempNormData);
+            setappdata(obj.myTopFigure, 'scanData', tempScanData);
+            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+            setappdata(obj.myTopFigure, 'runNum', runNum);
+            setappdata(obj.myTopFigure, 'taxis', taxis);
+            setappdata(obj.myTopFigure, 'fid', fid);
+            setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+            setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
+            setappdata(obj.myTopFigure, 'prevExcH', prevExcH);
+            setappdata(obj.myTopFigure, 'linewidth', linewidth);
+            setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
+            setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
+            guidata(obj.myTopFigure, myHandles);
+        end
+        function startContinuousMultiLock_takeNextPoint(obj)
+            myHandles = guidata(obj.myTopFigure);
+            tempNormData = getappdata(obj.myTopFigure, 'normData');
+            tempScanData = getappdata(obj.myTopFigure, 'scanData');
+            tempSummedData = getappdata(obj.myTopFigure, 'summedData');
+            tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
+            tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
+            runNum = getappdata(obj.myTopFigure, 'runNum');
+            taxis = getappdata(obj.myTopFigure, 'taxis');
+            fid = getappdata(obj.myTopFigure, 'fid');
+            seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
+            prevExcL = getappdata(obj.myTopFigure, 'prevExcL');
+            prevExcH = getappdata(obj.myTopFigure, 'prevExcH');
+            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
+            newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             
-            plotstart = 1; %Needs to be out here so plots can be cleared
-            while(getappdata(obj.myTopFigure, 'run'))
-                runNum = runNum + 1;
+            if runNum==1
+                systems = CsMl_Initialize;
+                CsMl_ErrorHandler(systems);
+                [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds
+                CsMl_ErrorHandler(ret);
+            else
+                handle = getappdata(obj.myTopFigure, 'gageHandle');
+                tempH = getappdata(obj.myTopFigure, 'plottingHandles');
+            end
+            
+            pointDone = 0;
+            while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
+                plotstart = 1; %Needs to be out here so plots can be cleared
                 %3. Set Frequency (Display + Synthesizer)
                 switch seqPlace
                     case 0 % left side of line 1
@@ -591,12 +708,6 @@ classdef FreqLocker < hgsetget
                 %4. Update Progress Bar
                 drawnow;
                 %5. Call Gage Card to gather data
-                if runNum==1
-                       systems = CsMl_Initialize;
-                       CsMl_ErrorHandler(systems);
-                       [ret, handle] = CsMl_GetSystem;  %this takes like 2 seconds....I should try and move this.
-                       CsMl_ErrorHandler(ret);
-                end
                 [data,time,ret] = GageCard.GageMRecord(obj.myGageConfigFrontend.myGageConfig, handle, runNum);
                 %IMMEDIATELY READJUST LC WAVEPLATE
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
@@ -624,42 +735,39 @@ classdef FreqLocker < hgsetget
                     scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                     %7. Clear the Raw Plots, Plot the Raw Plots
                     if runNum == 1
-                    tempH(7) = plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), ...
-                                reshape(data{1,2}, [1 length(data{1,2})]));
+                        tempH(7) = plot(myHandles.rGSAxes, taxis(1:length(data{1,2})), ...
+                                    reshape(data{1,2}, [1 length(data{1,2})]));
 
-                    tempH(8) = plot(myHandles.rEAxes, taxis(1:length(data{1,3})), ...
-                                reshape(data{1,3}, [1 length(data{1,3})]));
+                        tempH(8) = plot(myHandles.rEAxes, taxis(1:length(data{1,3})), ...
+                                    reshape(data{1,3}, [1 length(data{1,3})]));
 
-                    tempH(9) = plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), ...
-                                reshape(data{1,4}, [1 length(data{1,4})]));
+                        tempH(9) = plot(myHandles.rBGAxes, taxis(1:length(data{1,4})), ...
+                                    reshape(data{1,4}, [1 length(data{1,4})]));
 
-                    tempH(10) = plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), ...
-                                reshape(data{2,2}, [1 length(data{2,2})]));
+                        tempH(10) = plot(myHandles.rBGSAxes, taxis(1:length(data{2,2})), ...
+                                    reshape(data{2,2}, [1 length(data{2,2})]));
 
-                    tempH(11) = plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), ...
-                                reshape(data{2,3}, [1 length(data{2,3})]));
+                        tempH(11) = plot(myHandles.rBEAxes, taxis(1:length(data{2,3})), ...
+                                    reshape(data{2,3}, [1 length(data{2,3})]));
 
-                    tempH(12) = plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), ...
-                                reshape(data{2,4}, [1 length(data{2,4})]));
-                else
-                    set(tempH(7), 'XData',  taxis(1:length(data{1,2})));
-                    set(tempH(7), 'YData', reshape(data{1,2}, [1 length(data{1,2})]));
-                    set(tempH(8), 'XData',  taxis(1:length(data{1,3})));
-                    set(tempH(8), 'YData', reshape(data{1,3}, [1 length(data{1,3})]));
-                    set(tempH(9), 'XData',  taxis(1:length(data{1,4})));
-                    set(tempH(9), 'YData', reshape(data{1,4}, [1 length(data{1,4})]));
-                    set(tempH(10), 'XData',  taxis(1:length(data{2,2})));
-                    set(tempH(10), 'YData', reshape(data{2,2}, [1 length(data{2,2})]));
-                    set(tempH(11), 'XData',  taxis(1:length(data{2,3})));
-                    set(tempH(11), 'YData', reshape(data{2,3}, [1 length(data{2,3})]));
-                    set(tempH(12), 'XData',  taxis(1:length(data{2,4})));
-                    set(tempH(12), 'YData', reshape(data{2,4}, [1 length(data{2,4})]));
+                        tempH(12) = plot(myHandles.rBBGAxes, taxis(1:length(data{2,4})), ...
+                                    reshape(data{2,4}, [1 length(data{2,4})]));
+                    else
+                        set(tempH(7), 'XData',  taxis(1:length(data{1,2})));
+                        set(tempH(7), 'YData', reshape(data{1,2}, [1 length(data{1,2})]));
+                        set(tempH(8), 'XData',  taxis(1:length(data{1,3})));
+                        set(tempH(8), 'YData', reshape(data{1,3}, [1 length(data{1,3})]));
+                        set(tempH(9), 'XData',  taxis(1:length(data{1,4})));
+                        set(tempH(9), 'YData', reshape(data{1,4}, [1 length(data{1,4})]));
+                        set(tempH(10), 'XData',  taxis(1:length(data{2,2})));
+                        set(tempH(10), 'YData', reshape(data{2,2}, [1 length(data{2,2})]));
+                        set(tempH(11), 'XData',  taxis(1:length(data{2,3})));
+                        set(tempH(11), 'YData', reshape(data{2,3}, [1 length(data{2,3})]));
+                        set(tempH(12), 'XData',  taxis(1:length(data{2,4})));
+                        set(tempH(12), 'YData', reshape(data{2,4}, [1 length(data{2,4})]));
 
-                end
+                    end
                     %8. Update Scan Plots
-                    tempScanData = getappdata(obj.myTopFigure, 'scanData');
-                    tempNormData = getappdata(obj.myTopFigure, 'normData');
-                    tempSummedData = getappdata(obj.myTopFigure, 'summedData');
                     tSCdat12 = (double(scanDataCH1(2:3) - scanDataCH1(4)));
                     tSCdat3 = double(scanDataCH1(4));
                     tSCdat456 = double(scanDataCH2(2:end));
@@ -672,9 +780,6 @@ classdef FreqLocker < hgsetget
                     %SUMMED counts
                     tSum = tSCdat12(2) + tSCdat12(1);
                     tempSummedData = [tempSummedData(2:end) tSum];
-                    setappdata(obj.myTopFigure, 'normData', tempNormData);
-                    setappdata(obj.myTopFigure, 'scanData', tempScanData);
-                    setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                     
                     
                     %Do some PID magic!
@@ -712,12 +817,16 @@ classdef FreqLocker < hgsetget
                         obj.updatePIDvalues();
                         obj.checkPIDenables();
                         switch seqPlace
-                            case {0,1}
+                            case 0
+                                calcCorr1 = 0;
+                            case 1
                                 if runNum ~=2
                                     calcCorr1 = obj.myPID1.calculate(calcErr1, str2double(time));
                                     newCenterFreqL = newCenterFreqL + calcCorr1;
                                 end
-                            case {2,3}
+                            case 2
+                                calcCorr2 = 0;
+                            case 3
                                 if runNum ~=4
                                     calcCorr2 = obj.myPID2.calculate(calcErr2, str2double(time));
                                     newCenterFreqH = newCenterFreqH + calcCorr2;
@@ -726,12 +835,10 @@ classdef FreqLocker < hgsetget
                     end
                     
                     switch seqPlace
-                        case {0,1}
+                        case 1
                             tempPID1Data = [tempPID1Data(2:end) calcErr1];
-                            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
-                        case {2,3}
+                        case 3
                             tempPID2Data = [tempPID2Data(2:end) calcErr2];
-                            setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
                     end
                     
                     %Do some Plotting
@@ -754,7 +861,6 @@ classdef FreqLocker < hgsetget
                         set(tempH(4), 'YData', tempScanData(3,:));
                         set(tempH(5), 'YData', tempSummedData);
                         set(tempH(6), 'YData', tempPID1Data);
-                        refreshdata(tempH);
                     end
                     switch seqPlace
                         case {0,1}
@@ -777,16 +883,16 @@ classdef FreqLocker < hgsetget
                     temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
                     if get(obj.myPID1gui.mySaveLog, 'Value')
-                        if runNum > 2
+                        if runNum > 2 && seqPlace == 1
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL];%err correctionApplied servoVal
                         else
-                            tempPID1 = [calcErr1 0 newCenterFreqL];%err correctionApplied servoVal
+                            tempPID1 = [0 0 newCenterFreqL];%err correctionApplied servoVal
                         end
                     else
                         tempPID1 = [0 0 0];
                     end
                     if get(obj.myPID2gui.mySaveLog, 'Value')
-                        if runNum > 4
+                        if runNum > 4 && seqPlace == 3
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         elseif runNum == 4
                             tempPID2 = [calcErr2 0 newCenterFreqH];%err correctionApplied servoVal
@@ -809,25 +915,82 @@ classdef FreqLocker < hgsetget
                     if runNum >= 2
                         seqPlace = mod(seqPlace + 1,4);
                     end
-                    
-
+                    pointDone = 1;
             end
-            %9.5 Close Frequency Synthesizer and Data file
-            obj.myPID1.clear();
-            obj.myPID2.clear();
-            obj.myFreqSynth.close();
-            fclose('all'); % weird matlab thing, can't just close fid, won't work.
-            %10. If ~Run, make obvious and reset 'run'
-            if ~getappdata(obj.myTopFigure, 'run')
-                disp('Acquisistion Stopped');
-                set(myHandles.curFreq, 'String', 'STOPPED');
-                setappdata(obj.myTopFigure, 'run', 1);
+            if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
+                if runNum == 1
+                    setappdata(obj.myTopFigure, 'gageHandle', handle);
+                end
+                runNum = runNum + 1;
+                setappdata(obj.myTopFigure, 'normData', tempNormData);
+                setappdata(obj.myTopFigure, 'scanData', tempScanData);
+                setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+                setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+                setappdata(obj.myTopFigure, 'runNum', runNum);
+                setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+                setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
+                setappdata(obj.myTopFigure, 'prevExcH', prevExcH);
+                setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
+                setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
+                setappdata(obj.myTopFigure, 'plottingHandles', tempH);
+                
+                guidata(obj.myTopFigure, myHandles);
+                
+                %Destroy any timers that might exist
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
+                %Create startup timer - This HAS to be done this way in
+                %order to get around a plotting bug in Matlab specific to
+                %windows XP
+                t = timer('TimerFcn',@(x,y) startContinuousMultiLock_takeNextPoint(obj), 'StartDelay', 0.1);
+                start(t);
+            else %close everything done
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
+                %9.5 Close Frequency Synthesizer and Data file
+                obj.myPID1.clear();
+                obj.myFreqSynth.close();
+                fclose('all'); % weird matlab thing, can't just close fid, won't work.
+                %10. If ~Run, make obvious and reset 'run'
+                if ~getappdata(obj.myTopFigure, 'run')
+                    try
+                        ret = CsMl_FreeSystem(handle);
+                    catch
+                    end
+                    disp('Acquisistion Stopped');
+                    set(myHandles.curFreq, 'String', 'STOPPED');
+                    setappdata(obj.myTopFigure, 'run', 1);
+                    drawnow;
+                end
+                
+                rmappdata(obj.myTopFigure, 'normData');
+                rmappdata(obj.myTopFigure, 'scanData');
+                rmappdata(obj.myTopFigure, 'summedData');
+                rmappdata(obj.myTopFigure, 'PID1Data');
+                rmappdata(obj.myTopFigure, 'PID2Data');
+                rmappdata(obj.myTopFigure, 'runNum');
+                rmappdata(obj.myTopFigure, 'taxis');
+                rmappdata(obj.myTopFigure, 'fid');
+                rmappdata(obj.myTopFigure, 'seqPlace');
+                rmappdata(obj.myTopFigure, 'prevExcL');
+                rmappdata(obj.myTopFigure, 'prevExcH');
+                rmappdata(obj.myTopFigure, 'linewidth');
+                rmappdata(obj.myTopFigure, 'newCenterFreqL');
+                rmappdata(obj.myTopFigure, 'newCenterFreqH');
+                rmappdata(obj.myTopFigure, 'gageHandle');
+                rmappdata(obj.myTopFigure, 'plottingHandles');
                 drawnow;
+                
+                guidata(obj.myTopFigure, myHandles);
+                
+                clear variables
+                clear mex
             end
-            guidata(obj.myTopFigure, myHandles);
-            
-            clear variables
-            clear mex
         end
         function updatePIDvalues(obj)
             obj.myPID1.myKp = str2double(get(obj.myPID1gui.myKp, 'String'));
