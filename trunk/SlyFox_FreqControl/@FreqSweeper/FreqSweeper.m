@@ -987,19 +987,30 @@ classdef FreqSweeper < handle
                 guidata(obj.myTopFigure, myHandles);
                 
                 %Destroy any timers that might exist
-                delete(timerfind);
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
                 %Create startup timer - This HAS to be done this way in
                 %order to get around a plotting bug in Matlab specific to
                 %windows XP
                 t = timer('TimerFcn',@(x,y) sweep_takeNextPoint(obj), 'StartDelay', 0.1);
                 start(t);
             else %close everything done
+                if ~isempty(timerfind)
+                    stop(timerfind);
+                    delete(timerfind);
+                end
                 delete(timerfind);
                     %9.5 Close Frequency Synthesizer and Data file
                     obj.myFreqSynth.close();
                     fclose('all'); % weird matlab thing, can't just close fid, won't work.
                     %10. If ~Run, make obvious and reset 'run'
                     if ~getappdata(obj.myTopFigure, 'run')
+                        try
+                            ret = CsMl_FreeSystem(handle);
+                        catch
+                        end
                         disp('Acquisistion Stopped');
                         set(myHandles.curFreq, 'String', 'STOPPED');
                         setappdata(obj.myTopFigure, 'run', 1);
@@ -1022,6 +1033,9 @@ classdef FreqSweeper < handle
                     rmappdata(obj.myTopFigure, 'fid');
                     rmappdata(obj.myTopFigure, 'x');
                     rmappdata(obj.myTopFigure, 'freqList');
+                    rmappdata(obj.myTopFigure, 'gageHandle');
+                    rmappdata(obj.myTopFigure, 'plottingHandles');
+                    
                     drawnow;
 
                     guidata(obj.myTopFigure, myHandles);
