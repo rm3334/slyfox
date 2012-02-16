@@ -786,6 +786,7 @@ classdef FreqSweeper < handle
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'x', x);
             setappdata(obj.myTopFigure, 'freqList', freqList);
+            setappdata(obj.myTopFigure, 'curFrequency', curFrequency);
             guidata(obj.myTopFigure, myHandles);
         end
         function sweep_takeNextPoint(obj)
@@ -799,6 +800,7 @@ classdef FreqSweeper < handle
             x = getappdata(obj.myTopFigure, 'x');
             freqList = getappdata(obj.myTopFigure, 'freqList');
             jProgBar = getappdata(obj.myTopFigure, 'jProgBar');
+            curFrequency = getappdata(obj.myTopFigure, 'curFrequency');
 
             
             if runNum==1
@@ -983,6 +985,7 @@ classdef FreqSweeper < handle
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'plottingHandles', tempH);
+                setappdata(obj.myTopFigure, 'curFrequency', curFrequency);
                 
                 guidata(obj.myTopFigure, myHandles);
                 
@@ -1035,6 +1038,7 @@ classdef FreqSweeper < handle
                     rmappdata(obj.myTopFigure, 'freqList');
                     rmappdata(obj.myTopFigure, 'gageHandle');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
+                    rmappdata(obj.myTopFigure, 'curFrequency');
                     
                     drawnow;
 
