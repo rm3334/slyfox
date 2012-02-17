@@ -1028,7 +1028,7 @@ classdef FreqSweeper < handle
                     set(myHandles.holdFreq, 'Enable', 'on');
                     set(myHandles.backAndForthScan, 'Enable', 'on');
                     
-                    rmappdata(obj.myTopFigure, 'normData');
+%                     rmappdata(obj.myTopFigure, 'normData'); % keep for fitting later on
                     rmappdata(obj.myTopFigure, 'scanData');
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'runNum');

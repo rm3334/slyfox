@@ -34,8 +34,8 @@ function [datatemp,time,ret] = GageMRecord(a, handle, runNum)
         status = CsMl_QueryStatus(handle);
         flag = getappdata(gcf, 'run');
         while status ~= 0 & flag
+           pause(0.1);
            status = CsMl_QueryStatus(handle);
-           drawnow
            flag = getappdata(gcf, 'run');
         end
         if flag
