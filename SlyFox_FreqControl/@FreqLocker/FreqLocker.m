@@ -798,9 +798,7 @@ classdef FreqLocker < hgsetget
                             case {0,1}
                                 prevExcL = tNorm;
                             case {2, 3}
-                                if runNum >= 4
-                                    prevExcH = tNorm;
-                                end
+                                prevExcH = tNorm;
                         end
                         switch seqPlace
                                 case 0
@@ -894,8 +892,6 @@ classdef FreqLocker < hgsetget
                     if get(obj.myPID2gui.mySaveLog, 'Value')
                         if runNum > 4 && seqPlace == 3
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
-                        elseif runNum == 4
-                            tempPID2 = [calcErr2 0 newCenterFreqH];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 0];
                         end
@@ -954,6 +950,7 @@ classdef FreqLocker < hgsetget
                 end
                 %9.5 Close Frequency Synthesizer and Data file
                 obj.myPID1.clear();
+                obj.myPID2.clear();
                 obj.myFreqSynth.close();
                 fclose('all'); % weird matlab thing, can't just close fid, won't work.
                 %10. If ~Run, make obvious and reset 'run'
