@@ -900,7 +900,7 @@ classdef FreqLocker < hgsetget
                         if runNum > 4 && seqPlace == 3
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
-                            tempPID2 = [0 0 0];
+                            tempPID2 = [0 0 newCenterFreqH];
                         end
                     else
                         tempPID2 = [0 0 0];
@@ -1313,7 +1313,7 @@ classdef FreqLocker < hgsetget
                         if runNum > 2 && seqPlace == 1
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL];%err correctionApplied servoVal
                         else
-                            tempPID1 = [0 0 newCenterFreqL];%err correctionApplied servoVal
+                            tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
                     else
                         tempPID1 = [0 0 0];
@@ -1322,7 +1322,7 @@ classdef FreqLocker < hgsetget
                         if runNum > 4 && seqPlace == 3
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
-                            tempPID2 = [0 0 0];
+                            tempPID2 = [0 0 newCenterFreqH];
                         end
                     else
                         tempPID2 = [0 0 0];
