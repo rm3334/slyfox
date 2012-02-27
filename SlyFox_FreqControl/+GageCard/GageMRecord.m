@@ -73,12 +73,6 @@ function [datatemp,time,ret] = GageMRecord(a, handle, runNum)
             MaxChannelNumber = length(format_string);
             format_string = sprintf('%%s_CH%%0%dd-%%0%dd.dat', MaxChannelNumber, MaxSegmentNumber);
 
-%             if strcmp(sysinfo.BoardName, 'CS1610')
-%                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth+1); %assuming no skipped channels
-%                 disp('special cs1610')
-%             else
-%                 data = zeros(sysinfo.ChannelCount, acqInfo.SegmentCount, acqInfo.Depth); %assuming no skipped channels
-%             end
             datatemp = cell(sysinfo.ChannelCount, acqInfo.SegmentCount);
             for channel = 1:ChannelSkip:sysinfo.ChannelCount
                 transfer.Channel = channel;
@@ -98,25 +92,6 @@ function [datatemp,time,ret] = GageMRecord(a, handle, runNum)
                         datatemp{channel, i}(actual.ActualLength:end) = [];
                         len = size(datatemp{channel, i}, 2);
                     end;      
-            %         figure
-%                     plot(data)
-            %         % Get channel info for file header    
-            %         [ret, chanInfo] = CsMl_QueryChannel(handle, channel);            
-            %         CsMl_ErrorHandler(ret, 1, handle);
-            %         % Get information for ASCII file header
-            %         info.Start = actual.ActualStart;
-            %         info.Length = actual.ActualLength;
-            %         info.SampleSize = acqInfo.SampleSize;
-            %         info.SampleRes = acqInfo.SampleResolution;
-            %         info.SampleOffset = acqInfo.SampleOffset;
-            %         info.InputRange = chanInfo.InputRange;
-            %         info.DcOffset = chanInfo.DcOffset;
-            %         info.SegmentCount = acqInfo.SegmentCount;
-            %         info.SegmentNumber = i;
-            %         info.TimeStamp = tsdata(i);
-            % 
-            %         filename = sprintf(format_string, 'MulRec', transfer.Channel, i);
-            %         CsMl_SaveFile(filename, data, info);
                 end;
             end;   
         else
