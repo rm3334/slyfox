@@ -16,13 +16,16 @@ function FrequencyControlMain(DEBUGMODE )
     fs1 = FreqSweeper(f,tp);
         fs1.setFreqSynth(f1);
         fs1.setGageConfigFrontend(g1);
-        fs1.setuControl(ard)
+        fs1.setuControl(ard);
     fL = FreqLocker(f, tp);
         fL.setFreqSynth(f1);
         fL.setGageConfigFrontend(g1);
         fL.setFreqSweeper(fs1);
-        fL.setuControl(ard)
-    tp.TabNames = {'Gage', 'FreqSynth',  'Arduino', 'FreqSweeper', 'FreqLocker'};
+        fL.setuControl(ard);
+    gs = GageStreamerClientFrontend(f, tp);
+        gs.setFreqSweeper(fs1);
+        gs.setFreqLocker(fL);
+    tp.TabNames = {'Gage', 'FreqSynth',  'Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
     tp.TabSize = 100;
 
     mm = uimenu('Label', 'File');
