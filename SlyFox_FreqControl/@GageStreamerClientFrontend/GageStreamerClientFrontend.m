@@ -96,7 +96,8 @@ classdef GageStreamerClientFrontend < hgsetget
             guidata(obj.myTopFigure, myHandles);
         end
         function dataReceived(obj, src, eventData)
-            data = fread(obj.myClient, obj.myClient.BytesAvailable, 'double')
+            data = fread(obj.myClient, (obj.myClient.BytesAvailable - 1)/8, 'double')
+            fscanf(obj.myClient);
         end
         function quit(obj)
             myHandles = guidata(obj.myTopFigure);

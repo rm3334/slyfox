@@ -288,21 +288,25 @@ classdef GageCardStreamerFrontend < handle
                 
                 if getappdata(obj.myTopFigure, 'serverGood')
                     % PREPARE ARRAY OF DATA TO STREAM
+                    tic
                     stepSize = floor(length(data{1,2})/100); %Trying to decrease the number of plotted points
+                    lengthEach = length(temp7(1:stepSize:end));
                     dataToStream = zeros(1+6+6*100,1);
-                    dataToStream(1:7) = [time; tSCdat12; tSCdat3; tSCdat456];
-                    dataToStream(8:107) = temp7(1:stepSize:end);
-                    dataToStream(108:207) = temp8(1:stepSize:end);
-                    dataToStream(208:307) = temp9(1:stepSize:end);
-                    dataToStream(308:407) = temp10(1:stepSize:end);
-                    dataToStream(408:507) = temp11(1:stepSize:end);
-                    dataToStream(508:607) = temp12(1:stepSize:end);
+                    dataToStream(1:7) = [str2num(time) tSCdat12 tSCdat3 tSCdat456];
+                    dataToStream(8:7+lengthEach) = temp7(1:stepSize:end);
+                    dataToStream(8+1*lengthEach:7+2*lengthEach) = temp8(1:stepSize:end);
+                    dataToStream(8+2*lengthEach:7+3*lengthEach) = temp9(1:stepSize:end);
+                    dataToStream(8+3*lengthEach:7+4*lengthEach) = temp10(1:stepSize:end);
+                    dataToStream(8+4*lengthEach:7+5*lengthEach) = temp11(1:stepSize:end);
+                    dataToStream(8+5*lengthEach:7+6*lengthEach) = temp12(1:stepSize:end);
                     % STREAM DATA ACROSS THE NETWORK
                     try
                         fwrite(obj.myServer, dataToStream, 'double');
+                        fprintf(obj.myServer, '');
                     catch
                         obj.stopButtonServer_callback();
                     end
+                    toc
                 end
                 
                 
