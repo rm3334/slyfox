@@ -12,9 +12,9 @@ classdef FreqSynth < hgsetget
     end
     
     methods
-        function obj = FreqSynth(top,f,DEBUGMODE)
+        function obj = FreqSynth(top,f)
             obj.myTopFigure = top;
-            obj.myDEBUGmode = DEBUGMODE;
+            obj.myDEBUGmode = getappdata(obj.myTopFigure, 'DEBUGMODE');
             set(obj.myPanel, 'Parent', f);
             h0 = uiextras.VBox('Parent', obj.myPanel, 'Tag', 'freqGrid');
             
@@ -105,7 +105,7 @@ classdef FreqSynth < hgsetget
             end
         end
         function initialize(obj)
-            if ~obj.myDEBUGmode
+            if obj.myDEBUGmode ~= 1
                 obj.updateFreqSynth(1);
                 g = eval(obj.myVISAconstructor);
                 fopen(g);
@@ -113,7 +113,7 @@ classdef FreqSynth < hgsetget
             end
         end
         function close(obj)
-            if ~obj.myDEBUGmode
+            if obj.myDEBUGmode ~= 1
                 fclose(obj.myVISAobject);
                 delete(obj.myVISAobject);
                 obj.myVISAobject = [];
@@ -124,7 +124,7 @@ classdef FreqSynth < hgsetget
                 fprintf(obj.myVISAobject, [obj.myFreqCommand, ' ', newFreqStr]);
                 ret = 1;
             catch
-                if ~obj.myDEBUGmode
+                if obj.myDEBUGmode ~= 1
                     errordlg('Abandon hope, could not set frequency.')
                     ret = 0;
                 else
@@ -137,7 +137,7 @@ classdef FreqSynth < hgsetget
                 fprintf(obj.myVISAobject, [obj.myFreqCommand, '?'])
                 curFreq = fscanf(obj.myVISAobject);
             catch
-                if ~obj.myDEBUGmode
+                if obj.myDEBUGmode ~= 1
                     errordlg('Frequency? Never heard of her')
                 else
                     curFreq = 10;

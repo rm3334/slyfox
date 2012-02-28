@@ -76,7 +76,6 @@ classdef GageStreamerClientFrontend < hgsetget
             end
             guidata(obj.myTopFigure, myHandles);
         end
-        
         function closeClient_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);            
             success = 0;
@@ -96,8 +95,11 @@ classdef GageStreamerClientFrontend < hgsetget
             guidata(obj.myTopFigure, myHandles);
         end
         function dataReceived(obj, src, eventData)
-            data = fread(obj.myClient, (obj.myClient.BytesAvailable - 1)/8, 'double')
-            fscanf(obj.myClient);
+            data = fread(obj.myClient, (obj.myClient.BytesAvailable - 1)/8, 'double');
+            if getappdata(obj.myTopFigure, 'readyForData')
+                nextStep = getappdata(obj.myTopFigure, 'nextStep');
+                nextStep(data);
+            end
         end
         function quit(obj)
             myHandles = guidata(obj.myTopFigure);

@@ -2,16 +2,20 @@ function FrequencyControlMain(DEBUGMODE )
 %FREQUENCYCONTROLMAIN Main Function for Frequency Control Program
 %   This constructs the relevant objects and creates a Frequency Control
 %   GUI. Need to figure out GageCard AddPath.m
+%   DEBUGMODE 0 - Normal Running
+%             1 - Running with no GPIB installed
+%             2 - Run with data coming from the GageStreamerClientFrontend
 %   By Ben Bloom 01/20/2012 18:12
 
     f = figure('Menubar', 'none', 'Toolbar', 'none', 'NumberTitle', 'off', 'Name', 'Frequency Control');
     setappdata(gcf, 'run', 1);
     pan = uiextras.Panel('Parent', f, 'Tag', 'toppanel');
     setappdata(gcf, 'topPanel', pan);
+    setappdata(gcf, 'DEBUGMODE', DEBUGMODE);
     tp = uiextras.TabPanel('Parent', pan);
     %Build Objects
     g1 = GageCard.GageConfigFrontend(f,tp);
-    f1 = FreqSynth(f,tp, DEBUGMODE);
+    f1 = FreqSynth(f,tp);
     ard = uControlFrontend(f, tp);
     fs1 = FreqSweeper(f,tp);
         fs1.setFreqSynth(f1);
