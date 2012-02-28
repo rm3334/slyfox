@@ -769,9 +769,6 @@ classdef FreqSweeper < handle
                     fprintf(fid, '%8.6f\t', temp);
                     fprintf(fid, '\r\n');
                 end
-                if runNum == length(freqList) || ~getappdata(obj.myTopFigure, 'run')
-                   ret = CsMl_FreeSystem(handle);
-                end
                 pointDone = 1;
             end
             if (getappdata(obj.myTopFigure, 'run') && runNum <= length(freqList)) % Prepare for a new data point

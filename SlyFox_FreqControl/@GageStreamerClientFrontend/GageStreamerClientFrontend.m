@@ -62,7 +62,7 @@ classdef GageStreamerClientFrontend < hgsetget
             obj.myClient = tcpip(get(myHandles.TCPIPaddress, 'String'), 30000, 'NetworkRole', 'client', 'InputBufferSize', 8192);
             obj.myClient.BytesAvailableFcn = @obj.dataReceived;
             obj.myClient.BytesAvailableFcnMode = 'byte';
-            obj.myClient.BytesAvailableFcnCount = 4000;
+            obj.myClient.BytesAvailableFcnCount = 4912; %HARD CODED FOR TIMING REASONS. I'm doing this because I don't want data to be skipped.
             success = 0;
             try
                 fopen(obj.myClient);
@@ -97,7 +97,7 @@ classdef GageStreamerClientFrontend < hgsetget
             guidata(obj.myTopFigure, myHandles);
         end
         function dataReceived(obj, src, eventData)
-            data = fread(obj.myClient, (obj.myClient.BytesAvailable)/8, 'double');
+            data = fread(obj.myClient, 4912/8, 'double');  %HARD CODED FOR TIMING REASONS. I'm doing this because I don't want data to be skipped.
             if getappdata(obj.myTopFigure, 'readyForData')
                 nextStep = getappdata(obj.myTopFigure, 'nextStep');
                 nextStep(data);
