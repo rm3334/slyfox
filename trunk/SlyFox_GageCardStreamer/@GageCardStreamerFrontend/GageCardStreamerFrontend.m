@@ -292,7 +292,7 @@ classdef GageCardStreamerFrontend < handle
                     stepSize = floor(length(data{1,2})/100); %Trying to decrease the number of plotted points
                     tStep = taxis(3*stepSize)- taxis(2*stepSize);
                     lengthEach = length(temp7(1:stepSize:end));
-                    dataToStream = zeros(1+6+6*100,1);
+                    dataToStream = zeros(1+7+6*100,1);
                     dataToStream(1:8) = [str2num(time) tSCdat12 tSCdat3 tSCdat456 tStep];
                     dataToStream(9:8+lengthEach) = temp7(1:stepSize:end);
                     dataToStream(9+1*lengthEach:8+2*lengthEach) = temp8(1:stepSize:end);
@@ -303,7 +303,7 @@ classdef GageCardStreamerFrontend < handle
                     % STREAM DATA ACROSS THE NETWORK
                     try
                           fwrite(obj.myServer, dataToStream, 'double');
-                          disp(['Number of bytes sent: ' num2str(length(dataToStream)*8 + 2)])
+                          disp(['Number of bytes sent: ' num2str(length(dataToStream)*8)])
                     catch
                         obj.stopButtonServer_callback();
                     end
