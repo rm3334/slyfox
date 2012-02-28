@@ -157,7 +157,7 @@ classdef GageCardStreamerFrontend < handle
             obj.stream_takeNextPoint();
         end
         function startButtonServer_Callback(obj, src, eventData)
-           obj.myServer = tcpip('0.0.0.0', 30000, 'NetworkRole', 'server', 'OutputBufferSize', 8192);
+           obj.myServer = tcpip('0.0.0.0', 30000, 'NetworkRole', 'server', 'OutputBufferSize', 16536);
            fopen(obj.myServer);
            myHandles = guidata(obj.myTopFigure);
            setappdata(obj.myTopFigure, 'serverGood', 1);
@@ -290,19 +290,20 @@ classdef GageCardStreamerFrontend < handle
                     % PREPARE ARRAY OF DATA TO STREAM
                     tic
                     stepSize = floor(length(data{1,2})/100); %Trying to decrease the number of plotted points
+                    tStep = taxis(3*stepSize)- taxis(2*stepSize);
                     lengthEach = length(temp7(1:stepSize:end));
                     dataToStream = zeros(1+6+6*100,1);
-                    dataToStream(1:7) = [str2num(time) tSCdat12 tSCdat3 tSCdat456];
-                    dataToStream(8:7+lengthEach) = temp7(1:stepSize:end);
-                    dataToStream(8+1*lengthEach:7+2*lengthEach) = temp8(1:stepSize:end);
-                    dataToStream(8+2*lengthEach:7+3*lengthEach) = temp9(1:stepSize:end);
-                    dataToStream(8+3*lengthEach:7+4*lengthEach) = temp10(1:stepSize:end);
-                    dataToStream(8+4*lengthEach:7+5*lengthEach) = temp11(1:stepSize:end);
-                    dataToStream(8+5*lengthEach:7+6*lengthEach) = temp12(1:stepSize:end);
+                    dataToStream(1:8) = [str2num(time) tSCdat12 tSCdat3 tSCdat456 tStep];
+                    dataToStream(9:8+lengthEach) = temp7(1:stepSize:end);
+                    dataToStream(9+1*lengthEach:8+2*lengthEach) = temp8(1:stepSize:end);
+                    dataToStream(9+2*lengthEach:8+3*lengthEach) = temp9(1:stepSize:end);
+                    dataToStream(9+3*lengthEach:8+4*lengthEach) = temp10(1:stepSize:end);
+                    dataToStream(9+4*lengthEach:8+5*lengthEach) = temp11(1:stepSize:end);
+                    dataToStream(9+5*lengthEach:8+6*lengthEach) = temp12(1:stepSize:end);
                     % STREAM DATA ACROSS THE NETWORK
                     try
-                        fwrite(obj.myServer, dataToStream, 'double');
-                        fprintf(obj.myServer, '');
+                          fwrite(obj.myServer, dataToStream, 'double');
+                          disp(['Number of bytes sent: ' num2str(length(dataToStream)*8 + 2)])
                     catch
                         obj.stopButtonServer_callback();
                     end
