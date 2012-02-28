@@ -97,7 +97,7 @@ classdef FreqSynth < hgsetget
                     delete(vtest)
                 catch
                 end
-                if hObject.myDEBUGmode
+                if hObject.myDEBUGmode == 1
                     set(myHandles.testVISAreply, 'String', 'DEBUGMODE')
                 else
                     set(myHandles.testVISAreply, 'String', 'ERROR')

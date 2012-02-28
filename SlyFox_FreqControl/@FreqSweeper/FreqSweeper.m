@@ -673,7 +673,7 @@ classdef FreqSweeper < handle
                 temp12 = data(9+5*chDataLength:8+6*chDataLength);
                 stepSize = 1;%floor(length(data{1,2})/50); %Trying to decrease the number of plotted points
                 if runNum == 1
-                    taxis = 1:length(temp7)*tStep;
+                    taxis = (1:length(temp7))*tStep;
                     tempH(7) = plot(myHandles.rGSAxes, taxis, ...
                                 temp7);
 
@@ -820,7 +820,6 @@ classdef FreqSweeper < handle
                     rmappdata(obj.myTopFigure, 'fid');
                     rmappdata(obj.myTopFigure, 'x');
                     rmappdata(obj.myTopFigure, 'freqList');
-                    rmappdata(obj.myTopFigure, 'gageHandle');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
                     rmappdata(obj.myTopFigure, 'curFrequency');
                     
