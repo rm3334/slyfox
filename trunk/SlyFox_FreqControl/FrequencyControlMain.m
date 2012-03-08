@@ -7,7 +7,7 @@ function FrequencyControlMain(DEBUGMODE )
 %             2 - Run with data coming from the GageStreamerClientFrontend
 %   By Ben Bloom 01/20/2012 18:12
 
-    f = figure('Menubar', 'none', 'Toolbar', 'none', 'NumberTitle', 'off', 'Name', 'Frequency Control');
+    f = figure('Menubar', 'none', 'Toolbar', 'none', 'NumberTitle', 'off', 'Name', 'Frequency Control')
     setappdata(gcf, 'run', 1);
     pan = uiextras.Panel('Parent', f, 'Tag', 'toppanel');
     setappdata(gcf, 'topPanel', pan);
@@ -76,14 +76,21 @@ function FrequencyControlMain(DEBUGMODE )
         if DEBUGMODE ~= 2
             g1.quit();
         end
+        gs.quit();
+        delete(gs);
         f1.quit();
+        delete(f1);
         fs1.quit();
+        delete(fs1);
         fL.quit();
+        delete(fL);
         ard.quit();
-        delete(pan);
-%         delete(tp);
-        delete(f);
-        clear all;
+        delete(ard);
+%         delete(pan);
+%         delete(f);
+%         clear all;
+        delete(gcf)
+        clear all
     end
     
     set(f,'CloseRequestFcn',@windowClose);

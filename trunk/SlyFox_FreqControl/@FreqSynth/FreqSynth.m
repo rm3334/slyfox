@@ -146,11 +146,12 @@ classdef FreqSynth < hgsetget
         end
         function quit(obj)
             delete(obj.myPanel);
+            obj.myPanel = [];
             obj.myTopFigure = [];
-            try
-                obj.close()
-            catch
-            end
+%             try
+%                 obj.close()
+%             catch
+%             end
         end
         function loadState(obj)
             try
