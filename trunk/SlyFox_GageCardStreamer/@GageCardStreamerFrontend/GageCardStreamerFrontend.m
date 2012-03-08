@@ -157,12 +157,20 @@ classdef GageCardStreamerFrontend < handle
             obj.stream_takeNextPoint();
         end
         function startButtonServer_Callback(obj, src, eventData)
-           obj.myServer = tcpip('0.0.0.0', 30000, 'NetworkRole', 'server', 'OutputBufferSize', 16536);
-           fopen(obj.myServer);
            myHandles = guidata(obj.myTopFigure);
-           setappdata(obj.myTopFigure, 'serverGood', 1);
-           set(myHandles.startButtonServer, 'Enable', 'off');
-           set(myHandles.stopButtonServer, 'Enable', 'on');     
+           defColor = get(myHandles.startButtonServer, 'BackgroundColor');
+           set(myHandles.startButtonServer, 'BackgroundColor', 'y');
+           drawnow
+           try
+               obj.myServer = tcpip('0.0.0.0', 30000, 'NetworkRole', 'server', 'OutputBufferSize', 16536);
+               fopen(obj.myServer);
+               set(myHandles.startButtonServer, 'BackgroundColor', defColor);
+               setappdata(obj.myTopFigure, 'serverGood', 1);
+               set(myHandles.startButtonServer, 'Enable', 'off');
+               set(myHandles.stopButtonServer, 'Enable', 'on');     
+           catch
+               disp('TCPIP Server Failed');
+           end
         end
         function stopButtonServer_Callback(obj, src, eventData)
             fclose(obj.myServer);
@@ -228,7 +236,6 @@ classdef GageCardStreamerFrontend < handle
                     break;
                 end
                 %6. Call AnalyzeRawData
-                size(reshape(data{1,2}, [1 length(data{1,2})]))
                 scanDataCH1 = obj.analyzeRawData(data(1,:));
                 scanDataCH2 = obj.analyzeRawDataBLUE(data(2,:));
                 %7. Clear the Raw Plots, Plot the Raw Plots
