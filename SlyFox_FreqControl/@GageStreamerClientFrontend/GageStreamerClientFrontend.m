@@ -86,7 +86,8 @@ classdef GageStreamerClientFrontend < hgsetget
                 success = 1;
                 delete(obj.myClient);
                 disp('Close Success!')
-            catch
+            catch exception
+                exception.message
                 disp('Error: Close TCPIP Failed');
             end
             
@@ -109,9 +110,10 @@ classdef GageStreamerClientFrontend < hgsetget
             try
                 fclose(obj.myClient);
                 success = 1;
-                delete(obj.Client);
+                delete(obj.myClient);
                 disp('Close Success!')
-            catch
+            catch exception
+                exception.message
                 disp('Error: Close TCPIP Failed');
             end
         end
