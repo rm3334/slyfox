@@ -26,12 +26,12 @@ classdef uControlFrontend < hgsetget
                             'FontSize', 0.1);
                 comPortListHB = uiextras.HBox('Parent', uCbuttonVB);
                     uiextras.Empty('Parent', comPortListHB);
-                    a = instrhwinfo('serial');
-                    uicontrol(...
-                                'Parent', comPortListHB,...
-                                'Style', 'popupmenu', ...
-                                'Tag', 'comPortListMenu',...
-                                'String', a.SerialPorts);
+                    info = instrhwinfo('visa', 'ni');
+                    comPortListMenu = uicontrol(...
+                        'Parent', comPortListHB, ...
+                        'Tag', 'comPortListMenu', ...
+                        'Style', 'popup', ...
+                        'String', info.ObjectConstructorName);
                     uicontrol(...
                                 'Parent', comPortListHB,...
                                 'Style', 'pushbutton', ...
@@ -62,8 +62,8 @@ classdef uControlFrontend < hgsetget
         
         function refreshComPortList_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
-            a = instrhwinfo('serial');
-            set(myHandles.comPortListMenu, 'String', a.SerialPorts);
+            a = instrhwinfo('visa', 'ni');
+            set(myHandles.comPortListMenu, 'String', a.ObjectConstructorName);
             guidata(obj.myTopFigure, myHandles);
         end
         
@@ -72,7 +72,7 @@ classdef uControlFrontend < hgsetget
             mySerialPortList = get(myHandles.comPortListMenu, 'String');
             myVal = get(myHandles.comPortListMenu, 'Value');
             mySerialAddr = mySerialPortList{myVal};
-            obj.mySerial = serial(mySerialAddr);
+            obj.mySerial = eval(mySerialAddr);
             
             success = 0;
             try

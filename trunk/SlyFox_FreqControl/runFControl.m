@@ -1,3 +1,3 @@
 % run './Main/AddPath.m'
-FrequencyControlMain(2);
+FrequencyControlMain(0);
 %Testing commit
