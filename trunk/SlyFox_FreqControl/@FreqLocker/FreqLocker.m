@@ -244,13 +244,13 @@ classdef FreqLocker < hgsetget
                     tempVal = get(myHandles.singlePeakLockOptions, 'Value');
                     switch tempVal
                         case 1 %CONTINUOUS LOCK
-                            obj.startContinousLock_initialize();
+                            obj.startContinuousLock_initialize();
                     end
                 case 2 % Multiple PID
                     tempVal = get(myHandles.multiplePeakLockOptions, 'Value');
                     switch tempVal
                         case 1 %MULTIPLE STRETCHED STATES CONTINUOUS LOCK
-                            obj.startContinuousMultiLock_initialize(obj);
+                            obj.startContinuousMultiLock_initialize();
                         case 2 % INTERLEAVED 2-SHOT (DIO) LOCK
                             obj.startInterleaved2ShotLock();
                     end
@@ -415,9 +415,9 @@ classdef FreqLocker < hgsetget
 
                 end
                     %8. Update Scan Plots
-                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12'];
+                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12];
                     tempScanData(3,:) = [tempScanData(3, 2:end) tSCdat3];
-                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456'];
+                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456];
                     %NORMALIZED counts are (E - bg)/(E + G - 2bg)
                     tNorm = (tSCdat12(2)) / (tSCdat12(2) + tSCdat12(1));
                     tempNormData = [tempNormData(2:end) tNorm];
@@ -433,7 +433,6 @@ classdef FreqLocker < hgsetget
                     if runNum >= 2
                         prevExc = tNorm;
                         seqPlace = mod(seqPlace + 1,2);
-                        if runNum ~= 2
                             if seqPlace == 0
                                 obj.myPID1.myPolarity = 1;
                             else
@@ -444,12 +443,11 @@ classdef FreqLocker < hgsetget
                             obj.checkPIDenables();
                             deltaT = str2double(get(obj.myPID1gui.myDeltaT, 'String'));
                             if deltaT == 0
-                                calcCorr1 = obj.myPID1.calculate(calcErr1, str2double(time));
+                                calcCorr1 = obj.myPID1.calculate(calcErr1, time);
                             else
                                 calcCorr1 = obj.myPID1.calculate(calcErr1, -deltaT);
                             end
                             newCenterFreq = newCenterFreq + calcCorr1;
-                        end
                     end
                     
                     tempPID1Data = [tempPID1Data(2:end) calcErr1];
@@ -535,17 +533,17 @@ classdef FreqLocker < hgsetget
                 set(myHandles.curFreq, 'String', 'STOPPED');
                 setappdata(obj.myTopFigure, 'run', 1);
                 drawnow;
-                rmappdata(obj.myTopFigure, 'normData', tempNormData);
-                rmappdata(obj.myTopFigure, 'scanData', tempScanData);
-                rmappdata(obj.myTopFigure, 'summedData', tempSummedData);
-                rmappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
-                rmappdata(obj.myTopFigure, 'runNum', runNum);
-                rmappdata(obj.myTopFigure, 'taxis', taxis);
-                rmappdata(obj.myTopFigure, 'fid', fid);
-                rmappdata(obj.myTopFigure, 'seqPlace', seqPlace);
-                rmappdata(obj.myTopFigure, 'prevExc', prevExc);
-                rmappdata(obj.myTopFigure, 'linewidth', linewidth);
-                rmappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+                rmappdata(obj.myTopFigure, 'normData');
+                rmappdata(obj.myTopFigure, 'scanData');
+                rmappdata(obj.myTopFigure, 'summedData');
+                rmappdata(obj.myTopFigure, 'PID1Data');
+                rmappdata(obj.myTopFigure, 'runNum');
+                rmappdata(obj.myTopFigure, 'taxis');
+                rmappdata(obj.myTopFigure, 'fid');
+                rmappdata(obj.myTopFigure, 'seqPlace');
+                rmappdata(obj.myTopFigure, 'prevExc');
+                rmappdata(obj.myTopFigure, 'linewidth');
+                rmappdata(obj.myTopFigure, 'newCenterFreq');
                 rmappdata(obj.myTopFigure, 'plottingHandles');
                 drawnow;
                 
@@ -1036,7 +1034,7 @@ classdef FreqLocker < hgsetget
                         end
             end
             %Set to first frequency point
-            curFrequency = newCenterFreq - linewidth/2;
+            curFrequency = newCenterFreqL - linewidth/2;
             ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -1162,9 +1160,9 @@ classdef FreqLocker < hgsetget
 
                 end
                     %8. Update Scan Plots
-                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12'];
+                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12];
                     tempScanData(3,:) = [tempScanData(3, 2:end) tSCdat3];
-                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456'];
+                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456];
                     %NORMALIZED counts are (E - bg)/(E + G - 2bg)
                     tNorm = (tSCdat12(2)) / (tSCdat12(2) + tSCdat12(1));
                     tempNormData = [tempNormData(2:end) tNorm];
@@ -1212,7 +1210,7 @@ classdef FreqLocker < hgsetget
                                 calcCorr1 = 0;
                             case 1
                                     if deltaT1 == 0
-                                        calcCorr1 = obj.myPID1.calculate(calcErr1, str2double(time));
+                                        calcCorr1 = obj.myPID1.calculate(calcErr1, time);
                                     else
                                         calcCorr1 = obj.myPID1.calculate(calcErr1, -deltaT1);
                                     end
@@ -1221,7 +1219,7 @@ classdef FreqLocker < hgsetget
                                 calcCorr2 = 0;
                             case 3
                                     if deltaT2 == 0
-                                        calcCorr2 = obj.myPID2.calculate(calcErr2, str2double(time));
+                                        calcCorr2 = obj.myPID2.calculate(calcErr2, time);
                                     else
                                         calcCorr2 = obj.myPID2.calculate(calcErr2, -deltaT2);
                                     end
