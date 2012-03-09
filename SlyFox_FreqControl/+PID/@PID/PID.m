@@ -30,7 +30,11 @@ classdef PID < handle
         %Calculates correction factor for Error for this Iteration and Updates Records
         %Nice Pseudocode from Wikipedia
         function u = calculate(obj, e1, t1)
-            timeDiff = t1 - obj.myT0;
+            if t1 < 0
+                timeDiff = abs(t1);
+            else
+                timeDiff = t1 - obj.myT0;
+            end
             
             if obj.myT0 ~= 0
                 %Calculate Integral
