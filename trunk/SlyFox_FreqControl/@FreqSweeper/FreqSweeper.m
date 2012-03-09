@@ -101,7 +101,7 @@ classdef FreqSweeper < handle
                                     'Parent', cursorButtonHB,...
                                     'Style', 'checkbox', ...
                                     'Tag', 'ignoreFirstToggle',...
-                                    'Value', 1, ...
+                                    'Value', 0, ...
                                     'String', 'Ignore First Data Point');
                             uiextras.Empty('Parent', cursorButtonHB);
                             set(cursorButtonHB, 'Sizes', [-1 -3 -3 -1]);
@@ -652,10 +652,6 @@ classdef FreqSweeper < handle
                     setappdata(obj.myTopFigure, 'run', 0);
                     break;
                 end
-                if ~getappdata(obj.myTopFigure, 'run')
-                    ret = CsMl_FreeSystem(handle);
-                    break;
-                end
                 %6. Start Parsing Data
                 time = data(1);
                 tSCdat12 = data(2:3);
@@ -671,7 +667,6 @@ classdef FreqSweeper < handle
                 temp10 = data(9+3*chDataLength:8+4*chDataLength);
                 temp11 = data(9+4*chDataLength:8+5*chDataLength);
                 temp12 = data(9+5*chDataLength:8+6*chDataLength);
-                stepSize = 1;%floor(length(data{1,2})/50); %Trying to decrease the number of plotted points
                 if runNum == 1
                     taxis = (1:length(temp7))*tStep;
                     tempH(7) = plot(myHandles.rGSAxes, taxis, ...
@@ -792,10 +787,6 @@ classdef FreqSweeper < handle
                     fclose('all'); % weird matlab thing, can't just close fid, won't work.
                     %10. If ~Run, make obvious and reset 'run'
                     if ~getappdata(obj.myTopFigure, 'run')
-                        try
-                            ret = CsMl_FreeSystem(handle);
-                        catch
-                        end
                         disp('Acquisistion Stopped');
                         set(myHandles.curFreq, 'String', 'STOPPED');
                         setappdata(obj.myTopFigure, 'run', 1);
