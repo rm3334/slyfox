@@ -1089,6 +1089,7 @@ classdef FreqLocker < hgsetget
             if get(myHandles.cycleNumOn, 'Value')
                 cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
+                disp(['Cycle Number is : ' num2str(cycleNum) '\rTherfore we are at seqPlace: ' num2str(seqPlace)]);
             end
             pointDone = 0;
             while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
@@ -1303,7 +1304,7 @@ classdef FreqLocker < hgsetget
                         tempPID1 = [0 0 0];
                     end
                     if get(obj.myPID2gui.mySaveLog, 'Value')
-                        if runNum >= 4 && seqPlace == 3
+                        if runNum >= 2 && seqPlace == 3
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 newCenterFreqH];
