@@ -18,34 +18,36 @@ function FrequencyControlMain(DEBUGMODE )
         case {0,1}
             g1 = GageCard.GageConfigFrontend(f,tp);
             f1 = FreqSynth(f,tp);
-            ard = uControlFrontend(f, tp);
+            ardLC = uControlFrontend(f, tp, 1);
+            ardCN = uControlFrontend(f, tp, 2);
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
                 fs1.setGageConfigFrontend(g1);
-                fs1.setuControl(ard);
+                fs1.setLCuControl(ardLC);
             fL = FreqLocker(f, tp);
                 fL.setFreqSynth(f1);
                 fL.setGageConfigFrontend(g1);
                 fL.setFreqSweeper(fs1);
-                fL.setuControl(ard);
+                fL.setLCuControl(ardLC);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
-            tp.TabNames = {'Gage', 'FreqSynth',  'Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
+            tp.TabNames = {'Gage', 'FreqSynth',  'LC_Arduino', 'NC_Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
         case 2
             f1 = FreqSynth(f,tp);
-            ard = uControlFrontend(f, tp);
+            ardLC = uControlFrontend(f, tp, 1);
+            ardCN = uControlFrontend(f, tp, 2);
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
-                fs1.setuControl(ard);
+                fs1.setLCuControl(ardLC);
             fL = FreqLocker(f, tp);
                 fL.setFreqSynth(f1);
                 fL.setFreqSweeper(fs1);
-                fL.setuControl(ard);
+                fL.setLCuControl(ardLC);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
-            tp.TabNames = {'FreqSynth',  'Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
+            tp.TabNames = {'FreqSynth',  'LC_Arduino', 'NC_Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
     end
     tp.TabSize = 100;
 
@@ -84,8 +86,10 @@ function FrequencyControlMain(DEBUGMODE )
         delete(fs1);
         fL.quit();
         delete(fL);
-        ard.quit();
-        delete(ard);
+        ardLC.quit();
+        delete(ardLC);
+        ardCN.quit();
+        delete(ardCN);
 %         delete(pan);
 %         delete(f);
 %         clear all;

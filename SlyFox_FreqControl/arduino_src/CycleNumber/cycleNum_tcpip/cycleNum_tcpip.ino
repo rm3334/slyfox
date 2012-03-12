@@ -55,7 +55,7 @@ boolean hasChanged = true;
 // the following variables are long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 60;    // the debounce time; increase if the output flickers
+long debounceDelay = 2;    // the debounce time; increase if the output flickers
 
 void setup() {
   pinMode(ttlPin, INPUT);
