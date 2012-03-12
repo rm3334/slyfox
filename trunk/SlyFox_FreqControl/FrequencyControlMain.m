@@ -40,10 +40,12 @@ function FrequencyControlMain(DEBUGMODE )
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
                 fs1.setLCuControl(ardLC);
+                fs1.setCycleNuControl(ardCN);
             fL = FreqLocker(f, tp);
                 fL.setFreqSynth(f1);
                 fL.setFreqSweeper(fs1);
                 fL.setLCuControl(ardLC);
+                fL.setCycleNuControl(ardCN);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);

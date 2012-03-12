@@ -987,7 +987,7 @@ classdef FreqLocker < hgsetget
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
             runNum = 1;
-            if get(myHandles.cycleNumOn, 'Value')
+            if get(myHandles.cycleNumOn2, 'Value')
                 runNum = 0;
                 obj.myCycleNuControl.initialize();
             end
@@ -1086,7 +1086,7 @@ classdef FreqLocker < hgsetget
                 taxis = getappdata(obj.myTopFigure, 'taxis');
             end
             
-            if get(myHandles.cycleNumOn, 'Value')
+            if get(myHandles.cycleNumOn2, 'Value')
                 cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
                 disp(['Cycle Number is : ' num2str(cycleNum) '\rTherfore we are at seqPlace: ' num2str(seqPlace)]);
@@ -1292,7 +1292,7 @@ classdef FreqLocker < hgsetget
                     end
                     %9. Check Save and Write Data to file.
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
-                    temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];
+                    temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
                     if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 1
@@ -1319,7 +1319,7 @@ classdef FreqLocker < hgsetget
                     else
                         temp = [temp 0];
                     end
-                    if get(myHandles.cycleNumOn, 'Value')
+                    if get(myHandles.cycleNumOn2, 'Value')
                         temp = [temp cycleNum];
                     else
                         temp = [temp 0];
@@ -1367,21 +1367,25 @@ classdef FreqLocker < hgsetget
                 set(myHandles.curFreq, 'String', 'STOPPED');
                 setappdata(obj.myTopFigure, 'run', 1);
                 drawnow;
-                rmappdata(obj.myTopFigure, 'normData');
-                rmappdata(obj.myTopFigure, 'scanData');
-                rmappdata(obj.myTopFigure, 'summedData');
-                rmappdata(obj.myTopFigure, 'PID1Data');
-                rmappdata(obj.myTopFigure, 'PID2Data');
-                rmappdata(obj.myTopFigure, 'runNum');
-                rmappdata(obj.myTopFigure, 'taxis');
-                rmappdata(obj.myTopFigure, 'fid');
-                rmappdata(obj.myTopFigure, 'seqPlace');
-                rmappdata(obj.myTopFigure, 'prevExcL');
-                rmappdata(obj.myTopFigure, 'prevExcH');
-                rmappdata(obj.myTopFigure, 'linewidth');
-                rmappdata(obj.myTopFigure, 'newCenterFreqL');
-                rmappdata(obj.myTopFigure, 'newCenterFreqH');
-                rmappdata(obj.myTopFigure, 'plottingHandles');
+                try
+                    rmappdata(obj.myTopFigure, 'normData');
+                    rmappdata(obj.myTopFigure, 'scanData');
+                    rmappdata(obj.myTopFigure, 'summedData');
+                    rmappdata(obj.myTopFigure, 'PID1Data');
+                    rmappdata(obj.myTopFigure, 'PID2Data');
+                    rmappdata(obj.myTopFigure, 'runNum');
+                    rmappdata(obj.myTopFigure, 'taxis');
+                    rmappdata(obj.myTopFigure, 'fid');
+                    rmappdata(obj.myTopFigure, 'seqPlace');
+                    rmappdata(obj.myTopFigure, 'prevExcL');
+                    rmappdata(obj.myTopFigure, 'prevExcH');
+                    rmappdata(obj.myTopFigure, 'linewidth');
+                    rmappdata(obj.myTopFigure, 'newCenterFreqL');
+                    rmappdata(obj.myTopFigure, 'newCenterFreqH');
+                    rmappdata(obj.myTopFigure, 'plottingHandles');
+                catch exception
+                    exception.message
+                end
                 drawnow;
                 
                 guidata(obj.myTopFigure, myHandles);
