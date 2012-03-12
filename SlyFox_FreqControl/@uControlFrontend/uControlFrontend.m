@@ -33,7 +33,7 @@ classdef uControlFrontend < hgsetget
                             info = instrhwinfo('visa', 'ni');
                             comPortListMenu = uicontrol(...
                                 'Parent', comPortListHB, ...
-                                'Tag', 'comPortListMenu', ...
+                                'Tag', ['comPortListMenu' num2str(MODE)], ...
                                 'Style', 'popup', ...
                                 'String', info.ObjectConstructorName);
                             uicontrol(...
@@ -54,6 +54,7 @@ classdef uControlFrontend < hgsetget
                 end
                     uiextras.Empty('Parent', comPortListHB);
                     set(comPortListHB, 'Sizes', [-0.2 -4 -1 -0.2]);
+                    if MODE ~= 2
                 uicontrol(...
                                 'Parent', uCbuttonVB,...
                                 'Style', 'pushbutton', ...
@@ -70,22 +71,37 @@ classdef uControlFrontend < hgsetget
                 uicontrol(...
                                 'Parent', uCbuttonVB,...
                                 'Style', 'checkbox', ...
-                                'Tag', 'cycleNumOn',...
+                                'Tag', ['cycleNumOn' num2str(MODE)],...
                                 'String', 'CycleNum on?',...
-                                'Visible', 'off', ...
+                                'Visible', 'on', ...
                                 'Value', 0);
+                    else
+                            uiextras.Empty('Parent', uCbuttonVB);
+                         uiextras.Empty('Parent', uCbuttonVB);
+                uicontrol(...
+                                'Parent', uCbuttonVB,...
+                                'Style', 'checkbox', ...
+                                'Tag', ['cycleNumOn' num2str(MODE)],...
+                                'String', 'CycleNum on?',...
+                                'Visible', 'on', ...
+                                'Value', 0);
+                    end
                 uiextras.Empty('Parent', uCbuttonVB);
             uCbuttonVB.Sizes = [-2 -1 -1 -1 -1 -2];
             
             
             myHandles = guihandles(obj.myTopFigure);
             
-            switch MODE
-                case {0, 2}
-                  set(myHandles.openSerial, 'Visible', 'off');
-                  set(myHandles.closeSerial, 'Visible', 'off');
-                  set(myHandles.cycleNumOn, 'Visible', 'on');
-            end
+%             switch MODE
+%                 case {0, 2}
+%                   set(myHandles.openSerial, 'Visible', 'off');
+%                   set(myHandles.closeSerial, 'Visible', 'off');
+%                   set(myHandles.cycleNumOn, 'Visible', 'on');
+%                 case 1
+%                   set(myHandles.openSerial, 'Visible', 'on');
+%                   set(myHandles.closeSerial, 'Visible', 'on');
+%                   set(myHandles.cycleNumOn, 'Visible', 'off');
+%             end
             guidata(obj.myTopFigure, myHandles);
         end
         
@@ -102,16 +118,15 @@ classdef uControlFrontend < hgsetget
                 obj.mySerial = [];
             end
             myHandles = guidata(obj.myTopFigure);
-            mySerialPortList = get(myHandles.comPortListMenu, 'String');
-            myVal = get(myHandles.comPortListMenu, 'Value');
-            mySerialAddr = mySerialPortList{myVal};
-            obj.mySerial = eval(mySerialAddr);
+%             mySerialCMD = get(myHandles.comPortListMenu, 'String');
+%             obj.mySerial = eval(mySerialCMD);
+            obj.mySerial = tcpip('yesrarduino1.colorado.edu', 3001);
         end
         function cycleNum = getCycleNum(obj)
                 try
                     fopen(obj.mySerial);
                     fwrite(obj.mySerial, 'c');
-                    cycleNum = fread(obj.mySerial);
+                    cycleNum = fscanf(obj.mySerial);
                     fclose(obj.mySerial);
                 catch exception
                     exception.message
@@ -121,8 +136,8 @@ classdef uControlFrontend < hgsetget
         
         function openSerial_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
-            mySerialPortList = get(myHandles.comPortListMenu, 'String');
-            myVal = get(myHandles.comPortListMenu, 'Value');
+            mySerialPortList = get(myHandles.comPortListMenu1, 'String');
+            myVal = get(myHandles.comPortListMenu1, 'Value');
             mySerialAddr = mySerialPortList{myVal};
             obj.mySerial = eval(mySerialAddr);
             
@@ -138,7 +153,7 @@ classdef uControlFrontend < hgsetget
             if success
                 set(myHandles.closeSerial, 'Enable', 'on');
                 set(myHandles.openSerial, 'Enable', 'off');
-                set(myHandles.comPortListMenu, 'Enable', 'off');
+                set(myHandles.comPortListMenu1, 'Enable', 'off');
             end
             guidata(obj.myTopFigure, myHandles);
         end
