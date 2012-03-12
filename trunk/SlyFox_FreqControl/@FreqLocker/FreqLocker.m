@@ -6,8 +6,7 @@ classdef FreqLocker < hgsetget
     %   cancel drifts between shots. This program should have a few
     %   different modes once it is done. Single-peak locking, Stretched
     %   State locking, and intermittent locking mode for canceling drifts
-    %   between experiments. Written by Ben Bloom. Last Updated 01/22/12
-    %   15:31:00
+    %   between experiments. Written by Ben Bloom. Last Updated 03/09/12
     
     properties
         myPanel = uiextras.Grid();
@@ -15,7 +14,8 @@ classdef FreqLocker < hgsetget
         myFreqSynth = [];
         myGageConfigFrontend = [];
         myFreqSweeper = [];
-        myuControl = [];
+        myLCuControl = [];
+        myCycleNuControl = [];
         myLockModes = [];
         myPID1 = [];
         myPID1gui = [];
@@ -207,8 +207,11 @@ classdef FreqLocker < hgsetget
         function setFreqSweeper(obj, fs)
             obj.myFreqSweeper = fs;
         end
-        function setuControl(obj, uC)
-            obj.myuControl = uC;
+        function setLCuControl(obj, uC)
+            obj.myLCuControl = uC;
+        end
+        function setCycleNuControl(obj, uC)
+            obj.myCycleNuControl = uC;
         end
         function startAcquire_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
@@ -582,8 +585,8 @@ classdef FreqLocker < hgsetget
             
             %Initialize Liquid Crystal Waveplate
             if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
-                fprintf(obj.myuControl.mySerial, 'H');
-                %fscanf(obj.myuControl.mySerial)
+                fprintf(obj.myLCuControl.mySerial, 'H');
+                %fscanf(obj.myLCuControl.mySerial)
             end
             
             
@@ -694,13 +697,13 @@ classdef FreqLocker < hgsetget
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
                         case 0
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myLCuControl.mySerial, 'H');
                         case 1
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myLCuControl.mySerial, 'H');
                         case 2
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myLCuControl.mySerial, 'L');
                         case 3
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myLCuControl.mySerial, 'L');
                     end
                 end
                 if ~ret
@@ -984,6 +987,10 @@ classdef FreqLocker < hgsetget
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
             runNum = 1;
+            if get(myHandles.cycleNumOn, 'Value')
+                runNum = 0;
+                obj.myCycleNuControl.initialize();
+            end
             seqPlace = 0; %0 = left side of line 1
                           %1 = right side of line 1
                           %2 = left side of line 2
@@ -1001,7 +1008,7 @@ classdef FreqLocker < hgsetget
             
             %Initialize Liquid Crystal Waveplate
             if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
-                fprintf(obj.myuControl.mySerial, 'H');
+                fprintf(obj.myLCuControl.mySerial, 'H');
             end
             
 
@@ -1023,7 +1030,7 @@ classdef FreqLocker < hgsetget
                                 'err1', 'cor1', 'servoVal1', ...
                                 'err2', 'cor2', 'servoVal2', ...
                                 'err3', 'cor3', 'servoVal3', ...
-                                'freqSr'};
+                                'freqSr', 'cycleNum'};
                             n = length(colNames);
                             for i=1:n
                                 fprintf(fid, '%s\t', colNames{i});
@@ -1074,11 +1081,15 @@ classdef FreqLocker < hgsetget
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             
-            if runNum~=1
+            if runNum > 1
                 tempH = getappdata(obj.myTopFigure, 'plottingHandles');
                 taxis = getappdata(obj.myTopFigure, 'taxis');
             end
             
+            if get(myHandles.cycleNumOn, 'Value')
+                cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
+                seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
+            end
             pointDone = 0;
             while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
                 plotstart = 1; %Needs to be out here so plots can be cleared
@@ -1087,19 +1098,20 @@ classdef FreqLocker < hgsetget
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
                         case 0 % left side of line 1
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myLCuControl.mySerial, 'H');
                             curFrequency = newCenterFreqL - linewidth/2;
                         case 1 % right side of line 1
-                            fprintf(obj.myuControl.mySerial, 'H');
+                            fprintf(obj.myLCuControl.mySerial, 'H');
                             curFrequency = newCenterFreqL + linewidth/2;
                         case 2 % left side of line 2
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myLCuControl.mySerial, 'L');
                             curFrequency = newCenterFreqH - linewidth/2;
                         case 3 % right side of line 2
-                            fprintf(obj.myuControl.mySerial, 'L');
+                            fprintf(obj.myLCuControl.mySerial, 'L');
                             curFrequency = newCenterFreqH + linewidth/2;
                     end
                 end
+
                 ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -1107,6 +1119,12 @@ classdef FreqLocker < hgsetget
                 end
                 set(myHandles.curFreq, 'String', num2str(curFrequency));
                 set(myHandles.curFreqL, 'String', num2str(curFrequency));
+                
+                if runNum == 0
+                    runNum = runNum + 1;
+                    setappdata(obj.myTopFigure, 'runNum', runNum);
+                    return;
+                end
                 %4. Update Progress Bar
                 drawnow;
                 %5. Call Gage Card to gather data
@@ -1297,6 +1315,11 @@ classdef FreqLocker < hgsetget
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 4
                         temp = [temp (newCenterFreqL + newCenterFreqH)/2];
+                    else
+                        temp = [temp 0];
+                    end
+                    if get(myHandles.cycleNumOn, 'Value')
+                        temp = [temp cycleNum];
                     else
                         temp = [temp 0];
                     end
