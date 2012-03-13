@@ -18,8 +18,8 @@ function FrequencyControlMain(DEBUGMODE )
         case {0,1}
             g1 = GageCard.GageConfigFrontend(f,tp);
             f1 = FreqSynth(f,tp);
-            ardLC = uControlFrontend(f, tp, 1);
-            ardCN = uControlFrontend(f, tp, 2);
+            ardLC = uControlFrontend(f, tp, 1, 'LC');
+            ardCN = uControlFrontend(f, tp, 2, 'CN');
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
                 fs1.setGageConfigFrontend(g1);
@@ -35,8 +35,8 @@ function FrequencyControlMain(DEBUGMODE )
             tp.TabNames = {'Gage', 'FreqSynth',  'LC_Arduino', 'NC_Arduino', 'FreqSweeper', 'FreqLocker', 'GageStreamer'};
         case 2
             f1 = FreqSynth(f,tp);
-            ardLC = uControlFrontend(f, tp, 1);
-            ardCN = uControlFrontend(f, tp, 2);
+            ardLC = uControlFrontend(f, tp, 1, 'LC');
+            ardCN = uControlFrontend(f, tp, 2, 'CN');
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
                 fs1.setLCuControl(ardLC);
