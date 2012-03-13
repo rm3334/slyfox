@@ -1089,7 +1089,7 @@ classdef FreqLocker < hgsetget
             if get(myHandles.cycleNumOn2, 'Value')
                 cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
-                disp(['Cycle Number is : ' num2str(cycleNum) '\rTherfore we are at seqPlace: ' num2str(seqPlace)]);
+                disp(['Cycle Number is : ' num2str(cycleNum) '\rTherfore we are at seqPlace: ' num2str(seqPlace+1)]);
             end
             pointDone = 0;
             while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
