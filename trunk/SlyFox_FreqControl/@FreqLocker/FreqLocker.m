@@ -1320,7 +1320,7 @@ classdef FreqLocker < hgsetget
                         temp = [temp 0];
                     end
                     if get(myHandles.cycleNumOn2, 'Value')
-                        temp = [temp cycleNum];
+                        temp = [temp cycleNum-1];
                     else
                         temp = [temp 0];
                     end
