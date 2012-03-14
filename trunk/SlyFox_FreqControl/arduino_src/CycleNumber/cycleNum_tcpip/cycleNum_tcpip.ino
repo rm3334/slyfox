@@ -2,7 +2,7 @@
  
  Used to keep track of the cycle number so both Strontium experiments can sync up their data.
  Ben Bloom
- last updated 03/09/12 16:43:00
+ last updated 03/14/12 17:15:00
  */
 /* 
  "Debounce" is used to keep track of TTL 
@@ -49,7 +49,7 @@ const int ledPin = 13;
 int ledState = HIGH;         // the current state of the output pin
 int ttlState;             // the current reading from the input pin
 int lastTTLState = LOW;   // the previous reading from the input pin
-volatile unsigned int cycleNum = 0;
+volatile unsigned long cycleNum = 0;
 boolean hasChanged = true;
 
 // the following variables are long's because the time, measured in miliseconds,
@@ -106,8 +106,8 @@ void loop() {
     // to any clients connected to the server:
     if ('c' == client.read()){
       server.println(cycleNum);
-      client.stop();
     }
+    client.stop();
   }
 }
 
