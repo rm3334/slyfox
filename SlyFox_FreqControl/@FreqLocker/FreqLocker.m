@@ -197,6 +197,7 @@ classdef FreqLocker < hgsetget
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1]);
             myHandles = guihandles(obj.myTopFigure);
             guidata(obj.myTopFigure, myHandles);
+%             obj.loadState();
         end
         function setFreqSynth(obj, fs)
             obj.myFreqSynth = fs;
@@ -987,7 +988,7 @@ classdef FreqLocker < hgsetget
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
             runNum = 1;
-            if get(myHandles.cycleNumOn2, 'Value')
+            if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
                 obj.myCycleNuControl.initialize();
             end
@@ -1007,7 +1008,7 @@ classdef FreqLocker < hgsetget
             
             
             %Initialize Liquid Crystal Waveplate
-            if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
+            if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                 fprintf(obj.myLCuControl.mySerial, 'H');
             end
             
@@ -1088,17 +1089,17 @@ classdef FreqLocker < hgsetget
                 taxis = getappdata(obj.myTopFigure, 'taxis');
             end
             
-            if get(myHandles.cycleNumOn2, 'Value')
+            if get(myHandles.cycleNumOnCN, 'Value')
                 cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
-                disp(['Cycle Number was : ' num2str(cycleNum-1) '\rTherfore we are at seqPlace: ' num2str(mod(cycleNum-2,4))]);
+                disp(['Cycle Number was : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4))]);
             end
             pointDone = 0;
             while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
                 plotstart = 1; %Needs to be out here so plots can be cleared
                 %IMMEDIATELY READJUST LC WAVEPLATE and set frequency for
                 %next point.
-                if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerial, 'Enable'), 'off')
+                if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
                         case 0 % left side of line 1
                             fprintf(obj.myLCuControl.mySerial, 'H');
@@ -1321,7 +1322,7 @@ classdef FreqLocker < hgsetget
                     else
                         temp = [temp 0];
                     end
-                    if get(myHandles.cycleNumOn2, 'Value')
+                    if get(myHandles.cycleNumOnCN, 'Value')
                         temp = [temp cycleNum-1];
                     else
                         temp = [temp 0];
@@ -1489,6 +1490,7 @@ classdef FreqLocker < hgsetget
                 set(obj.myPID1gui.myKi, 'String', FreqLockerState.PID1myKi);
                 set(obj.myPID1gui.myKd, 'String', FreqLockerState.PID1myKd);
                 set(obj.myPID1gui.myDeltaT, 'String', FreqLockerState.PID1myDeltaT);
+                disp('1')
 
                 set(obj.myPID2gui.myKp, 'String', FreqLockerState.PID2myKp);
                 set(obj.myPID2gui.myKi, 'String', FreqLockerState.PID2myKi);
@@ -1502,7 +1504,7 @@ classdef FreqLocker < hgsetget
                 
                 guidata(obj.myTopFigure, myHandles);
             catch
-                disp('No saved state for FreqSweeper Exists');
+                disp('No saved state for FreqLocker Exists');
             end
         end
 
