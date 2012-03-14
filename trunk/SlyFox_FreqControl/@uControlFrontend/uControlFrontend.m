@@ -6,6 +6,7 @@ classdef uControlFrontend < hgsetget
         myTopFigure = [];
         myPanel = [];
         mySerial = [];
+        myName = [];
     end
     
     methods
@@ -17,7 +18,7 @@ classdef uControlFrontend < hgsetget
             obj.myPanel = uiextras.HBox('Parent', parentObj, ...
                 'Spacing', 5, ...
                 'Padding', 5);
-            
+            obj.myName = NAME;
             uCbuttonVB = uiextras.VBox('Parent', obj.myPanel);
                 uicontrol(...
                             'Parent', uCbuttonVB, ...
@@ -96,7 +97,7 @@ classdef uControlFrontend < hgsetget
         function refreshComPortList_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
             a = instrhwinfo('visa', 'ni');
-            set(myHandles.comPortListMenu, 'String', a.ObjectConstructorName);
+            set(myHandles.(['comPortListMenu' obj.myName]), 'String', a.ObjectConstructorName);
             guidata(obj.myTopFigure, myHandles);
         end
         
@@ -106,7 +107,7 @@ classdef uControlFrontend < hgsetget
                 obj.mySerial = [];
             end
             myHandles = guidata(obj.myTopFigure);
-            mySerialCMD = get(myHandles.comPortListMenu, 'String');
+            mySerialCMD = get(myHandles.(['comPortListMenu' obj.myName]), 'String');
             obj.mySerial = eval(mySerialCMD);
 %             obj.mySerial = tcpip('yesrarduino1.colorado.edu', 3001);
         end
@@ -124,8 +125,8 @@ classdef uControlFrontend < hgsetget
         
         function openSerial_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
-            mySerialPortList = get(myHandles.comPortListMenu1, 'String');
-            myVal = get(myHandles.comPortListMenu1, 'Value');
+            mySerialPortList = get(myHandles.(['comPortListMenu' obj.myName]), 'String');
+            myVal = get(myHandles.(['comPortListMenu' obj.myName]), 'Value');
             mySerialAddr = mySerialPortList{myVal};
             obj.mySerial = eval(mySerialAddr);
             
@@ -139,9 +140,9 @@ classdef uControlFrontend < hgsetget
             end
             
             if success
-                set(myHandles.closeSerial, 'Enable', 'on');
-                set(myHandles.openSerial, 'Enable', 'off');
-                set(myHandles.comPortListMenu1, 'Enable', 'off');
+                set(myHandles.(['closeSerial' obj.myName]), 'Enable', 'on');
+                set(myHandles.(['openSerial'  obj.myName]), 'Enable', 'off');
+                set(myHandles.(['comPortListMenu' obj.myName]), 'Enable', 'off');
             end
             guidata(obj.myTopFigure, myHandles);
         end
@@ -159,9 +160,9 @@ classdef uControlFrontend < hgsetget
             end
             
             if success
-                set(myHandles.closeSerial, 'Enable', 'off');
-                set(myHandles.openSerial, 'Enable', 'on');
-                set(myHandles.comPortListMenu, 'Enable', 'on');
+                set(myHandles.(['closeSerial' obj.myName]), 'Enable', 'off');
+                set(myHandles.(['openSerial'  obj.myName]), 'Enable', 'on');
+                set(myHandles.(['comPortListMenu' obj.myName]), 'Enable', 'on');
             end
             guidata(obj.myTopFigure, myHandles);
         end
