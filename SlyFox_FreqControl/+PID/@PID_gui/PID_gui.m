@@ -133,6 +133,7 @@ classdef PID_gui < hgsetget
             elseif runNum > 2
                 set(obj.myPlotHandle, 'YData', tempPIDData);
                 refreshdata(obj.myPlotHandle);
+                drawnow;
             end
             guidata(obj.myTopFigure, myHandles);
         end

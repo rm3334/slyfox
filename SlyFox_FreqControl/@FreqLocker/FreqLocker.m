@@ -1060,6 +1060,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
             setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
+            setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
             setappdata(obj.myTopFigure, 'nextStep', @obj.startContinuousMultiLock_takeNextPoint);
             pause(0.5) %I think I need this to make sure we get our first point good
             guidata(obj.myTopFigure, myHandles);
@@ -1080,6 +1081,7 @@ classdef FreqLocker < hgsetget
             linewidth = getappdata(obj.myTopFigure, 'linewidth');
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
+            prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
             
             if runNum > 1
                 tempH = getappdata(obj.myTopFigure, 'plottingHandles');
@@ -1089,7 +1091,7 @@ classdef FreqLocker < hgsetget
             if get(myHandles.cycleNumOn2, 'Value')
                 cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
-                disp(['Cycle Number is : ' num2str(cycleNum) '\rTherfore we are at seqPlace: ' num2str(seqPlace+1)]);
+                disp(['Cycle Number was : ' num2str(cycleNum-1) '\rTherfore we are at seqPlace: ' num2str(mod(cycleNum-2,4))]);
             end
             pointDone = 0;
             while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
@@ -1292,7 +1294,7 @@ classdef FreqLocker < hgsetget
                     end
                     %9. Check Save and Write Data to file.
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
-                    temp = [curFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
+                    temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
                     if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 1
@@ -1340,6 +1342,7 @@ classdef FreqLocker < hgsetget
                 end
                 runNum = runNum + 1;
                 seqPlace = mod(seqPlace + 1,4);
+                setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
@@ -1382,6 +1385,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreqL');
                     rmappdata(obj.myTopFigure, 'newCenterFreqH');
+                    rmappdata(obj.myTopFigure, 'prevFrequency');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
                 catch exception
                     exception.message
