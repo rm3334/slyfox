@@ -7,6 +7,7 @@ classdef AnalogVoltageStepper
         myDAQSession = [];
         myTopFigure = [];
         mySingleScanData = [];
+        myCounter = 0;
         myPanel = uiextras.Panel();
     end
     
@@ -74,7 +75,13 @@ classdef AnalogVoltageStepper
             obj.myDAQSession.prepare
             guidata(obj.myTopFigure, myHandles);
         end
-        
+        function [prevSet, curSet] = getNextAnalogValues(obj)
+            prevIDX = mod(obj.myCounter, length(obj.mySingleScanData))+1;
+            obj.myCounter = obj.myCounter + 1;
+            curIDX = mod(obj.myCounter, length(obj.mySingleScanData))+1;
+            prevSet = obj.mySingleScanData(prevIDX,:);
+            curSet = obj.mySingleScanData(curIDX,:);
+        end
         function quit(obj)
             obj.myDEBUGmode = [];
             obj.mySingleScanData = [];
