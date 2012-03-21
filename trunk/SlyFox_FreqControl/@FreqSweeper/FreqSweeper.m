@@ -808,11 +808,15 @@ classdef FreqSweeper < handle
                     rmappdata(obj.myTopFigure, 'scanData');
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'runNum');
-                    rmappdata(obj.myTopFigure, 'taxis');
+                    try
+                        rmappdata(obj.myTopFigure, 'taxis');
+                        rmappdata(obj.myTopFigure, 'plottingHandles');
+                    catch exception
+                        exception.message
+                    end
                     rmappdata(obj.myTopFigure, 'fid');
                     rmappdata(obj.myTopFigure, 'x');
                     rmappdata(obj.myTopFigure, 'freqList');
-                    rmappdata(obj.myTopFigure, 'plottingHandles');
                     rmappdata(obj.myTopFigure, 'curFrequency');
                     
                     drawnow;
