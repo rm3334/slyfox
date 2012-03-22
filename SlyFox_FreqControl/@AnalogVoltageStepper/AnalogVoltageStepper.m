@@ -1,4 +1,4 @@
-classdef AnalogVoltageStepper
+classdef AnalogVoltageStepper < handle
     %ANALOGVOLTAGESTEPPER Steps Values of Analog Voltage Out by Ben Bloom
     %03/15/12
     
@@ -9,6 +9,7 @@ classdef AnalogVoltageStepper
         mySingleScanData = [];
         myCounter = 0;
         myPanel = uiextras.Panel();
+        myNames = [];
     end
     
     methods
@@ -48,7 +49,7 @@ classdef AnalogVoltageStepper
             myHandles = guihandles(obj.myTopFigure);
             guidata(obj.myTopFigure, myHandles);
         end
-        function updateSingleScanData_Callback(obj)
+        function updateSingleScanData_Callback(obj, ~, ~)
             %this is a two part function that both updates and initializes
             %the AnalogVoltageStepper
             if isempty(obj.myDAQSession)
@@ -57,30 +58,40 @@ classdef AnalogVoltageStepper
             myHandles = guidata(obj.myTopFigure);
             chVals = cell(8,1);
             for idx=0:7
-                chVals{idx+1} = eval(get(myHandles.(['dev1a' int2str(idx)]), 'String'));
+                tempStr = get(myHandles.(['dev1a' int2str(idx)]), 'String');
+                if ~isempty(tempStr)
+                    chVals{idx+1} = eval(tempStr);
+                else
+                    chVals{idx+1} = [];
+                end
             end
             allCH = 1:8;
             chIDX = allCH(~cellfun(@isempty, chVals));
             
             % Removes channels
-            obj.myDAQSession.removeChannel(1:length(obj.myDAQSession.Channels));
+            numOldChannels = length(obj.myDAQSession.Channels);
+            if numOldChannels ~= 0
+                obj.myDAQSession.removeChannel(1:numOldChannels);
+            end
             devVal = get(myHandles.aDevName, 'Value');
             devNames = get(myHandles.aDevName, 'String');
             devName = devNames{devVal};
             
             obj.myDAQSession.addAnalogOutputChannel(devName, chIDX, 'Voltage');
             
-            obj.mySingleScanData = combvec(chVals{chIDX});
-            
-            obj.myDAQSession.prepare
+            obj.mySingleScanData = combvec(chVals{chIDX})';
+            obj.myNames = {obj.myDAQSession.Channels(:).ID};
+            obj.myDAQSession.outputSingleScan(obj.mySingleScanData(1,:));
             guidata(obj.myTopFigure, myHandles);
         end
         function [prevSet, curSet] = getNextAnalogValues(obj)
             prevIDX = mod(obj.myCounter, length(obj.mySingleScanData))+1;
-            obj.myCounter = obj.myCounter + 1;
-            curIDX = mod(obj.myCounter, length(obj.mySingleScanData))+1;
+            curIDX = mod(obj.myCounter + 1, length(obj.mySingleScanData))+1;
             prevSet = obj.mySingleScanData(prevIDX,:);
             curSet = obj.mySingleScanData(curIDX,:);
+        end
+        function incrementCounter(obj)
+            obj.myCounter = obj.myCounter + 1;
         end
         function quit(obj)
             obj.myDEBUGmode = [];
