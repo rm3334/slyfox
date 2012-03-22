@@ -30,6 +30,7 @@ function FrequencyControlMain(DEBUGMODE )
                 fL.setGageConfigFrontend(g1);
                 fL.setFreqSweeper(fs1);
                 fL.setLCuControl(ardLC);
+                fL.setAnalogStepper(AVS);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
@@ -48,6 +49,7 @@ function FrequencyControlMain(DEBUGMODE )
                 fL.setFreqSweeper(fs1);
                 fL.setLCuControl(ardLC);
                 fL.setCycleNuControl(ardCN);
+                fL.setAnalogStepper(AVS);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);

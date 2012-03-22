@@ -49,13 +49,13 @@ const int ledPin = 13;
 int ledState = HIGH;         // the current state of the output pin
 int ttlState;             // the current reading from the input pin
 int lastTTLState = LOW;   // the previous reading from the input pin
-volatile unsigned long cycleNum = 0;
+volatile unsigned int cycleNum = 0;
 boolean hasChanged = true;
 
 // the following variables are long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 1;    // the debounce time; increase if the output flickers
+long debounceDelay = 3;    // the debounce time; increase if the output flickers
 
 void setup() {
   pinMode(ttlPin, INPUT);
@@ -106,8 +106,8 @@ void loop() {
     // to any clients connected to the server:
     if ('c' == client.read()){
       server.println(cycleNum);
+      client.stop();
     }
-    client.stop();
   }
 }
 
