@@ -65,8 +65,8 @@ classdef AnalogVoltageStepper < handle
                     chVals{idx+1} = [];
                 end
             end
-            allCH = 1:8;
-            chIDX = allCH(~cellfun(@isempty, chVals));
+            allCH = 0:7;
+            chIDXni = allCH(~cellfun(@isempty, chVals));
             
             % Removes channels
             numOldChannels = length(obj.myDAQSession.Channels);
@@ -77,9 +77,9 @@ classdef AnalogVoltageStepper < handle
             devNames = get(myHandles.aDevName, 'String');
             devName = devNames{devVal};
             
-            obj.myDAQSession.addAnalogOutputChannel(devName, chIDX, 'Voltage');
+            obj.myDAQSession.addAnalogOutputChannel(devName, chIDXni, 'Voltage');
             
-            obj.mySingleScanData = combvec(chVals{chIDX})';
+            obj.mySingleScanData = combvec(chVals{chIDXni+1})';
             obj.myNames = {obj.myDAQSession.Channels(:).ID};
             obj.myDAQSession.outputSingleScan(obj.mySingleScanData(1,:));
             guidata(obj.myTopFigure, myHandles);
