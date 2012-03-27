@@ -647,9 +647,11 @@ classdef FreqSweeper < handle
                 %IMMEDIATELY CHANGE THE LIQUID CRYSTAL WAVEPLATE IF NEED BE
                 if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                     if ~mod(runNum+1,2)
-                        fprintf(obj.myLCuControl.mySerial, 'L');
+                        fprintf(obj.myLCuControl.mySerial, [';c3;d0;t80000']);
+                        %fprintf(obj.myLCuControl.mySerial, 'L');
                     else
-                        fprintf(obj.myLCuControl.mySerial, 'H');
+                        fprintf(obj.myLCuControl.mySerial, [';c0;d0;t80000']);
+                        %fprintf(obj.myLCuControl.mySerial, 'H');
                     end
                 end
                 if ~ret
