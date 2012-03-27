@@ -1157,18 +1157,15 @@ classdef FreqLocker < hgsetget
                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                     switch mod(seqPlace+1,4) 
                         case 0 % left side of line 1
-                            fprintf(obj.myLCuControl.mySerial, 'H');
                             curFrequency = newCenterFreqL - linewidth/2;
                         case 1 % right side of line 1
-                            fprintf(obj.myLCuControl.mySerial, 'H');
                             curFrequency = newCenterFreqL + linewidth/2;
                         case 2 % left side of line 2
-                            fprintf(obj.myLCuControl.mySerial, 'L');
                             curFrequency = newCenterFreqH - linewidth/2;
                         case 3 % right side of line 2
-                            fprintf(obj.myLCuControl.mySerial, 'L');
                             curFrequency = newCenterFreqH + linewidth/2;
                     end
+                    fprintf(obj.myLCuControl.mySerial, [';c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
                 end
                 
 
