@@ -1142,7 +1142,7 @@ classdef FreqLocker < hgsetget
                     prevCycleNum = getappdata(obj.myTopFigure, 'prevCycleNum');
                 end
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
-                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we should be at seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
+                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
                 if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
                     fprintf(1, 'Cycle Slipped\n');
                     badData = 1;
@@ -1154,8 +1154,7 @@ classdef FreqLocker < hgsetget
                 plotstart = 1; %Needs to be out here so plots can be cleared
                 %IMMEDIATELY READJUST LC WAVEPLATE and set frequency for
                 %next point.
-                if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
-                    switch mod(seqPlace+1,4) 
+                   switch mod(seqPlace+1,4) 
                         case 0 % left side of line 1
                             curFrequency = newCenterFreqL - linewidth/2;
                         case 1 % right side of line 1
@@ -1165,7 +1164,10 @@ classdef FreqLocker < hgsetget
                         case 3 % right side of line 2
                             curFrequency = newCenterFreqH + linewidth/2;
                     end
-                    fprintf(obj.myLCuControl.mySerial, [';c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
+                if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
+                    disp([':1;c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
+                    fprintf(obj.myLCuControl.mySerial, [':1;c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
+                    %fscanf(obj.myLCuControl.mySerial)
                 end
                 
 

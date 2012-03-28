@@ -37,9 +37,12 @@ Ver: 0.2
 const int numPulses = 5;
 const int pulseLength = 2000;
 int incomingByte;  // for incoming serial data
+boolean readingMode;
 byte serialStatus;  //idle or receiving
 byte dataStatus;  //ready or not ready
 byte serialInputCount; //how many bytes received
+volatile int mode = 0; // Mode 0 does not step cycle number
+                       // Mode 1 steps cycle counter
 volatile boolean startCOM = false;
 volatile char Command[3];
 volatile int cmdIDX; // for building Command list
@@ -68,7 +71,7 @@ void setup(){
 
 void loop(){
   if (mirrorTTL1)
-  {
+  { 
     if(digitalRead(pinTTL_IN1)){
       setPinTTL_OUT1_HIGH();
     }else
@@ -106,7 +109,8 @@ void loop(){
 }
 
 void advanceCycleNum(){
-    cycleNum++;
+  if (mode == 1) {
+    cycleNum += 1;
     cycleNum %= 4;
     
     switch (cycleNum){
@@ -123,33 +127,43 @@ void advanceCycleNum(){
         mirrorTTL1 = true;
         break;
     }
+  }
+  else {
+    mirrorTTL1 = true;
+  }
 }
 
 void changeStartCOM(){
   startCOM = !startCOM;
-  Serial.println(startCOM);
 }
 void ComputerCom(){
-    Serial.println("Ready");
+    //Serial.println("Ready");
     digitalWrite(pinLED, HIGH);
     cmdIDX = -1;
     Val0 = 0;
     Val1 = 0;
     Val2 = 0;
+    readingMode = false;
     while (Serial.available() > 0) {
       // read the incoming byte:
         incomingByte = Serial.read();
-        if (incomingByte==';') {
+        if (incomingByte == ':'){
+          readingMode = true;
+        }
+        else if (readingMode){
+          mode = int(incomingByte - '0');
+          readingMode = false;
+        }
+        else if (incomingByte==';') {
           serialInputCount=0;
           serialStatus=SERIAL_RECEIVING;
           cmdIDX++;
-          Serial.println("Semi-Colon");
         }
         else {
           if (serialInputCount==0) {
             Command[cmdIDX]=char(incomingByte);
             serialInputCount++;
-            Serial.println(char(incomingByte));
+            //Serial.println(char(incomingByte));
           }
           else{
             switch (cmdIDX) {
@@ -173,7 +187,7 @@ void ComputerCom(){
       for (int x = 0; x<3; x++){ //For now I am just forcing commands in the order 'c' 'd' 't'
         switch (Command[x]) {
           case 'c':
-            cycleNum = Val0; 
+            cycleNum = Val0;
           break;
           
           case 'd':
