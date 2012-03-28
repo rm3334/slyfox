@@ -109,7 +109,9 @@ classdef uControlFrontend < hgsetget
             myHandles = guidata(obj.myTopFigure);
             mySerialCMD = get(myHandles.(['comPortListMenu' obj.myName]), 'String');
             obj.mySerial = eval(mySerialCMD);
-%             obj.mySerial = tcpip('yesrarduino1.colorado.edu', 3001);
+            if strcmp(obj.myName, 'LC')
+                set(obj.mySerial, 'BaudRate', 57600);
+            end
         end
         function cycleNum = getCycleNum(obj)
                 try
@@ -129,6 +131,9 @@ classdef uControlFrontend < hgsetget
             myVal = get(myHandles.(['comPortListMenu' obj.myName]), 'Value');
             mySerialAddr = mySerialPortList{myVal};
             obj.mySerial = eval(mySerialAddr);
+            if strcmp(obj.myName, 'LC')
+                set(obj.mySerial, 'BaudRate', 57600);
+            end
             
             success = 0;
             try
