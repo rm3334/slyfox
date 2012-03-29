@@ -24,6 +24,7 @@ classdef FreqLocker < hgsetget
         myPID2gui = [];
         myPID3 = [];
         myPID3gui = [];
+        myDataToOutput = [];
     end
     
     methods
@@ -364,7 +365,7 @@ classdef FreqLocker < hgsetget
                     prevCycleNum = getappdata(obj.myTopFigure, 'prevCycleNum');
                 end
                 seqPlace = mod(cycleNum-2,2); % 1 for previous measurement and 1 for mike bishof's convention
-                fprintf(1,['Cycle Number I just read was : ' num2str(cycleNum-1) '\rTherfore we should be at seqPlace: ' num2str(mod(cycleNum-2,2))]);
+                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
                 if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
                     fprintf(1, 'Cycle Slipped\n');
                     badData = 1;
@@ -1503,7 +1504,7 @@ classdef FreqLocker < hgsetget
                                 'err1', 'cor1', 'servoVal1', ...
                                 'err2', 'cor2', 'servoVal2', ...
                                 'err3', 'cor3', 'servoVal3', ...
-                                'freqSr', 'cycleNum', 'badData'}
+                                'freqSr', 'cycleNum', 'badData'};
                             
                             if get(myHandles.stepVoltages, 'Value')
                                 colNames = [colNames obj.myAnalogStepper.myNames];
@@ -1572,7 +1573,7 @@ classdef FreqLocker < hgsetget
                     prevCycleNum = getappdata(obj.myTopFigure, 'prevCycleNum');
                 end
                 seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
-                fprintf(1,['Cycle Number I just read was : ' num2str(cycleNum-1) '\rTherfore we should be at seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
+                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
                 if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
                     fprintf(1, 'Cycle Slipped\n');
                     badData = 1;
@@ -1584,28 +1585,30 @@ classdef FreqLocker < hgsetget
                 plotstart = 1; %Needs to be out here so plots can be cleared
                 %IMMEDIATELY READJUST LC WAVEPLATE and set frequency for
                 %next point.
-                    switch mod(seqPlace+1,4) 
-                        case 0 % left side of line 1
-                            [prevSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
-                            obj.myAnalogStepper.myDAQSession.outputSingleScan(nextSet);
+                [prevSet, curSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
+                fprintf(1, ['Analog Voltages for last measurement were: ' num2str(prevSet) '\n\n']);
+                obj.myDataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', nextSet, 'UniformOutput', 0));
+                setappdata(obj.myTopFigure, 'DAQdata', obj.myDataToOutput);
+                    switch mod(seqPlace+2,4) %we are in seqPlace+1's blueMOT
+                        case 1 % left side of line 1
                             if ~badData
                                 obj.myAnalogStepper.incrementCounter();
                             end
+                        case 3 % left side of line 2
+                            if ~badData
+                                obj.myAnalogStepper.incrementCounter();
+                            end
+                    end
+                    switch mod(seqPlace+1,4) %Change Frequencies like normal
+                        case 0 % left side of line 1
                             curFrequency = newCenterFreqL - linewidth/2;
                         case 1 % right side of line 1
-                            [prevSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
                             curFrequency = newCenterFreqL + linewidth/2;
                         case 2 % left side of line 2
-                            [prevSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
-                            obj.myAnalogStepper.myDAQSession.outputSingleScan(nextSet);
-                            if ~badData
-                                obj.myAnalogStepper.incrementCounter();
-                            end
                             curFrequency = newCenterFreqH - linewidth/2;
                         case 3 % right side of line 2
-                            [prevSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
                             curFrequency = newCenterFreqH + linewidth/2;
-                    end                
+                    end  
 
                 ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
                 if ~ret
@@ -1618,6 +1621,8 @@ classdef FreqLocker < hgsetget
                 if runNum == 0
                     runNum = runNum + 1;
                     setappdata(obj.myTopFigure, 'runNum', runNum);
+%                     setappdata(obj.myTopFigure, 'DAQcallback_DataRequired', @obj.advanceAnalogValues);
+%                     obj.advanceAnalogValues(1,1);
                     return;
                 end
                 %4. Update Progress Bar
@@ -1856,6 +1861,7 @@ classdef FreqLocker < hgsetget
                 guidata(obj.myTopFigure, myHandles);
                
             else %close everything done
+                setappdata(obj.myTopFigure, 'DAQcallback_DataRequired', @(src, event) eval('return'));
                 setappdata(obj.myTopFigure, 'readyForData', 0);
                 %9.5 Close Frequency Synthesizer and Data file
                 obj.myPID1.clear();
@@ -1895,6 +1901,11 @@ classdef FreqLocker < hgsetget
                 clear variables
                 clear mex
             end
+        end
+        function advanceAnalogValues(obj, ~,~)
+            obj.myAnalogStepper.myDAQSession.queueOutputData(obj.myDataToOutput);
+            obj.myDataToOutput(1)
+            %obj.myAnalogStepper.myDAQSession.startBackground();
         end
         function updatePIDvalues(obj)
             obj.myPID1.myKp = str2double(get(obj.myPID1gui.myKp, 'String'));
