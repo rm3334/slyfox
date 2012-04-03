@@ -10,13 +10,17 @@ classdef DDS_uControlFrontend < hgsetget
         myPanel = [];
         myDDS0;
         myDDS1;
+        myDDS2;
+        myDDS3;
+        myDDS4;
+        myDDS5;
         mySerial;
     end
     
     methods
         function obj = DDS_uControlFrontend(topFig, parentObj)
             obj.myTopFigure = topFig;
-            obj.myPanel = uiextras.HBox('Parent', parentObj, ...
+            obj.myPanel = uiextras.Grid('Parent', parentObj, ...
                 'Spacing', 5, ...
                 'Padding', 5);
             
@@ -60,9 +64,14 @@ classdef DDS_uControlFrontend < hgsetget
                 uiextras.Empty('Parent', uCbuttonVB);
             uCbuttonVB.Sizes = [-2 -1 -1 -1 -2];
 
+            uiextras.Empty('Parent', obj.myPanel);
             obj.myDDS0 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 0);
+            obj.myDDS3 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 3);
             obj.myDDS1 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 1);
-            obj.myPanel.Sizes = [-1 -2 -2];
+            obj.myDDS4 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 4);
+            obj.myDDS2 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 2);
+            obj.myDDS5 = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, 5);
+            set(obj.myPanel, 'ColumnSizes', [-1 -1 -1, -1], 'RowSizes', [-1, -1]);
             
             myHandles = guihandles(obj.myTopFigure);
             set(myHandles.sendCommand, 'Enable', 'off');
@@ -97,6 +106,10 @@ classdef DDS_uControlFrontend < hgsetget
                 set(myHandles.openSerial, 'Enable', 'off');
                 obj.myDDS0.mySerial = obj.mySerial;
                 obj.myDDS1.mySerial = obj.mySerial;
+                obj.myDDS2.mySerial = obj.mySerial;
+                obj.myDDS3.mySerial = obj.mySerial;
+                obj.myDDS4.mySerial = obj.mySerial;
+                obj.myDDS5.mySerial = obj.mySerial;
                 set(myHandles.sendCommand, 'Enable', 'on');
                 set(myHandles.comPortListMenu, 'Enable', 'off');
             end

@@ -117,7 +117,7 @@ classdef DDS_Config < hgsetget
             switch selectedMode
                 case 'Single Tone'
                     instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
-                    instrSet = [instrSet; obj.myBoardAddress]; %which board to use
+                    instrSet = [instrSet; uint8(obj.myBoardAddress)]; %which board to use
                     instrSet = [instrSet; 7]; %Number of Bytes in Instruction after this point
                     instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('FTW1_Reg')))]; %Address of register on the DDS to write to.
                     FTW1 = params.FTW1;
