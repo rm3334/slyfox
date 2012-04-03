@@ -6,7 +6,7 @@ classdef FreqLocker < hgsetget
     %   cancel drifts between shots. This program should have a few
     %   different modes once it is done. Single-peak locking, Stretched
     %   State locking, and intermittent locking mode for canceling drifts
-    %   between experiments. Written by Ben Bloom. Last Updated 03/09/12
+    %   between experiments. Written by Ben Bloom. Last Updated 03/30/12
     
     properties
         myPanel = uiextras.Grid();
@@ -1585,20 +1585,20 @@ classdef FreqLocker < hgsetget
                 plotstart = 1; %Needs to be out here so plots can be cleared
                 %IMMEDIATELY READJUST LC WAVEPLATE and set frequency for
                 %next point.
-                [prevSet, curSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
-                fprintf(1, ['Analog Voltages for last measurement were: ' num2str(prevSet) '\n\n']);
-                obj.myDataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', nextSet, 'UniformOutput', 0));
                 setappdata(obj.myTopFigure, 'DAQdata', obj.myDataToOutput);
                     switch mod(seqPlace+2,4) %we are in seqPlace+1's blueMOT
-                        case 1 % left side of line 1
+                        case 0 % left side of line 1
                             if ~badData
                                 obj.myAnalogStepper.incrementCounter();
                             end
-                        case 3 % left side of line 2
+                        case 2 % left side of line 2
                             if ~badData
                                 obj.myAnalogStepper.incrementCounter();
                             end
                     end
+                    [prevSet, curSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
+                    fprintf(1, ['Analog Voltages for last measurement were: ' num2str(prevSet) '\n\n']);
+                    obj.myDataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', nextSet, 'UniformOutput', 0));
                     switch mod(seqPlace+1,4) %Change Frequencies like normal
                         case 0 % left side of line 1
                             curFrequency = newCenterFreqL - linewidth/2;
@@ -1806,7 +1806,7 @@ classdef FreqLocker < hgsetget
                         if runNum >= 2 && seqPlace == 3 && ~badData
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
-                            tempPID2 = [0 0 newCenterFreqH];
+                            tempPID2 = [0 0 0];
                         end
                     else
                         tempPID2 = [0 0 0];
