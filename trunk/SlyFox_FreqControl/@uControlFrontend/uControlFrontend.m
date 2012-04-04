@@ -7,6 +7,7 @@ classdef uControlFrontend < hgsetget
         myPanel = [];
         mySerial = [];
         myName = [];
+        myMode = 0;
     end
     
     methods
@@ -19,6 +20,7 @@ classdef uControlFrontend < hgsetget
                 'Spacing', 5, ...
                 'Padding', 5);
             obj.myName = NAME;
+            obj.myMode = MODE;
             uCbuttonVB = uiextras.VBox('Parent', obj.myPanel);
                 uicontrol(...
                             'Parent', uCbuttonVB, ...
@@ -50,7 +52,7 @@ classdef uControlFrontend < hgsetget
                                 'Parent', comPortListHB, ...
                                 'Tag', ['comPortListMenu' NAME], ...
                                 'Style', 'edit', ...
-                                'String', 'tcpip(''yesrarduino1.colorado.edu'', 3001)');
+                                'String', 'tcpip(''yesrcounter.colorado.edu'', 5025)');
                             uiextras.Empty('Parent', comPortListHB);
                 end
                     uiextras.Empty('Parent', comPortListHB);
@@ -103,6 +105,7 @@ classdef uControlFrontend < hgsetget
         
         function initialize(obj)
             if ~isempty(obj.mySerial)
+                fclose(obj.mySerial);
                 delete(obj.mySerial);
                 obj.mySerial = [];
             end
@@ -112,13 +115,21 @@ classdef uControlFrontend < hgsetget
             if strcmp(obj.myName, 'LC')
                 set(obj.mySerial, 'BaudRate', 57600);
             end
+            try
+                fopen(obj.mySerial);
+            catch exception
+                exception.message
+                disp('Error when getting cycleNum');
+            end
         end
         function cycleNum = getCycleNum(obj)
                 try
-                    fopen(obj.mySerial);
-                    fwrite(obj.mySerial, 'c');
-                    cycleNum = fscanf(obj.mySerial);
-                    fclose(obj.mySerial);
+%                     fopen(obj.mySerial);
+%                     fwrite(obj.mySerial, 'c');
+%                     cycleNum = fscanf(obj.mySerial);
+%                     fclose(obj.mySerial);
+                      fprintf(obj.mySerial, 'SENS:TOT:DATA?');
+                      cycleNum = fscanf(obj.mySerial);
                 catch exception
                     exception.message
                     disp('Error when getting cycleNum');
@@ -129,7 +140,11 @@ classdef uControlFrontend < hgsetget
             myHandles = guidata(obj.myTopFigure);
             mySerialPortList = get(myHandles.(['comPortListMenu' obj.myName]), 'String');
             myVal = get(myHandles.(['comPortListMenu' obj.myName]), 'Value');
-            mySerialAddr = mySerialPortList{myVal};
+            if obj.myMode ~= 2
+                mySerialAddr = mySerialPortList{myVal};
+            else
+                mySerialAddr = get(myHandles.(['comPortListMenu' obj.myName]), 'String');
+            end
             obj.mySerial = eval(mySerialAddr);
             if strcmp(obj.myName, 'LC')
                 set(obj.mySerial, 'BaudRate', 57600);
