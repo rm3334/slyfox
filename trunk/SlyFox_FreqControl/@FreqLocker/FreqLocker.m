@@ -257,6 +257,7 @@ classdef FreqLocker < hgsetget
                         case 1 %CONTINUOUS LOCK
                             obj.startContinuousLock_initialize();
                         case 2 %INTERMITTENT LOCK WITH DATA POINTS BETWEEN LOCK POINTS
+                            obj.startIntermittentLock_initialize();
                     end
                 case 2 % Multiple PID
                     tempVal = get(myHandles.multiplePeakLockOptions, 'Value');
@@ -557,7 +558,6 @@ classdef FreqLocker < hgsetget
                     setappdata(obj.myTopFigure, 'taxis', taxis);
                 end
                 runNum = runNum + 1;
-                seqPlace = mod(seqPlace + 1,2);
                 setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
@@ -620,7 +620,9 @@ classdef FreqLocker < hgsetget
                 obj.myCycleNuControl.initialize();
             end
             seqPlace = 0; %0 = left side of line 1
-                          %1 = right side of line 1
+                          %1 = Data point
+                          %2 = right side of line 1
+                          %3 = Data point
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
             bufferSize = 50;
@@ -670,7 +672,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'scanData', tempScanData);
             setappdata(obj.myTopFigure, 'summedData', tempSummedData);
             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
-            setappdata(obj.myTopFigure, 'IntermittentData', tempIntermittentData);
+            setappdata(obj.myTopFigure, 'intermittentData', tempIntermittentData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -689,7 +691,7 @@ classdef FreqLocker < hgsetget
             tempScanData = getappdata(obj.myTopFigure, 'scanData');
             tempSummedData = getappdata(obj.myTopFigure, 'summedData');
             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
-            tempIntermittentData = getappdata(obj.myTopFigure, 'IntermittentData');
+            tempIntermittentData = getappdata(obj.myTopFigure, 'intermittentData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -710,7 +712,7 @@ classdef FreqLocker < hgsetget
                 if runNum ~= 0
                     prevCycleNum = getappdata(obj.myTopFigure, 'prevCycleNum');
                 end
-                seqPlace = mod(cycleNum-2,2); % 1 for previous measurement and 1 for mike bishof's convention
+                seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
                 fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
                 if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
                     fprintf(1, 'Cycle Slipped\n');
@@ -818,12 +820,11 @@ classdef FreqLocker < hgsetget
                     %Calculate Error for PID1
                     calcErr1 = tNorm - prevExc;
                     
-                    tempSeqPlace = mod(seqPlace + 1,4);
                     if runNum >= 2 && ~badData
-                        switch tempSeqPlace
+                        seqPlace = mod(seqPlace + 1,4);
+                        switch seqPlace
                             case {0,2}
                             prevExc = tNorm;
-                            seqPlace = mod(seqPlace + 1,4);
                                 if seqPlace == 0
                                     obj.myPID1.myPolarity = 1;
                                 elseif seqPlace == 2
@@ -923,7 +924,6 @@ classdef FreqLocker < hgsetget
                     setappdata(obj.myTopFigure, 'taxis', taxis);
                 end
                 runNum = runNum + 1;
-                seqPlace = mod(seqPlace + 1,2);
                 setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
                 setappdata(obj.myTopFigure, 'normData', tempNormData);
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
@@ -934,6 +934,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'prevExc', prevExc);
                 setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
                 setappdata(obj.myTopFigure, 'plottingHandles', tempH);
+                setappdata(obj.myTopFigure, 'intermittentData', tempIntermittentData);
                 
                 guidata(obj.myTopFigure, myHandles);
                 
@@ -962,6 +963,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'newCenterFreq');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
                     rmappdata(obj.myTopFigure, 'prevCycleNum');
+                    rmappdata(obj.myTopFigure, 'intermittentData');
                 catch exception
                     exception.message
                 end
