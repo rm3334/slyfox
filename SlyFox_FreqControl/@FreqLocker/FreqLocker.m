@@ -195,10 +195,12 @@ classdef FreqLocker < hgsetget
                            'Tag', 'lockStatus', ...
                            'String', 'LockPoint');
             lockOutput = uiextras.TabPanel('Parent', obj.myPanel);
-                axes('Tag', 'servoVal1AXES', 'Parent', lockOutput, 'ActivePositionProperty', 'OuterPosition');
-                axes('Tag', 'normExcAXES', 'Parent', lockOutput, 'ActivePositionProperty', 'OuterPosition');
-                lockOutput.TabNames = {'ServoVal1', 'Normalized Exc'};
-                lockOutput.SelectedChild = 1;
+                p1 = uiextras.Panel('Parent', lockOutput);
+                    axes('Tag', 'servoVal1AXES', 'Parent', p1, 'ActivePositionProperty', 'OuterPosition');
+                p2 = uiextras.Panel('Parent', lockOutput);
+                    axes('Tag', 'normExcAXES', 'Parent', p2, 'ActivePositionProperty', 'OuterPosition');
+                    lockOutput.TabNames = {'SVal1', 'Normalized Exc'};
+                    lockOutput.SelectedChild = 1;
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1]);
             myHandles = guihandles(obj.myTopFigure);
             guidata(obj.myTopFigure, myHandles);
@@ -840,11 +842,10 @@ classdef FreqLocker < hgsetget
                                     calcCorr1 = obj.myPID1.calculate(calcErr1, -deltaT);
                                 end
                                 newCenterFreq = newCenterFreq + calcCorr1;
-                                
+                                tempIntermittentData = [tempIntermittentData(2:end), tNorm];                      
                             case {1,3}
                                 calcErr1 = 0;
                                 calcCorr1 = 0;
-                                tempIntermittentData = [tempIntermittentData(2:end), tNorm];
                                 if runNum == 2
                                     tempH(13) = plot(myHandles.normExcAXES, tempIntermittentData, 'ok', 'LineWidth', 2);
                                 else
