@@ -73,7 +73,7 @@ classdef AnalogVoltageStepper < handle
             set(obj.myDAQSession,'TriggerType', 'HwDigital');
             set(obj.myDAQSession,'SampleRate',100000);
             set(obj.myDAQSession,'HwDigitalTriggerSource', 'PFI0')
-            set(obj.myDAQSession, 'TriggerCondition', 'PositiveEdge');
+%             set(obj.myDAQSession,'TriggerCondition', 'PositiveEdge');
             set(obj.myDAQSession,'StopFcn',@obj.queueMoreData);
             chVals = cell(8,1);
             for idx=0:7
@@ -102,9 +102,11 @@ classdef AnalogVoltageStepper < handle
             addchannel(obj.myDAQSession, chIDXni, obj.myNames);
 %             obj.mySingleScanData = combvec(chVals{chIDXni+1})';
 %             temp = cell()
-            obj.mySingleScanData = cell2mat(chVals(chIDXni+1))'
+%             cell2mat(chVals(chIDXni+1))'
+            obj.mySingleScanData = cell2mat(chVals(chIDXni+1))';
 %             obj.myNames = {obj.myDAQSession.Channels(:).ID};
-            dataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', obj.mySingleScanData(1,:), 'UniformOutput', 0));
+%             dataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', obj.mySingleScanData(1,:), 'UniformOutput', 0));
+            dataToOutput = obj.mySingleScanData(1,:);
             setappdata(obj.myTopFigure, 'DAQdata', dataToOutput);
 %             obj.myDAQSession.queueOutputData(dataToOutput);
 %             obj.myDAQSession.startBackground();
