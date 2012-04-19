@@ -701,6 +701,7 @@ classdef FreqLocker < hgsetget
             linewidth = getappdata(obj.myTopFigure, 'linewidth');
             newCenterFreq = getappdata(obj.myTopFigure, 'newCenterFreq');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
+            
             badData = 0;
             detuning = 0;
             
@@ -730,13 +731,13 @@ classdef FreqLocker < hgsetget
                 
                 %3. Set Frequency (Display + Synthesizer)
                 switch mod(seqPlace+1,4) 
-                    case 0 % left side of line 1
+                    case 0 % left side of line 1 is next
                         curFrequency = newCenterFreq - linewidth/2;
-                    case 1 % data point 1
+                    case 1 % data point 1 is next
                         curFrequency = newCenterFreq + detuning;
-                    case 2 % right side of line 2
+                    case 2 % right side of line 2 is next
                         curFrequency = newCenterFreq + linewidth/2;
-                    case 3 % data point 2
+                    case 3 % data point 2 is next
                         curFrequency = newCenterFreq + detuning;
                 end
             
@@ -818,18 +819,17 @@ classdef FreqLocker < hgsetget
                     
                     
                     
-                    %Do some PID magic!
-                    %Calculate Error for PID1
-                    calcErr1 = tNorm - prevExc;
+                    %Do some PID magic
                     
+
+                    seqPlace = mod(seqPlace + 1,4);% now refers to next point
                     if runNum >= 2 && ~badData
-                        seqPlace = mod(seqPlace + 1,4);
                         switch seqPlace
-                            case {0,2}
+                            case {1,3} %which means you just took a lock point
                             prevExc = tNorm;
-                                if seqPlace == 0
+                                if seqPlace == 1
                                     obj.myPID1.myPolarity = 1;
-                                elseif seqPlace == 2
+                                elseif seqPlace == 3
                                     obj.myPID1.myPolarity = -1;
                                     calcErr1 = -1*calcErr1;
                                 end
@@ -841,11 +841,11 @@ classdef FreqLocker < hgsetget
                                 else
                                     calcCorr1 = obj.myPID1.calculate(calcErr1, -deltaT);
                                 end
-                                newCenterFreq = newCenterFreq + calcCorr1;
-                                tempIntermittentData = [tempIntermittentData(2:end), tNorm];                      
-                            case {1,3}
+                                newCenterFreq = newCenterFreq + calcCorr1;                      
+                            case {0,2} %which means you just took data
                                 calcErr1 = 0;
                                 calcCorr1 = 0;
+                                tempIntermittentData = [tempIntermittentData(2:end), tNorm];
                                 if runNum == 2
                                     tempH(13) = plot(myHandles.normExcAXES, tempIntermittentData, 'ok', 'LineWidth', 2);
                                 else
@@ -878,7 +878,7 @@ classdef FreqLocker < hgsetget
                         set(tempH(6), 'YData', tempPID1Data);
                     end
                     obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
-                    switch mod(seqPlace+1,4)
+                    switch seqPlace %Refers to next point
                         case 0
                         set(myHandles.lockStatus, 'String', 'L1');
                         
