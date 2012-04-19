@@ -1598,7 +1598,8 @@ classdef FreqLocker < hgsetget
                     end
                     [prevSet, curSet, nextSet] = obj.myAnalogStepper.getNextAnalogValues();
                     fprintf(1, ['Analog Voltages for last measurement were: ' num2str(prevSet) '\n\n']);
-                    obj.myDataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', nextSet, 'UniformOutput', 0));
+%                     obj.myDataToOutput = cell2mat(arrayfun(@(x) x*ones(1,500)', nextSet, 'UniformOutput', 0));
+                    obj.myDataToOutput = nextSet;
                     switch mod(seqPlace+1,4) %Change Frequencies like normal
                         case 0 % left side of line 1
                             curFrequency = newCenterFreqL - linewidth/2;
