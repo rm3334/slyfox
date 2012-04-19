@@ -49,7 +49,7 @@ classdef FreqLocker < hgsetget
                             'Parent', singlePeakP, ...
                             'Style', 'popup', ...
                             'Tag', 'singlePeakLockOptions', ...
-                            'String', 'Continuous Lock | Intermittent Lock');
+                            'String', 'Continuous Lock | Intermittent Lock with Data Point Between Lock Steps');
                     multiPeakP = uiextras.HBox('Parent', obj.myLockModes);
                         uicontrol(...
                             'Parent', multiPeakP, ...
@@ -194,8 +194,11 @@ classdef FreqLocker < hgsetget
                            'Style', 'text', ...
                            'Tag', 'lockStatus', ...
                            'String', 'LockPoint');
-            lockOutput = uiextras.Panel('Parent', obj.myPanel, ...
-                'Title', 'Locking Output');
+            lockOutput = uiextras.TabPanel('Parent', obj.myPanel);
+                axes('Tag', 'servoVal1AXES', 'Parent', lockOutput, 'ActivePositionProperty', 'OuterPosition');
+                axes('Tag', 'normExcAXES', 'Parent', lockOutput, 'ActivePositionProperty', 'OuterPosition');
+                lockOutput.TabNames = {'ServoVal1', 'Normalized Exc'};
+                lockOutput.SelectedChild = 1;
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1]);
             myHandles = guihandles(obj.myTopFigure);
             guidata(obj.myTopFigure, myHandles);
@@ -253,6 +256,7 @@ classdef FreqLocker < hgsetget
                     switch tempVal
                         case 1 %CONTINUOUS LOCK
                             obj.startContinuousLock_initialize();
+                        case 2 %INTERMITTENT LOCK WITH DATA POINTS BETWEEN LOCK POINTS
                     end
                 case 2 % Multiple PID
                     tempVal = get(myHandles.multiplePeakLockOptions, 'Value');
@@ -515,6 +519,372 @@ classdef FreqLocker < hgsetget
                         set(myHandles.lockStatus, 'String', 'L1');
                     else
                         set(myHandles.lockStatus, 'String', 'R1');
+                    end
+                    %9. Check Save and Write Data to file.
+% 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
+
+                    temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];                    
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
+                        if runNum >= 2 && ~badData
+                            tempPID1 = [calcErr1 calcCorr1 newCenterFreq];%err correctionApplied servoVal
+                        else
+                            tempPID1 = [calcErr1 0 newCenterFreq];%err correctionApplied servoVal
+                        end
+                    else
+                        tempPID1 = [0 0 0];
+                    end
+                    tempPID2 = [0 0 0];
+                    tempPID3 = [0 0 0];
+                    temp = [temp tempPID1 tempPID2 tempPID3];
+                    if get(myHandles.cycleNumOnCN, 'Value')
+                        temp = [temp prevCycleNum];
+                        setappdata(obj.myTopFigure, 'prevCycleNum', cycleNum);
+                    else
+                        temp = [temp 0];
+                    end
+                    temp = [temp badData];
+                    fprintf(fid, '%8.6f\t', temp);
+                    fprintf(fid, '\r\n');
+                    
+                    if (runNum > 5 && tNorm >= 0.1)
+                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreq - linewidth/2));
+                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreq + linewidth/2));
+                    end
+                    pointDone = 1;
+            end
+            if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
+                if runNum == 1
+                    setappdata(obj.myTopFigure, 'taxis', taxis);
+                end
+                runNum = runNum + 1;
+                seqPlace = mod(seqPlace + 1,2);
+                setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
+                setappdata(obj.myTopFigure, 'normData', tempNormData);
+                setappdata(obj.myTopFigure, 'scanData', tempScanData);
+                setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+                setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                setappdata(obj.myTopFigure, 'runNum', runNum);
+                setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+                setappdata(obj.myTopFigure, 'prevExc', prevExc);
+                setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+                setappdata(obj.myTopFigure, 'plottingHandles', tempH);
+                
+                guidata(obj.myTopFigure, myHandles);
+                
+           else %close everything done
+               setappdata(obj.myTopFigure, 'readyForData', 0);
+                %9.5 Close Frequency Synthesizer and Data file
+                obj.myPID1.clear();
+                obj.myFreqSynth.close();
+                fclose('all'); % weird matlab thing, can't just close fid, won't work.
+                %10. If ~Run, make obvious and reset 'run'
+                disp('Acquisistion Stopped');
+                set(myHandles.curFreq, 'String', 'STOPPED');
+                setappdata(obj.myTopFigure, 'run', 1);
+                drawnow;
+                try
+                    rmappdata(obj.myTopFigure, 'normData');
+                    rmappdata(obj.myTopFigure, 'scanData');
+                    rmappdata(obj.myTopFigure, 'summedData');
+                    rmappdata(obj.myTopFigure, 'PID1Data');
+                    rmappdata(obj.myTopFigure, 'runNum');
+                    rmappdata(obj.myTopFigure, 'taxis');
+                    rmappdata(obj.myTopFigure, 'fid');
+                    rmappdata(obj.myTopFigure, 'seqPlace');
+                    rmappdata(obj.myTopFigure, 'prevExc');
+                    rmappdata(obj.myTopFigure, 'linewidth');
+                    rmappdata(obj.myTopFigure, 'newCenterFreq');
+                    rmappdata(obj.myTopFigure, 'plottingHandles');
+                    rmappdata(obj.myTopFigure, 'prevCycleNum');
+                catch exception
+                    exception.message
+                end
+                    
+                drawnow;
+                
+                guidata(obj.myTopFigure, myHandles);
+
+                clear variables
+                clear mex
+            end
+        end
+        function startIntermittentLock_initialize(obj)
+            setappdata(obj.myTopFigure, 'readyForData', 0);
+            myHandles = guidata(obj.myTopFigure);
+            prevExc = 0; %For use in calculating the present Error
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
+            newCenterFreq = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
+            runNum = 1;
+            if get(myHandles.cycleNumOnCN, 'Value')
+                runNum = 0;
+                obj.myCycleNuControl.initialize();
+            end
+            seqPlace = 0; %0 = left side of line 1
+                          %1 = right side of line 1
+            
+            %AVOID MEMORY MOVEMENT SLOWDOWNS
+            bufferSize = 50;
+            tempScanData = zeros(6,bufferSize);
+            tempSummedData = zeros(1,bufferSize);
+            tempNormData = zeros(1,bufferSize);
+            tempPID1Data = zeros(1,bufferSize);
+            tempIntermittentData = zeros(1,bufferSize);
+            
+            %2.5 Initialize Frequency Synthesizer
+            obj.myFreqSynth.initialize();
+            %Start Frequency Loop / Check 'Run'
+            set(myHandles.curFreq, 'BackgroundColor', 'green');
+            
+            if getappdata(obj.myTopFigure, 'run')
+                        [path, fileName] = obj.createFileName();
+                        try
+                            mkdir(path);
+                            fid = fopen([path filesep fileName], 'a');
+                            fwrite(fid, datestr(now, 'mm/dd/yyyy\tHH:MM AM'))
+                            fprintf(fid, '\r\n');
+                            colNames = {'Frequency', 'Norm', 'GndState', ...
+                                'ExcState', 'Background', 'TStamp', 'BLUEGndState', ...
+                                'BLUEBackground', 'BLUEExcState', ...
+                                'err1', 'cor1', 'servoVal1', ...
+                                'err2', 'cor2', 'servoVal2', ...
+                                'err3', 'cor3', 'servoVal3', ...
+                                'cycleNum', 'badData'};
+                            n = length(colNames);
+                            for i=1:n
+                                fprintf(fid, '%s\t', colNames{i});
+                            end
+                                fprintf(fid, '\r\n');
+                        catch
+                            disp('Could not open file to write to.');
+                        end
+            end
+            
+            %Set to first frequency point
+            curFrequency = newCenterFreq - linewidth/2;
+            ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
+                if ~ret
+                    setappdata(obj.myTopFigure, 'run', 0);
+                end
+            
+            setappdata(obj.myTopFigure, 'normData', tempNormData);
+            setappdata(obj.myTopFigure, 'scanData', tempScanData);
+            setappdata(obj.myTopFigure, 'summedData', tempSummedData);
+            setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'IntermittentData', tempIntermittentData);
+            setappdata(obj.myTopFigure, 'runNum', runNum);
+            setappdata(obj.myTopFigure, 'fid', fid);
+            setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
+            setappdata(obj.myTopFigure, 'prevExc', prevExc);
+            setappdata(obj.myTopFigure, 'linewidth', linewidth);
+            setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
+            setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
+            setappdata(obj.myTopFigure, 'nextStep', @obj.startIntermittentLock_takeNextPoint);
+            pause(0.5) %I think I need this to make sure we get our first point good
+            guidata(obj.myTopFigure, myHandles);
+            setappdata(obj.myTopFigure, 'readyForData', 1);
+        end
+        function startIntermittentLock_takeNextPoint(obj, data)
+            myHandles = guidata(obj.myTopFigure);
+            tempNormData = getappdata(obj.myTopFigure, 'normData');
+            tempScanData = getappdata(obj.myTopFigure, 'scanData');
+            tempSummedData = getappdata(obj.myTopFigure, 'summedData');
+            tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
+            tempIntermittentData = getappdata(obj.myTopFigure, 'IntermittentData');
+            runNum = getappdata(obj.myTopFigure, 'runNum');
+            fid = getappdata(obj.myTopFigure, 'fid');
+            seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
+            prevExc = getappdata(obj.myTopFigure, 'prevExc');
+            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            newCenterFreq = getappdata(obj.myTopFigure, 'newCenterFreq');
+            prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
+            badData = 0;
+            detuning = 0;
+            
+            if runNum~=1
+                tempH = getappdata(obj.myTopFigure, 'plottingHandles');
+                taxis = getappdata(obj.myTopFigure, 'taxis');
+            end
+            
+            if get(myHandles.cycleNumOnCN, 'Value')
+                cycleNum = str2double(obj.myCycleNuControl.getCycleNum());
+                if runNum ~= 0
+                    prevCycleNum = getappdata(obj.myTopFigure, 'prevCycleNum');
+                end
+                seqPlace = mod(cycleNum-2,2); % 1 for previous measurement and 1 for mike bishof's convention
+                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
+                if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
+                    fprintf(1, 'Cycle Slipped\n');
+                    badData = 1;
+                end
+                setappdata(obj.myTopFigure, 'prevCycleNum', cycleNum);
+            end
+            
+            pointDone = 0;
+            while(getappdata(obj.myTopFigure, 'run') && ~pointDone)
+                plotstart = 1; %Needs to be out here so plots can be cleared
+                
+                
+                %3. Set Frequency (Display + Synthesizer)
+                switch mod(seqPlace+1,4) 
+                    case 0 % left side of line 1
+                        curFrequency = newCenterFreq - linewidth/2;
+                    case 1 % data point 1
+                        curFrequency = newCenterFreq + detuning;
+                    case 2 % right side of line 2
+                        curFrequency = newCenterFreq + linewidth/2;
+                    case 3 % data point 2
+                        curFrequency = newCenterFreq + detuning;
+                end
+            
+                ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
+                if ~ret
+                    setappdata(obj.myTopFigure, 'run', 0);
+                    break;
+                end
+                set(myHandles.curFreq, 'String', num2str(curFrequency));
+                set(myHandles.curFreqL, 'String', num2str(curFrequency));
+                
+                if runNum == 0
+                    runNum = runNum + 1;
+                    setappdata(obj.myTopFigure, 'runNum', runNum);
+                    return;
+                end
+                %4. Update Progress Bar
+                drawnow;
+                %5. Call Gage Card to gather data
+                time = data(1);
+                tSCdat12 = data(2:3);
+                tSCdat3 = data(4);
+                tSCdat456 = data(5:7);
+                tStep = data(8);
+                chDataLength = length(data(9:end))/6;
+
+                %7. Clear the Raw Plots, Plot the Raw Plots
+                temp7 = data(9:8+chDataLength);
+                temp8 = data(9+1*chDataLength:8+2*chDataLength);
+                temp9 = data(9+2*chDataLength:8+3*chDataLength);
+                temp10 = data(9+3*chDataLength:8+4*chDataLength);
+                temp11 = data(9+4*chDataLength:8+5*chDataLength);
+                temp12 = data(9+5*chDataLength:8+6*chDataLength);
+                    %7. Clear the Raw Plots, Plot the Raw Plots
+                if runNum == 1
+                    taxis = (1:length(temp7))*tStep;
+                    tempH(7) = plot(myHandles.rGSAxes, taxis, ...
+                                temp7);
+
+                    tempH(8) = plot(myHandles.rEAxes, taxis, ...
+                                temp8);
+
+                    tempH(9) = plot(myHandles.rBGAxes, taxis, ...
+                                temp9);
+
+                    tempH(10) = plot(myHandles.rBGSAxes, taxis, ...
+                                temp10);
+
+                    tempH(11) = plot(myHandles.rBEAxes, taxis, ...
+                                temp11);
+
+                    tempH(12) = plot(myHandles.rBBGAxes, taxis, ...
+                                temp12);
+                else
+                    set(tempH(7), 'XData',  taxis);
+                    set(tempH(7), 'YData', temp7);
+                    set(tempH(8), 'XData',  taxis);
+                    set(tempH(8), 'YData', temp8);
+                    set(tempH(9), 'XData',  taxis);
+                    set(tempH(9), 'YData', temp9);
+                    set(tempH(10), 'XData',  taxis);
+                    set(tempH(10), 'YData', temp10);
+                    set(tempH(11), 'XData',  taxis);
+                    set(tempH(11), 'YData', temp11);
+                    set(tempH(12), 'XData',  taxis);
+                    set(tempH(12), 'YData', temp12);
+
+                end
+                    %8. Update Scan Plots
+                    tempScanData(1:2, :) = [tempScanData(1:2, 2:end) tSCdat12];
+                    tempScanData(3,:) = [tempScanData(3, 2:end) tSCdat3];
+                    tempScanData(4:6,:) = [tempScanData(4:6, 2:end) tSCdat456];
+                    %NORMALIZED counts are (E - bg)/(E + G - 2bg)
+                    tNorm = (tSCdat12(2)) / (tSCdat12(2) + tSCdat12(1));
+                    tempNormData = [tempNormData(2:end) tNorm];
+                    %SUMMED counts
+                    tSum = tSCdat12(2) + tSCdat12(1);
+                    tempSummedData = [tempSummedData(2:end) tSum];
+                    
+                    
+                    
+                    %Do some PID magic!
+                    %Calculate Error for PID1
+                    calcErr1 = tNorm - prevExc;
+                    
+                    tempSeqPlace = mod(seqPlace + 1,4);
+                    if runNum >= 2 && ~badData
+                        switch tempSeqPlace
+                            case {0,2}
+                            prevExc = tNorm;
+                            seqPlace = mod(seqPlace + 1,4);
+                                if seqPlace == 0
+                                    obj.myPID1.myPolarity = 1;
+                                elseif seqPlace == 2
+                                    obj.myPID1.myPolarity = -1;
+                                    calcErr1 = -1*calcErr1;
+                                end
+                                obj.updatePIDvalues();
+                                obj.checkPIDenables();
+                                deltaT = str2double(get(obj.myPID1gui.myDeltaT, 'String'));
+                                if deltaT == 0
+                                    calcCorr1 = obj.myPID1.calculate(calcErr1, time);
+                                else
+                                    calcCorr1 = obj.myPID1.calculate(calcErr1, -deltaT);
+                                end
+                                newCenterFreq = newCenterFreq + calcCorr1;
+                                
+                            case {1,3}
+                                calcErr1 = 0;
+                                calcCorr1 = 0;
+                                tempIntermittentData = [tempIntermittentData(2:end), tNorm];
+                                if runNum == 2
+                                    tempH(13) = plot(myHandles.normExcAXES, tempIntermittentData, 'ok', 'LineWidth', 2);
+                                else
+                                    set(tempH(13), 'YData', tempIntermittentData);
+                                end
+                        end
+                    end
+                    
+                    tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                    
+                    %Do some Plotting
+                    firstplot = 1;
+                    if get(myHandles.ignoreFirstToggle, 'Value') && plotstart < 3
+                        plotstart = 2;
+                        firstplot = 2;
+                    end
+                    if runNum == 1
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                    elseif runNum > 1
+                        set(tempH(1), 'YData', tempNormData);
+                        set(tempH(2), 'YData', tempScanData(2,:));
+                        set(tempH(3), 'YData', tempScanData(1,:));
+                        set(tempH(4), 'YData', tempScanData(3,:));
+                        set(tempH(5), 'YData', tempSummedData);
+                        set(tempH(6), 'YData', tempPID1Data);
+                    end
+                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                    switch mod(seqPlace+1,4)
+                        case 0
+                        set(myHandles.lockStatus, 'String', 'L1');
+                        
+                        case 2
+                        set(myHandles.lockStatus, 'String', 'R1');
+                        
+                        otherwise
+                        set(myHandles.lockStatus, 'String', 'D');
                     end
                     %9. Check Save and Write Data to file.
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
