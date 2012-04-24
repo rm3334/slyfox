@@ -191,7 +191,9 @@ classdef AChanGroup < hgsetget
                 obj.myDevice = buildNewDAQSession(obj);
                 data = obj.assembleOutputData();
                 obj.myTempData = data;
+                tic
                 putdata(obj.myDevice, data);
+                toc
                 bool = 1;
                 start(obj.myDevice)
 %             catch exception

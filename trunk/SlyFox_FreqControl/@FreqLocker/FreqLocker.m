@@ -826,7 +826,8 @@ classdef FreqLocker < hgsetget
                     if runNum >= 2 && ~badData
                         switch seqPlace
                             case {1,3} %which means you just took a lock point
-                            prevExc = tNorm;
+                                calcErr1 = prevExc - tNorm;
+                                prevExc = tNorm;
                                 if seqPlace == 1
                                     obj.myPID1.myPolarity = 1;
                                 elseif seqPlace == 3
