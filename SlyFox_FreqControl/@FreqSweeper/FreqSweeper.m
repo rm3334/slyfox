@@ -538,8 +538,19 @@ classdef FreqSweeper < handle
                             stepFrequency = -1*str2double(get(myHandles.stepFrequency, 'String')); %FLIPPED
                             stopFrequency = str2double(get(myHandles.startFrequency, 'String')); %FLIPPED
                         end
-                    freqList = startFrequency:stepFrequency:stopFrequency;
-                    curFrequency = freqList(1);
+                        try
+                            freqList = startFrequency:stepFrequency:stopFrequency;
+                            curFrequency = freqList(1);
+                        catch exception
+                            set(myHandles.startButton, 'Enable', 'on');
+                            set(myHandles.stopButton, 'Enable', 'off');
+                            set(myHandles.saveScan, 'Enable', 'on');
+                            set(myHandles.flipScan, 'Enable', 'on');
+                            set(myHandles.holdFreq, 'Enable', 'on');
+                            set(myHandles.backAndForthScan, 'Enable', 'on');
+                            errordlg('Bad Frequency Numbers');
+                            return
+                        end
                 else
                     freqList = 1:10000;
                     curFrequency = str2double(get(myHandles.startFrequency, 'String'));
