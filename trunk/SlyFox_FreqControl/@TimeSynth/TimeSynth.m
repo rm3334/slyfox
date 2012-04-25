@@ -190,7 +190,8 @@ classdef TimeSynth < hgsetget
                     checksum = checksum - 65536;
                 end
                 data = [data, checksum];
-
+tic
+                pause(0.3)
                 fprintf(obj.myVISAobject, ['LDWF?1,' int2str((length(data)-1)/2) ]);
                 fscanf(obj.myVISAobject);
                 fwrite(obj.myVISAobject,data(1:end-1),'int16');
@@ -201,6 +202,7 @@ classdef TimeSynth < hgsetget
                 fprintf(obj.myVISAobject, ['FSMP ' num2str(frequency)]); % Stepping Frequency
                 fprintf(obj.myVISAobject, 'TSRC 2'); % Trigger Source - Single (0) - Positive Slope (2) - for testing
                 fprintf(obj.myVISAobject, 'MENA 1'); % Enable Modulation
+                toc
             catch
                 if obj.myDEBUGmode ~= 1
                     errordlg('Abandon hope, could not set Time.')
@@ -230,7 +232,7 @@ classdef TimeSynth < hgsetget
             try
                 load TimeSynthState
                 myHandles = guidata(obj.myTopFigure);
-                set(myHandles.visaCMD, 'Value', TimeSynthState.myVISAcmd);
+                set(myHandles.visaCMDTime, 'Value', TimeSynthState.myVISAcmd);
                 obj.updateTimeSynth(1);
                 guidata(obj.myTopFigure, myHandles);
             catch
