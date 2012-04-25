@@ -3,7 +3,7 @@ classdef PID < handle
     %   This is a simple PID that holds that values of its gains, and the
     %   last summed error, and has functions for computing correction
     %   factors.
-    %   Written by Ben Bloom. Last Updated 01/20/2012 18:01:00
+    %   Written by Ben Bloom. Last Updated 04/25/2012 15:50:00
     
     properties
         myPolarity = 1; %Polarity of error
@@ -38,7 +38,7 @@ classdef PID < handle
             
             if obj.myT0 ~= 0
                 %Calculate Integral
-                obj.myIntE = obj.myIntE + e1*timeDiff;
+                obj.myIntE = obj.myIntE + (e1+obj.myE0)*timeDiff/2;
                 %Calculate Derivative
                 derivative = (e1 - obj.myE0)/timeDiff;
             else
