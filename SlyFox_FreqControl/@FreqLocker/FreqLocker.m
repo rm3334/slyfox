@@ -853,9 +853,13 @@ classdef FreqLocker < hgsetget
                                     set(tempH(13), 'YData', tempIntermittentData);
                                 end
                         end
+                        tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                    else
+                        calcErr1 = 0;
+                        calcCorr1 = 0;
                     end
                     
-                    tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                    
                     
                     %Do some Plotting
                     firstplot = 1;
