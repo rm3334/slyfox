@@ -619,7 +619,7 @@ classdef FreqSweeper < handle
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Initialize Time Synthesizer
-            obj.myTimeSynth.initialize();
+%             obj.myTimeSynth.initialize();
             %Set to first frequency point
             ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
             if sweepSelect == 2
@@ -868,7 +868,7 @@ classdef FreqSweeper < handle
                     setappdata(obj.myTopFigure, 'readyForData', 0);
                     %9.5 Close Frequency Synthesizer and Data file
 % % % % % % %                     obj.myFreqSynth.close();
-                    obj.myTimeSynth.close();
+%                     obj.myTimeSynth.close();
                     fclose('all'); % weird matlab thing, can't just close fid, won't work.
                     %10. If ~Run, make obvious and reset 'run'
                     if ~getappdata(obj.myTopFigure, 'run')
