@@ -92,9 +92,39 @@ classdef TimeSynth < hgsetget
                 g = eval(obj.myVISAconstructor);
                 fopen(g);
                 obj.myVISAobject = g;
+                
+                %Set Burst Mode
+                fprintf(obj.myVISAobject, 'SOUR1:BURS:MODE TRIG');
+                fprintf(obj.myVISAobject, 'SOUR1:BURS:NCYC 1');
+                %Set Pulse Waveform
+                fprintf(obj.myVISAobject, 'SOUR1:FUNC:SHAP PULS');
+                %Set Duty Cycle 100%
+                
+                
+                fprintf(obj.myVISAobject, 'SOUR1:VOLT:LEV:IMM:AMPL 5VPP');
+                fprintf(obj.myVISAobject, 'SOUR1:VOLT:LEV:IMM:OFFS 2.5V');
+                fprintf(obj.myVISAobject, 'TRIG:SEQ:SOUR EXT');
+                fprintf(obj.myVISAobject, 'OUTP1:STAT ON');
+                
             end
         end
-        function realPulseTime = setSinglePulse(obj, delayTime, pulseTime)
+        function setSinglePulse(obj, delayTime, pulseTime)
+            try
+                %Set Trigger Delay
+                fprintf(obj.myVISAobject, ['SOUR1:BURS:TDEL ' num2str(delayTime) 'ms']);
+                %Set Period
+                fprintf(obj.myVISAobject, ['SOUR1:PULS:PER ' num2str(pulseTime) 'ms']);
+%                 realPulseTime = pulseTime*1e-3;
+            catch
+                if obj.myDEBUGmode ~= 1
+                    errordlg('Abandon hope, could not set Time.')
+                    ret = 0;
+                else
+                    ret = 1;
+                end
+            end
+        end
+        function realPulseTime = setSinglePulseSRS(obj, delayTime, pulseTime)
             try
                 delayTime = delayTime*1e-3;
                 pulseTime = pulseTime*1e-3;
