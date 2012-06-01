@@ -522,7 +522,7 @@ classdef FreqSweeper < handle
             set(myHandles.backAndForthScan, 'Enable', 'off');
             
             sweepSelect = obj.mySweepModes.SelectedChild; %1-Frequency 2-Time
-                                                          
+%             sweepSelect = 1;                                              
             
             %1. Create Frequency List
                 %Check to see if you want to scan, or you want to hold the
@@ -619,15 +619,15 @@ classdef FreqSweeper < handle
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Initialize Time Synthesizer
-%             obj.myTimeSynth.initialize();
+            obj.myTimeSynth.initialize();
             %Set to first frequency point
             ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
             if sweepSelect == 2
                 totalTime = max(timeList);
-                realPulseTime = obj.myTimeSynth.setSinglePulse(totalTime - timeList(1), timeList(1));
-                realPulseTime = realPulseTime*1e3;
-                timeList(1) = realPulseTime;
-                x(1) = realPulseTime;
+                obj.myTimeSynth.setSinglePulse(totalTime - timeList(1), timeList(1));
+% %                 realPulseTime = realPulseTime*1e3;
+% %                 timeList(1) = realPulseTime;
+% %                 x(1) = realPulseTime;
             end
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -697,10 +697,10 @@ classdef FreqSweeper < handle
                 else
                     %Set Pulse Time
                     totalTime = max(timeList);
-                    realPulseTime = obj.myTimeSynth.setSinglePulse(totalTime - timeList(runNum), timeList(runNum));
-                    realPulseTime = realPulseTime*1e3;
-                    timeList(runNum) = realPulseTime;
-                    x(runNum) = realPulseTime;
+                    obj.myTimeSynth.setSinglePulse(totalTime - timeList(runNum+1), timeList(runNum+1));
+% %                     realPulseTime = realPulseTime*1e3;
+% %                     timeList(runNum) = realPulseTime;
+% %                     x(runNum) = realPulseTime;
                 end
                 %4. Update Progress Bar
                 jProgBar.setValue(runNum);
@@ -858,7 +858,7 @@ classdef FreqSweeper < handle
                 setappdata(obj.myTopFigure, 'curFrequency', curFrequency);
                 setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
                 if sweepSelect == 2
-                    setappdata(obj.myTopFigure, 'prevTime', realPulseTime);
+                    setappdata(obj.myTopFigure, 'prevTime', timeList(runNum));
                     setappdata(obj.myTopFigure, 'x', x);
                 end
 %                 pause(3) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Testing
