@@ -645,6 +645,7 @@ classdef FreqSweeper < handle
             setappdata(obj.myTopFigure, 'timeList', timeList);
             setappdata(obj.myTopFigure, 'sweepSelect', sweepSelect);
             setappdata(obj.myTopFigure, 'prevTime', timeList(1));
+            setappdata(obj.myTopFigure, 'curTime', timeList(1));
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
             setappdata(obj.myTopFigure, 'curFrequency', curFrequency);
             setappdata(obj.myTopFigure, 'nextStep', @obj.sweepRemote_takeNextPoint);
@@ -668,6 +669,7 @@ classdef FreqSweeper < handle
             curFrequency = getappdata(obj.myTopFigure, 'curFrequency');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
             prevTime = getappdata(obj.myTopFigure, 'prevTime');
+            curTime = getappdata(obj.myTopFigure, 'curTime');
 
             
             if runNum~=1
@@ -695,12 +697,15 @@ classdef FreqSweeper < handle
                     end
                     set(myHandles.curFreq, 'String', num2str(curFrequency));
                 else
-                    %Set Pulse Time
-                    totalTime = max(timeList);
-                    obj.myTimeSynth.setSinglePulse(totalTime - timeList(runNum+1), timeList(runNum+1));
+                    if runNum+1 <= length(timeList)
+                        %Set Pulse Time
+                        totalTime = max(timeList);
+                        obj.myTimeSynth.setSinglePulse(totalTime - timeList(runNum+1), timeList(runNum+1));
+                        curTime = timeList(runNum+1);
 % %                     realPulseTime = realPulseTime*1e3;
 % %                     timeList(runNum) = realPulseTime;
 % %                     x(runNum) = realPulseTime;
+                    end
                 end
                 %4. Update Progress Bar
                 jProgBar.setValue(runNum);
@@ -858,7 +863,7 @@ classdef FreqSweeper < handle
                 setappdata(obj.myTopFigure, 'curFrequency', curFrequency);
                 setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
                 if sweepSelect == 2
-                    setappdata(obj.myTopFigure, 'prevTime', timeList(runNum));
+                    setappdata(obj.myTopFigure, 'prevTime', curTime);
                     setappdata(obj.myTopFigure, 'x', x);
                 end
 %                 pause(3) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Testing
@@ -902,6 +907,7 @@ classdef FreqSweeper < handle
                     rmappdata(obj.myTopFigure, 'curFrequency');
                     rmappdata(obj.myTopFigure, 'prevFrequency');
                     rmappdata(obj.myTopFigure, 'prevTime');
+                    rmappdata(obj.myTopFigure, 'curTime');
                     rmappdata(obj.myTopFigure, 'sweepSelect');
                     
                     drawnow;
