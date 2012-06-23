@@ -8,6 +8,7 @@ classdef DDS_Frontend < hgsetget
     properties
         myTopFigure = [];
         myTitlePanel = [];
+        mySuperPanel = [];
         myPanel = [];
         myDDS;
         mySerial;
@@ -22,7 +23,12 @@ classdef DDS_Frontend < hgsetget
             obj.myTopFigure = topFig;
             obj.myTitlePanel = uiextras.Panel('Parent', parentObj, ...
                 'Title', ['DDS' num2str(boardAddr)]);
-            obj.myPanel = uiextras.HBox('Parent', obj.myTitlePanel, ...
+            %%sara edits!%%
+            obj.mySuperPanel = uiextras.VBox('Parent', obj.myTitlePanel, ...
+                'Spacing', 5, ...
+                'Padding', 5);
+            %%%%%%%
+            obj.myPanel = uiextras.HBox('Parent', obj.mySuperPanel, ...
                 'Spacing', 5, ...
                 'Padding', 5);
             obj.myDDS = DDS.DDS_Config(boardAddr);
@@ -57,6 +63,9 @@ classdef DDS_Frontend < hgsetget
                         'Tag', ['sysClk' num2str(obj.myBoardAddr)]);
                 uiextras.Empty('Parent', buttonVBox);
                 set(buttonVBox, 'Sizes', [-3 -1 -2 -1 -3]);
+                
+
+                
             modeTabPanel = uiextras.TabPanel('Parent', obj.myPanel, ...
                 'Tag', 'modeTabPanel', ...
                 'Callback', @obj.modeTabPanel_Callback);
@@ -224,8 +233,69 @@ classdef DDS_Frontend < hgsetget
                 BPSKGrid = uiextras.VBox('Parent', modeTabPanel);
             modeTabPanel.TabNames = obj.myAvailableModes;
             modeTabPanel.SelectedChild = 1;
+            
+            
+            %%%%%% here Sara tries to add amplitude box at the bottom %%%%%%
+            buttonHBox = uiextras.HBox('Parent', obj.mySuperPanel, ...
+                'Spacing', 5, ...
+                'Padding', 5);
+                uiextras.Empty('Parent', buttonHBox);
+                
+                ampTextVB = uiextras.VBox('Parent', buttonHBox);
+                            uiextras.Empty('Parent', ampTextVB);
+                            uicontrol(...
+                                'Parent', ampTextVB,...
+                                'Style', 'text', ...
+                                'FontWeight', 'bold', ...
+                                'FontUnits', 'normalized', ...
+                                'FontSize', 0.5, ...
+                                'String', 'Amplitude');
+                            uiextras.Empty('Parent', ampTextVB);
+                            ampTextVB.Sizes = [-1 -4 -1];
+                        
+                        
+                uicontrol(...
+                            'Parent', buttonHBox, ...
+                            'Style', 'edit', ...
+                            'String', '4096', ...
+                            'Tag', ['amp' num2str(obj.myBoardAddr)]);                       
+                        
+                uicontrol(...
+                                'Parent', buttonHBox,...
+                                'Style', 'pushbutton', ...
+                                'Tag', 'updateAmp',...
+                                'String', 'Update Amplitude',...
+                                'Callback', @obj.amp_Callback);            
+                buttonHBox.Sizes = [-1 -5 -5 -6];        
+            %%%%%%%%%%%%%%%
+            
+            set(obj.mySuperPanel, 'Sizes', [-10 -2]);
             set(obj.myPanel, 'Sizes', [-1 -3]);
         end
+        
+        
+        
+        %%%% adding a callback function for the amplitude %%%%
+        function amp_Callback(obj, src, eventData)
+            lower_limit = 1;
+            upper_limit = 4096;
+            myHandles = guidata(obj.myTopFigure);            
+            %if not an integer from 1 to 4096, perform no action and send
+            %an error message
+            num_entered = str2double(get(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String'));
+            if ((num_entered < 1) || (num_entered > 4096) || (floor(num_entered) ~= num_entered))               
+                str = sprintf('Please enter an integer from %d to %d', lower_limit, upper_limit);
+                msgbox(str);
+            else
+                str = sprintf('What to do??');
+                msgbox(str);
+            end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+       
+        
+        
         
         function modeTabPanel_Callback(obj, src, eventData)
             obj.myCurrentMode = eventData.SelectedChild;
