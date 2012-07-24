@@ -338,7 +338,6 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
             setappdata(obj.myTopFigure, 'prevExc', prevExc);
-            setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
             setappdata(obj.myTopFigure, 'nextStep', @obj.startContinuousLock_takeNextPoint);
@@ -356,7 +355,7 @@ classdef FreqLocker < hgsetget
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
             prevExc = getappdata(obj.myTopFigure, 'prevExc');
-            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreq = getappdata(obj.myTopFigure, 'newCenterFreq');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
             badData = 0;
@@ -594,7 +593,6 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'fid');
                     rmappdata(obj.myTopFigure, 'seqPlace');
                     rmappdata(obj.myTopFigure, 'prevExc');
-                    rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreq');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
                     rmappdata(obj.myTopFigure, 'prevCycleNum');
@@ -679,7 +677,6 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
             setappdata(obj.myTopFigure, 'prevExc', prevExc);
-            setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreq', newCenterFreq);
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
             setappdata(obj.myTopFigure, 'nextStep', @obj.startIntermittentLock_takeNextPoint);
@@ -698,7 +695,7 @@ classdef FreqLocker < hgsetget
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
             prevExc = getappdata(obj.myTopFigure, 'prevExc');
-            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreq = getappdata(obj.myTopFigure, 'newCenterFreq');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
             
@@ -965,7 +962,6 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'fid');
                     rmappdata(obj.myTopFigure, 'seqPlace');
                     rmappdata(obj.myTopFigure, 'prevExc');
-                    rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreq');
                     rmappdata(obj.myTopFigure, 'plottingHandles');
                     rmappdata(obj.myTopFigure, 'prevCycleNum');
@@ -1054,7 +1050,6 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
             setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
             setappdata(obj.myTopFigure, 'prevExcH', prevExcH);
-            setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
             setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
@@ -1075,7 +1070,7 @@ classdef FreqLocker < hgsetget
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
             prevExcL = getappdata(obj.myTopFigure, 'prevExcL');
             prevExcH = getappdata(obj.myTopFigure, 'prevExcH');
-            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
@@ -1384,7 +1379,6 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'seqPlace');
                     rmappdata(obj.myTopFigure, 'prevExcL');
                     rmappdata(obj.myTopFigure, 'prevExcH');
-                    rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreqL');
                     rmappdata(obj.myTopFigure, 'newCenterFreqH');
                     rmappdata(obj.myTopFigure, 'prevFrequency');
@@ -1483,7 +1477,6 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
             setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
             setappdata(obj.myTopFigure, 'prevExcH', prevExcH);
-            setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
             setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
@@ -1504,7 +1497,7 @@ classdef FreqLocker < hgsetget
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
             prevExcL = getappdata(obj.myTopFigure, 'prevExcL');
             prevExcH = getappdata(obj.myTopFigure, 'prevExcH');
-            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
@@ -1819,7 +1812,6 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'seqPlace');
                     rmappdata(obj.myTopFigure, 'prevExcL');
                     rmappdata(obj.myTopFigure, 'prevExcH');
-                    rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreqL');
                     rmappdata(obj.myTopFigure, 'newCenterFreqH');
                     rmappdata(obj.myTopFigure, 'prevFrequency');
@@ -1913,7 +1905,6 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
             setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
             setappdata(obj.myTopFigure, 'prevExcH', prevExcH);
-            setappdata(obj.myTopFigure, 'linewidth', linewidth);
             setappdata(obj.myTopFigure, 'newCenterFreqL', newCenterFreqL);
             setappdata(obj.myTopFigure, 'newCenterFreqH', newCenterFreqH);
             setappdata(obj.myTopFigure, 'prevFrequency', curFrequency);
@@ -1934,7 +1925,7 @@ classdef FreqLocker < hgsetget
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
             prevExcL = getappdata(obj.myTopFigure, 'prevExcL');
             prevExcH = getappdata(obj.myTopFigure, 'prevExcH');
-            linewidth = getappdata(obj.myTopFigure, 'linewidth');
+            linewidth = str2double(get(myHandles.linewidth, 'String'));
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
@@ -2264,7 +2255,6 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'seqPlace');
                     rmappdata(obj.myTopFigure, 'prevExcL');
                     rmappdata(obj.myTopFigure, 'prevExcH');
-                    rmappdata(obj.myTopFigure, 'linewidth');
                     rmappdata(obj.myTopFigure, 'newCenterFreqL');
                     rmappdata(obj.myTopFigure, 'newCenterFreqH');
                     rmappdata(obj.myTopFigure, 'prevFrequency');
