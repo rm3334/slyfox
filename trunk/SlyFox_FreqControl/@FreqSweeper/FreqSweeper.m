@@ -619,15 +619,15 @@ classdef FreqSweeper < handle
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
             %Initialize Time Synthesizer
-            obj.myTimeSynth.initialize();
+%             obj.myTimeSynth.initialize();
             %Set to first frequency point
             ret = obj.myFreqSynth.setFrequency(num2str(curFrequency));
             if sweepSelect == 2
                 totalTime = max(timeList);
                 obj.myTimeSynth.setSinglePulse(totalTime - timeList(1), timeList(1));
-% %                 realPulseTime = realPulseTime*1e3;
-% %                 timeList(1) = realPulseTime;
-% %                 x(1) = realPulseTime;
+%                 realPulseTime = realPulseTime*1e3;
+%                 timeList(1) = realPulseTime;
+%                 x(1) = realPulseTime;
             end
                 if ~ret
                     setappdata(obj.myTopFigure, 'run', 0);
@@ -702,9 +702,9 @@ classdef FreqSweeper < handle
                         totalTime = max(timeList);
                         obj.myTimeSynth.setSinglePulse(totalTime - timeList(runNum+1), timeList(runNum+1));
                         curTime = timeList(runNum+1);
-% %                     realPulseTime = realPulseTime*1e3;
-% %                     timeList(runNum) = realPulseTime;
-% %                     x(runNum) = realPulseTime;
+%                     realPulseTime = realPulseTime*1e3;
+%                     timeList(runNum) = realPulseTime;
+%                     x(runNum) = realPulseTime;
                     end
                 end
                 %4. Update Progress Bar
@@ -873,7 +873,7 @@ classdef FreqSweeper < handle
                     setappdata(obj.myTopFigure, 'readyForData', 0);
                     %9.5 Close Frequency Synthesizer and Data file
 % % % % % % %                     obj.myFreqSynth.close();
-%                     obj.myTimeSynth.close();
+% % % % % % %                     obj.myTimeSynth.close();
                     fclose('all'); % weird matlab thing, can't just close fid, won't work.
                     %10. If ~Run, make obvious and reset 'run'
                     if ~getappdata(obj.myTopFigure, 'run')
