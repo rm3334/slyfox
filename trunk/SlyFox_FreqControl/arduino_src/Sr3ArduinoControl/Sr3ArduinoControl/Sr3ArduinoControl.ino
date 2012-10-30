@@ -43,6 +43,7 @@ byte dataStatus;  //ready or not ready
 byte serialInputCount; //how many bytes received
 volatile int mode = 0; // Mode 0 does not step cycle number
                        // Mode 1 steps cycle counter
+                       // Mode 2 is a mod 8 cycle counter
 volatile boolean startCOM = false;
 volatile char Command[3];
 volatile int cmdIDX; // for building Command list
@@ -83,25 +84,63 @@ void loop(){
   {
     setPinTTL_OUT1_LOW();
   }
-  
-  switch (cycleNum){
-    case 0:
-      digitalWrite(pinLCWaveplate, HIGH);
-      digitalWrite(pinLED, HIGH);
-      break;
-    case 1:
-      digitalWrite(pinLCWaveplate, HIGH);
-      digitalWrite(pinLED, HIGH);
-      break;
-    case 2:
-      digitalWrite(pinLCWaveplate, LOW);
-      digitalWrite(pinLED, LOW);
-      break;
-    case 3:
-      digitalWrite(pinLCWaveplate, LOW);
-      digitalWrite(pinLED, LOW);
-      break;
+  if (mode == 0 || mode == 1) {
+    switch (cycleNum){
+      case 0:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 1:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 2:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+      case 3:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+    }
   }
+  else if (mode == 2){
+    switch (cycleNum){
+      case 0:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 1:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 2:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 3:
+        digitalWrite(pinLCWaveplate, HIGH);
+        digitalWrite(pinLED, HIGH);
+        break;
+      case 4:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+      case 5:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+      case 6:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+      case 7:
+        digitalWrite(pinLCWaveplate, LOW);
+        digitalWrite(pinLED, LOW);
+        break;
+    }
+  }
+  
   if (startCOM) {
     ComputerCom();
     startCOM = !startCOM;
