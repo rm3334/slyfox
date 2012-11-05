@@ -61,8 +61,14 @@ classdef DDS_Frontend < hgsetget
                         'Style', 'edit', ...
                         'String', '200', ...
                         'Tag', ['sysClk' num2str(obj.myBoardAddr)]);
+                setDefaultButton = uicontrol( ...
+                            'Parent', buttonVBox,...
+                            'Style', 'pushbutton', ...
+                            'Tag', ['setDefault' num2str(obj.myBoardAddr)],...
+                            'String', 'Set Default',...
+                            'Callback', @obj.setDefaultButton_Callback);
                 uiextras.Empty('Parent', buttonVBox);
-                set(buttonVBox, 'Sizes', [-3 -1 -2 -1 -3]);
+                set(buttonVBox, 'Sizes', [-3 -1 -2 -1 -1 -3]);
                 
 
                 
@@ -258,14 +264,15 @@ classdef DDS_Frontend < hgsetget
                             'Parent', buttonHBox, ...
                             'Style', 'edit', ...
                             'String', '4096', ...
-                            'Tag', ['amp' num2str(obj.myBoardAddr)]);                       
+                            'Tag', ['amp' num2str(obj.myBoardAddr)], ...
+                            'Callback', @obj.amp_Callback);                       
                         
                 uicontrol(...
                                 'Parent', buttonHBox,...
                                 'Style', 'pushbutton', ...
                                 'Tag', 'updateAmp',...
                                 'String', 'Update Amplitude',...
-                                'Callback', @obj.amp_Callback);            
+                                'Callback', @obj.updateAmp_Callback);            
                 buttonHBox.Sizes = [-1 -5 -5 -6];        
             %%%%%%%%%%%%%%%
             
@@ -277,26 +284,49 @@ classdef DDS_Frontend < hgsetget
         
         %%%% adding a callback function for the amplitude %%%%
         function amp_Callback(obj, src, eventData)
-            lower_limit = 1;
+            lower_limit = 0;
             upper_limit = 4096;
             myHandles = guidata(obj.myTopFigure);            
             %if not an integer from 1 to 4096, perform no action and send
             %an error message
             num_entered = str2double(get(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String'));
-            if ((num_entered < 1) || (num_entered > 4096) || (floor(num_entered) ~= num_entered))               
-                str = sprintf('Please enter an integer from %d to %d', lower_limit, upper_limit);
-                msgbox(str);
-            else
-                str = sprintf('What to do??');
-                msgbox(str);
+            if (num_entered > upper_limit)               
+                set(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String', num2str(upper_limit));
+            elseif (num_entered < lower_limit)
+                set(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String', num2str(lower_limit));
             end
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-       
+        function updateAmp_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);   
+            
+            amp = str2double(get(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String'));
+            ampHex = obj.myDDS.calculateAmp(amp)
+            params = struct('ampHex', ampHex);
+                    
+            iSet = obj.myDDS.createInstructionSet('Amplitude', params);
+            fwrite(obj.mySerial, iSet{1});
+            fscanf(obj.mySerial)
+        end
         
         
-        
+        function setDefaultButton_Callback(obj, src, eventData)
+            myHandles = guidata(obj.myTopFigure);
+            
+            dAmplitude = str2double(get(myHandles.(['amp' num2str(obj.myBoardAddr)]), 'String'));
+            dAmpHex = obj.myDDS.calculateAmp(dAmplitude);
+            
+            
+            dFrequency = str2double(get(myHandles.(['stFTW' num2str(obj.myBoardAddr)]), 'String'));
+            [~, dftw] = obj.myDDS.calculateFTW(dFrequency);
+            
+            params = struct('ampHex', dAmpHex, 'FTW1', dftw);
+            iSet = obj.myDDS.createInstructionSet('Defaults', params);
+%             iSet{1}
+            fwrite(obj.mySerial, iSet{1});
+            fscanf(obj.mySerial)
+        end
         function modeTabPanel_Callback(obj, src, eventData)
             obj.myCurrentMode = eventData.SelectedChild;
         end

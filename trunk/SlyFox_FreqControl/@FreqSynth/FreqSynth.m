@@ -9,6 +9,7 @@ classdef FreqSynth < hgsetget
         myTopFigure = [];
         myVISAconstructor = [];
         myVISAobject = [];
+        myTimeSynth = [];
     end
     
     methods
@@ -23,7 +24,7 @@ classdef FreqSynth < hgsetget
                 'Parent', h0, ...
                 'Tag', 'visaCMD', ...
                 'Style', 'popup', ...
-                'String', info.ObjectConstructorName, ...
+                'String', [{'Use Time Synth Object'}; info.ObjectConstructorName], ...
                 'Callback', @obj.updateFreqSynth);
             
             h1 = uiextras.HBox('Parent', h0, 'Tag', 'freqGrid');
@@ -70,46 +71,63 @@ classdef FreqSynth < hgsetget
             guidata(top, myHandles);
             obj.loadState();
         end
+        function setTimeSynth(obj, tSynth)
+            obj.myTimeSynth = tSynth;
+        end
         function updateFreqSynth(hObject, eventData, varargin)
             myHandles = guidata(hObject.myTopFigure);
             tVal = get(myHandles.visaCMD, 'Value');
             tStrings = get(myHandles.visaCMD, 'String');
-            if ~isempty(hObject.myVISAobject)
-                hObject.close();
+            
+            if tVal == 1 %use time synth is selected
+                hObject.myTimeSynth.updateTimeSynth();
+                hObject.myVISAobject = hObject.myTimeSynth.myVISAobject;
+            else
+                if ~isempty(hObject.myVISAobject)
+                    hObject.close();
+                end
+                hObject.myVISAconstructor = tStrings{tVal};
+                hObject.myFreqCommand = get(myHandles.frequencyCommand, 'String');
             end
-            hObject.myVISAconstructor = tStrings{tVal};
-            hObject.myFreqCommand = get(myHandles.frequencyCommand, 'String');
         end
         function testVISAcommunication(hObject, eventData, varargin)
             hObject.updateFreqSynth(1);
             myHandles = guidata(hObject.myTopFigure);
-            vtest = eval(hObject.myVISAconstructor);
-            try
-                fopen(vtest);
-                fprintf(vtest, '*IDN?');
-                idn = fscanf(vtest);
-                set(myHandles.testVISAreply, 'String', idn(1:35));
-                fclose(vtest);
-                delete(vtest);
-                clear vtest;
-            catch
+            tVal = get(myHandles.visaCMD, 'Value');
+            if tVal ~= 1
+                vtest = eval(hObject.myVISAconstructor);
                 try
-                    delete(vtest)
+                    fopen(vtest);
+                    fprintf(vtest, '*IDN?');
+                    idn = fscanf(vtest);
+                    set(myHandles.testVISAreply, 'String', idn(1:35));
+                    fclose(vtest);
+                    delete(vtest);
+                    clear vtest;
                 catch
-                end
-                if hObject.myDEBUGmode == 1
-                    set(myHandles.testVISAreply, 'String', 'DEBUGMODE')
-                else
-                    set(myHandles.testVISAreply, 'String', 'ERROR')
+                    try
+                        delete(vtest)
+                    catch err
+                    end
+                    if hObject.myDEBUGmode == 1
+                        set(myHandles.testVISAreply, 'String', 'DEBUGMODE')
+                    else
+                        set(myHandles.testVISAreply, 'String', 'ERROR')
+                    end
                 end
             end
         end
         function initialize(obj)
             if obj.myDEBUGmode ~= 1
-                obj.updateFreqSynth(1);
-                g = eval(obj.myVISAconstructor);
-                fopen(g);
-                obj.myVISAobject = g;
+                if tVal ~= 1
+                    obj.updateFreqSynth(1);
+                    g = eval(obj.myVISAconstructor);
+                    fopen(g);
+                    obj.myVISAobject = g;
+                else
+                    obj.myTimeSynth.initialize();
+                    obj.myVISAobject = obj.myTimeSynth.myVISAobject;
+                end    
             end
         end
         function close(obj)

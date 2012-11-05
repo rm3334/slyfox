@@ -147,7 +147,11 @@ classdef uControlFrontend < hgsetget
             end
             obj.mySerial = eval(mySerialAddr);
             if strcmp(obj.myName, 'LC')
+                try
                 set(obj.mySerial, 'BaudRate', 57600);
+                catch err
+                    disp('Could not send BaudRate change request...possibly remote session');
+                end
             end
             
             success = 0;
