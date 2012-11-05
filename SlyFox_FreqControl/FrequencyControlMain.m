@@ -19,6 +19,7 @@ function FrequencyControlMain(DEBUGMODE )
             g1 = GageCard.GageConfigFrontend(f,tp);
             f1 = FreqSynth(f,tp);
 %             t1 = TimeSynth(f,tp);
+%                 f1.setTimeSynth(t1);
             ardLC = uControlFrontend(f, tp, 1, 'LC');
             ardCN = uControlFrontend(f, tp, 2, 'CN');
             AVS = AnalogVoltageStepper(f, tp);
@@ -41,6 +42,7 @@ function FrequencyControlMain(DEBUGMODE )
         case 2
             f1 = FreqSynth(f,tp);
 %             t1 = TimeSynth(f,tp);
+%                 f1.setTimeSynth(t1);
             ardLC = uControlFrontend(f, tp, 1, 'LC');
             ardCN = uControlFrontend(f, tp, 2, 'CN');
             AVS = AnalogVoltageStepper(f, tp);

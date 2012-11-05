@@ -1,4 +1,4 @@
-function ArduinoDDSMain(DEBUGMODE )
+function ArduinoDDSMain(numDDS )
 %ARDUINODDSMAIN Main Function for Arduino DDS Program
 %   This constructs the relevant objects and creates an Arduino DDS
 %   GUI. 
@@ -9,7 +9,7 @@ function ArduinoDDSMain(DEBUGMODE )
     tp = uiextras.Panel('Parent', f, 'Tag', 'topPanelDDS');
     setappdata(gcf, 'topPanel', tp);
     set(f, 'ResizeFcn', @resizeTopPanel);
-    myDDSFrontend = DDS.DDS_uControlFrontend(f,tp);
+    myDDSFrontend = DDS.DDS_uControlFrontend(f,tp, numDDS);
 
     mm = uimenu('Label', 'File');
     sm = uimenu(mm, 'Label', 'Save...');

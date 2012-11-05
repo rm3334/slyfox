@@ -33,6 +33,7 @@ classdef DDS_Config < hgsetget
                         'FTW2_Reg', ...
                         'DeltaFW_Reg', ...
                         'RampRate_Reg', ...
+                        'OSKI_Reg', ...
                         'AvailableModes', ...
                         'ModeCodes'};
                         
@@ -45,6 +46,7 @@ classdef DDS_Config < hgsetget
                         '3', ...
                         '4', ...
                         '6', ...
+                        '8', ...
                         {'Single Tone', ...
                             'FSK', ...
                             'Ramped FSK', ...
@@ -67,6 +69,14 @@ classdef DDS_Config < hgsetget
             ftwRAW = (desiredFrequency*2^48)/obj.mySysClk;
             ftw = num2hex(q, ftwRAW);
             outFreq = hex2num(q, ftw)*(obj.mySysClk*10^6)/2^48;
+        end
+        
+        function ampHex = calculateAmp(obj, ampNum)
+            %This function calculates the correct Frequency Tuning Word
+            %needed to reach the desired frequency given the chips system
+            %clock.
+            q = quantizer('ufixed','round', [16 0]);
+            ampHex = num2hex(q, ampNum);
         end
         
         function [realSlope, RRW, DFTW] = calculateRRW(obj, desiredSlope)
@@ -325,6 +335,37 @@ classdef DDS_Config < hgsetget
                     instrCell{1} = instrSet;
                     
                     obj.myMode = params.NEWMODE;
+                case 'Amplitude'
+                    instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
+                    instrSet = [instrSet; uint8(obj.myBoardAddress)]; %which board to use
+                    instrSet = [instrSet; 3]; %Number of Bytes in Instruction after this point
+                    instrSet = [instrSet; uint8(hex2dec(obj.myHWProps('OSKI_Reg')))]; %Address of register on the DDS to write to.
+                    ampHex = params.ampHex;
+                    for i=1:2:length(ampHex)
+                        instrSet = [instrSet; uint8(hex2dec(ampHex(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                    end
+
+                    checkSumLow = obj.createCheckSum(instrSet);
+                    instrSet = [instrSet; uint8(checkSumLow)];
+                    instrCell{1} = instrSet;
+                case 'Defaults'
+                    instrSet = [instrSet; uint8(';')]; %tells the microprocessor that this is an arduino CMD not at DDS cmd
+                    instrSet = [instrSet; uint8(obj.myBoardAddress)]; %which board to use
+                    instrSet = [instrSet; 9]; %Number of Bytes in Instruction after this point
+                    instrSet = [instrSet; uint8('D')]; %Instruction D
+                    ampHex = params.ampHex;
+                    for i=1:2:length(ampHex)
+                        instrSet = [instrSet; uint8(hex2dec(ampHex(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                    end
+                    
+                    FTW1 = params.FTW1;
+                    for i=1:2:length(FTW1)
+                        instrSet = [instrSet; uint8(hex2dec(FTW1(i:i+1)))]; %Yea I know its sloppy, but come on did that last 2 uS cost you that much time
+                    end
+
+                    checkSumLow = obj.createCheckSum(instrSet);
+                    instrSet = [instrSet; uint8(checkSumLow)];
+                    instrCell{1} = instrSet;
             end
         end
         
