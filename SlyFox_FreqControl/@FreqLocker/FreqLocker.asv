@@ -606,6 +606,7 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
 
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];                    
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreq];%err correctionApplied servoVal
                         else
@@ -970,11 +971,15 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
 
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 str2double(time) tSCdat456(1) tSCdat456(3) tSCdat456(2)];                    
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreq];%err correctionApplied servoVal
                         else
                             tempPID1 = [calcErr1 0 newCenterFreq];%err correctionApplied servoVal
                         end
+                    else
+                        tempPID1 = [0 0 0];
+                    end
                     tempPID2 = [0 0 0];
                     tempPID3 = [0 0 0];
                     temp = [temp tempPID1 tempPID2 tempPID3];
@@ -1363,17 +1368,24 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 2 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL];%err correctionApplied servoVal
                         else
                             tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
-
+                    else
+                        tempPID1 = [0 0 0];
+                    end
+                    if get(obj.myPID2gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 3 && ~badData
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 newCenterFreqH];
                         end
+                    else
+                        tempPID2 = [0 0 0];
+                    end
                     tempPID3 = [0 0 0];
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 4
@@ -1789,16 +1801,24 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 1 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL];%err correctionApplied servoVal
                         else
                             tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
+                    else
+                        tempPID1 = [0 0 0];
+                    end
+                    if get(obj.myPID2gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 3 && ~badData
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 0];
                         end
+                    else
+                        tempPID2 = [0 0 0];
+                    end
                     tempPID3 = [0 0 0];
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 4
@@ -2292,28 +2312,42 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 1 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL1];%err correctionApplied servoVal
                         else
                             tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
+                    else
+                        tempPID1 = [0 0 0];
+                    end
+                    if get(obj.myPID2gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 3 && ~badData
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqL2];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 0];
                         end
-
+                    else
+                        tempPID2 = [0 0 0];
+                    end
+                    if get(obj.myPID3gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 5 && ~badData
                             tempPID3 = [calcErr3 calcCorr3 newCenterFreqH1];%err correctionApplied servoVal
                         else
                             tempPID3 = [0 0 0];
                         end
-
+                    else
+                        tempPID3 = [0 0 0];
+                    end
+                    if get(obj.myPID4gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 7 && ~badData
                             tempPID4 = [calcErr4 calcCorr4 newCenterFreqH2];%err correctionApplied servoVal
                         else
                             tempPID4 = [0 0 0];
                         end
+                    else
+                        tempPID4 = [0 0 0];
+                    end
                     temp = [temp tempPID1 tempPID2 tempPID3 tempPID4];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 8
                         temp = [temp (newCenterFreqL1 + newCenterFreqH1)/2 (newCenterFreqL2 + newCenterFreqH2)/2];
@@ -2750,17 +2784,24 @@ classdef FreqLocker < hgsetget
 % 'Frequency', 'Norm', 'GndState', 'ExcState', 'Background', 'TStamp', 'BLUEGndState', 'BLUEBackground', 'BLUEExcState'
                     temp = [prevFrequency tNorm tSCdat12(1) tSCdat12(2) tSCdat3 time tSCdat456(1) tSCdat456(3) tSCdat456(2)];
                     
+                    if get(obj.myPID1gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 1 && ~badData
                             tempPID1 = [calcErr1 calcCorr1 newCenterFreqL];%err correctionApplied servoVal
                         else
                             tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
-
+                    else
+                        tempPID1 = [0 0 0];
+                    end
+                    if get(obj.myPID2gui.mySaveLog, 'Value')
                         if runNum >= 2 && seqPlace == 3 && ~badData
                             tempPID2 = [calcErr2 calcCorr2 newCenterFreqH];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 0];
                         end
+                    else
+                        tempPID2 = [0 0 0];
+                    end
                     tempPID3 = [0 0 0];
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 4

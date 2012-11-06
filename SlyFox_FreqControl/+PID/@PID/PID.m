@@ -24,7 +24,7 @@ classdef PID < handle
             obj.myKi = Ki;
             obj.myKd = Kd;
             obj.myORange = oRange;
-            obj.myT0
+            obj.myT0;
         end
         
         %Calculates correction factor for Error for this Iteration and Updates Records
@@ -66,7 +66,14 @@ classdef PID < handle
             obj.myE0 = 0;
             obj.myT0 = 0;
         end
-        
+        function reset(obj)
+            obj.myKp = 0;
+            obj.myKi = 0;
+            obj.myKd = 0;
+            obj.myIntE = 0;
+            obj.myE0 = 0;
+            obj.myT0 = 0;
+        end
     end
     
 end

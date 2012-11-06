@@ -9,7 +9,6 @@ classdef PID_gui < hgsetget
         myTitlePanel = [];
         myPanel = [];
         myPID;
-        myPID2;
         myName;
         myPlotHandle = [];
         myKp = [];
@@ -24,6 +23,7 @@ classdef PID_gui < hgsetget
         myDeltaT2 = [];
         mySetPoint2 = [];
         myEnableBox = [];
+        mySaveLog = [];
     end
     
     methods
@@ -31,7 +31,6 @@ classdef PID_gui < hgsetget
             obj.myTopFigure = topFig;
             obj.myName = myName;
             obj.myPID = PID.PID(1,0,0,0,10);
-            obj.myPID2 = PID.PID(1,0,0,0,10);
             obj.myTitlePanel = uiextras.Panel('Parent', parentObj, ...
                 'Title', ['PID ' num2str(myName)]);
             obj.myPanel = uiextras.HBox('Parent', obj.myTitlePanel, ...
@@ -162,13 +161,13 @@ classdef PID_gui < hgsetget
             set(myHandles.saveDir, 'String', dirPath);
             guidata(obj.myTopFigure, myHandles);
         end
-        function createBodePlot_Callback(obj, src, eventData)
+        function createBodePlot_Callback
             C = pid(str2double(get(obj.myKp, 'String')), str2double(get(obj.myKi, 'String'))*1000,str2double(get(obj.myKd, 'String'))/1000 ,'Ts',str2double(get(obj.myDeltaT, 'String'))/1000,'IFormula','Trapezoidal');
-            C2 = pid(str2double(get(obj.myKp2, 'String')),str2double(get(obj.myKi2, 'String'))*1000,str2double(get(obj.myKd2, 'String'))/1000, 'Ts',str2double(get(obj.myDeltaT, 'String'))/1000,'IFormula','Trapezoidal');
+            C2 = pid(-0.1*1.625, -10*11.3e-5*1000, 'Ts',3.9,'IFormula','Trapezoidal');
             P = bodeoptions;
             P.FreqUnits = 'Hz';
-            figure;
             bodeplot(C2*C, P)
+            
         end
     end
     
