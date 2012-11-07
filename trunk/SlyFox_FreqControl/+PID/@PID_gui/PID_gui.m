@@ -12,6 +12,7 @@ classdef PID_gui < hgsetget
         myPID2;
         myName;
         myPlotHandle = [];
+        myFFTPlotHandle = [];
         myKp = [];
         myKi = [];
         myKd = [];
@@ -140,18 +141,36 @@ classdef PID_gui < hgsetget
                         'ActivePositionProperty', 'OuterPosition');
                         title(errPlot, 'Error Signal');
                     errFFT = axes( 'Parent', tempPAN, ...
+                        'Tag', ['err_FFT' obj.myName ], ...
                         'ActivePositionProperty', 'OuterPosition');
-                        title(errFFT, 'Error FFT');
+                        title(errFFT, 'SS Error Amp Spectrum');
         end
         
-        function updateMyPlots(obj, newErr, runNum, plotstart)
+        function updateMyPlots(obj, newErr, runNum, plotSize)
             myHandles = guidata(obj.myTopFigure);
             tempPIDData = getappdata(obj.myTopFigure, ['PID' obj.myName 'Data']);
-            if isempty(obj.myPlotHandle) || plotstart > 2 % this should really be fixed
-                obj.myPlotHandle = plot(myHandles.(['err_PID' obj.myName]), tempPIDData, 'ok', 'LineWidth', 3);
+            if isempty(obj.myPlotHandle)
+                obj.myPlotHandle = plot(myHandles.(['err_PID' obj.myName]), tempPIDData(end-plotSize:end), 'ok', 'LineWidth', 3);
+                
+                
+                Fs = 1/obj.myPID.myTimeDiff;% Sampling frequency
+                L = length(tempPIDData);    % Length of signal
+                NFFT = 2^nextpow2(L);       % Next power of 2 from length of y
+                Y = fft(tempPIDData,NFFT)/L;
+                f = Fs/2*linspace(0,1,NFFT/2+1);
+                % Plot single-sided amplitude spectrum.
+                obj.myFFTPlotHandle = plot(myHandles.(['err_FFT' obj.myName]), f, 2*abs(Y(1:NFFT/2+1)), 'ok', 'LineWidth', 3);
             elseif runNum > 2
-                set(obj.myPlotHandle, 'YData', tempPIDData);
+                set(obj.myPlotHandle, 'YData', tempPIDData(end-plotSize:end));
                 refreshdata(obj.myPlotHandle);
+                
+                
+                Fs = 1/obj.myPID.myTimeDiff;% Sampling frequency
+                L = length(tempPIDData);    % Length of signal
+                NFFT = 2^nextpow2(L);       % Next power of 2 from length of y
+                Y = fft(tempPIDData,NFFT)/L;
+                set(obj.myFFTPlotHandle, 'YData', 2*abs(Y(1:NFFT/2+1)));
+                refreshdata(obj.myFFTPlotHandle);
                 drawnow;
             end
             guidata(obj.myTopFigure, myHandles);

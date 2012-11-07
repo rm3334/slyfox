@@ -396,7 +396,7 @@ classdef FreqSweeper < handle
 %                     uiextras.Empty('Parent', uiVB);
                     errPlot = axes( 'Parent', uiVB, ...
                         'Tag', 'errPlot', ...
-                        'ActivePositionProperty', 'OuterPosition');
+                        'NextPlot', 'replaceChildren');
                         title(errPlot, 'Locking Error Signal');
                         
                     %Spacer

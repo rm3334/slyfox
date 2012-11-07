@@ -4,7 +4,7 @@ classdef FreqSynth < hgsetget
     
     properties
         myFreqCommand = 'FREQ';
-        myPanel = uiextras.Panel();
+        myPanel = uiextras.Panel('Tag', 'poop');
         myDEBUGmode = 0;
         myTopFigure = [];
         myVISAconstructor = [];

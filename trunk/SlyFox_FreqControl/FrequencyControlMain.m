@@ -56,12 +56,14 @@ function FrequencyControlMain(DEBUGMODE )
                 fL.setFreqSweeper(fs1);
                 fL.setLCuControl(ardLC);
                 fL.setCycleNuControl(ardCN);
-                fL.setAnalogStepper(AVS);
+%                 fL.setAnalogStepper(AVS);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
 %             tp.TabNames = {'FreqSynth', 'TimeSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
             tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
+%             tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'Sweeper', 'FreqLocker', 'GageStreamer'};
+
     end
     tp.TabSize = 100;
 
@@ -120,5 +122,7 @@ function FrequencyControlMain(DEBUGMODE )
     set(f,'CloseRequestFcn',@windowClose);
     set(sm, 'Callback', @menuSaveFcn);
     set(lm, 'Callback', @menuLoadFcn);
+    a = get(f, 'children');
+    set(a(2), 'Visible', 'off');
 end
 
