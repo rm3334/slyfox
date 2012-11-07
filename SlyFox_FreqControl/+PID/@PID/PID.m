@@ -14,6 +14,7 @@ classdef PID < handle
         myIntE = 0;  %Record of ALL Previous Errors
         myE0 = 0;    %Previous output error
         myT0 = 0;   %Previous Evaluation Time
+        myTimeDiff = 0; %Needed to do FFT of error
     end
     
     methods
@@ -35,6 +36,7 @@ classdef PID < handle
             else
                 timeDiff = t1 - obj.myT0;
             end
+            obj.myTimeDiff = timeDiff;
             
             if obj.myT0 ~= 0
                 %Calculate Integral

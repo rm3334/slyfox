@@ -5,6 +5,7 @@ function resizeTopPanel(src, event)
         tp = getappdata(src, 'topPanel');
         set(tp, 'Position', [1 1 figpos(3) figpos(4)])
     catch
+        disp('poop')
     end
 end
 

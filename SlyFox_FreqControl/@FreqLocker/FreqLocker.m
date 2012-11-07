@@ -29,6 +29,11 @@ classdef FreqLocker < hgsetget
         myDataToOutput = [];
     end
     
+    properties (Constant)
+        bufferSize = 512;
+        plotSize = 40;
+    end
+    
     methods
         function obj = FreqLocker(top,f)
             obj.myTopFigure = top;
@@ -368,11 +373,10 @@ classdef FreqLocker < hgsetget
                           %1 = right side of line 1
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -582,21 +586,21 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
-                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                     if mod(seqPlace+1,2) == 0
                         set(myHandles.lockStatus, 'String', 'L1');
                     else
@@ -701,12 +705,11 @@ classdef FreqLocker < hgsetget
                           %3 = Data point
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
-            tempIntermittentData = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempIntermittentData = zeros(1,FreqLocker.bufferSize);
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -941,21 +944,21 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
-                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                    obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                     switch seqPlace %Refers to next point
                         case 0
                         set(myHandles.lockStatus, 'String', 'L1');
@@ -1069,12 +1072,11 @@ classdef FreqLocker < hgsetget
                           %3 = right side of line 2
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
-            tempPID2Data = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempPID2Data = zeros(1,FreqLocker.bufferSize);
             
 
             %2.5 Initialize Frequency Synthesizer
@@ -1329,25 +1331,25 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
                     switch seqPlace
                         case {0,2}
-                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                         case {1,3}
-                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, plotstart);
+                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, FreqLocker.plotSize);
                     end
                     switch mod(seqPlace+1,4)
                         case 0
@@ -1479,12 +1481,11 @@ classdef FreqLocker < hgsetget
                           %3 = right side of line 2
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
-            tempPID2Data = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempPID2Data = zeros(1,FreqLocker.bufferSize);
             
             
             
@@ -1755,25 +1756,25 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
                     switch seqPlace
                         case {0,1}
-                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                         case {2,3}
-                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, plotstart);
+                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, FreqLocker.plotSize);
                     end
                     switch mod(seqPlace+1,4)
                         case 0
@@ -1913,14 +1914,13 @@ classdef FreqLocker < hgsetget
                           %7 = right side of PID4 - high Freq
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
-            tempPID2Data = zeros(1,bufferSize);
-            tempPID3Data = zeros(1,bufferSize);
-            tempPID4Data = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempPID2Data = zeros(1,FreqLocker.bufferSize);
+            tempPID3Data = zeros(1,FreqLocker.bufferSize);
+            tempPID4Data = zeros(1,FreqLocker.bufferSize);
             
             
             
@@ -2246,29 +2246,29 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
                     switch seqPlace
                         case {0,1}
-                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                         case {2,3}
-                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, plotstart);
+                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, FreqLocker.plotSize);
                         case {4,5}
-                            obj.myPID3gui.updateMyPlots(calcErr3, runNum, plotstart);
+                            obj.myPID3gui.updateMyPlots(calcErr3, runNum, FreqLocker.plotSize);
                         case {6,7}
-                            obj.myPID4gui.updateMyPlots(calcErr4, runNum, plotstart);
+                            obj.myPID4gui.updateMyPlots(calcErr4, runNum, FreqLocker.plotSize);
                     end
                     switch mod(seqPlace+1,8)
                         case 0
@@ -2434,12 +2434,11 @@ classdef FreqLocker < hgsetget
                           %3 = right side of line 2
             
             %AVOID MEMORY MOVEMENT SLOWDOWNS
-            bufferSize = 50;
-            tempScanData = zeros(6,bufferSize);
-            tempSummedData = zeros(1,bufferSize);
-            tempNormData = zeros(1,bufferSize);
-            tempPID1Data = zeros(1,bufferSize);
-            tempPID2Data = zeros(1,bufferSize);
+            tempScanData = zeros(6,FreqLocker.bufferSize);
+            tempSummedData = zeros(1,FreqLocker.bufferSize);
+            tempNormData = zeros(1,FreqLocker.bufferSize);
+            tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempPID2Data = zeros(1,FreqLocker.bufferSize);
             
             
 
@@ -2716,25 +2715,25 @@ classdef FreqLocker < hgsetget
                         firstplot = 2;
                     end
                     if runNum == 1
-                        tempH(1) = plot(myHandles.sNormAxes, tempNormData, 'ok', 'LineWidth', 3);
-                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,:), 'or', 'LineWidth', 2);
-                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,:), 'ob', 'LineWidth', 2);
-                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,:), 'ob', 'LineWidth', 1);
-                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData, 'og', 'LineWidth', 2);
-                        tempH(6) = plot(myHandles.errPlot, tempPID1Data, 'ok', 'LineWidth', 2);
+                        tempH(1) = plot(myHandles.sNormAxes, tempNormData(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 3);
+                        tempH(2) = plot(myHandles.sEAxes, tempScanData(2,end-FreqLocker.plotSize:end), 'or', 'LineWidth', 2);
+                        tempH(3) = plot(myHandles.sGAxes, tempScanData(1,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 2);
+                        tempH(4) = plot(myHandles.sBGAxes, tempScanData(3,end-FreqLocker.plotSize:end), 'ob', 'LineWidth', 1);
+                        tempH(5) = plot(myHandles.sSummedAxes, tempSummedData(end-FreqLocker.plotSize:end), 'og', 'LineWidth', 2);
+                        tempH(6) = plot(myHandles.errPlot, tempPID1Data(end-FreqLocker.plotSize:end), 'ok', 'LineWidth', 2);
                     elseif runNum > 1
-                        set(tempH(1), 'YData', tempNormData);
-                        set(tempH(2), 'YData', tempScanData(2,:));
-                        set(tempH(3), 'YData', tempScanData(1,:));
-                        set(tempH(4), 'YData', tempScanData(3,:));
-                        set(tempH(5), 'YData', tempSummedData);
-                        set(tempH(6), 'YData', tempPID1Data);
+                        set(tempH(1), 'YData', tempNormData(end-FreqLocker.plotSize:end));
+                        set(tempH(2), 'YData', tempScanData(2,end-FreqLocker.plotSize:end));
+                        set(tempH(3), 'YData', tempScanData(1,end-FreqLocker.plotSize:end));
+                        set(tempH(4), 'YData', tempScanData(3,end-FreqLocker.plotSize:end));
+                        set(tempH(5), 'YData', tempSummedData(end-FreqLocker.plotSize:end));
+                        set(tempH(6), 'YData', tempPID1Data(end-FreqLocker.plotSize:end));
                     end
                     switch seqPlace
                         case {0,1}
-                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, plotstart);
+                            obj.myPID1gui.updateMyPlots(calcErr1, runNum, FreqLocker.plotSize);
                         case {2,3}
-                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, plotstart);
+                            obj.myPID2gui.updateMyPlots(calcErr2, runNum, FreqLocker.plotSize);
                     end
                     switch mod(seqPlace+1,4)
                         case 0
