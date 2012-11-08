@@ -153,23 +153,25 @@ classdef PID_gui < hgsetget
                 obj.myPlotHandle = plot(myHandles.(['err_PID' obj.myName]), tempPIDData(end-plotSize:end), 'ok', 'LineWidth', 3);
                 
                 
-                Fs = 1/obj.myPID.myTimeDiff;% Sampling frequency
+                Fs = 1/str2double(get(obj.myDeltaT, 'String'));% Sampling frequency
                 L = length(tempPIDData);    % Length of signal
                 NFFT = 2^nextpow2(L);       % Next power of 2 from length of y
                 Y = fft(tempPIDData,NFFT)/L;
                 f = Fs/2*linspace(0,1,NFFT/2+1);
                 % Plot single-sided amplitude spectrum.
-                obj.myFFTPlotHandle = plot(myHandles.(['err_FFT' obj.myName]), f, 2*abs(Y(1:NFFT/2+1)), 'ok', 'LineWidth', 3);
+                obj.myFFTPlotHandle = plot(myHandles.(['err_FFT' obj.myName]), f, 2*abs(Y(1:NFFT/2+1)), 'LineWidth', 1);
             elseif runNum > 2
                 set(obj.myPlotHandle, 'YData', tempPIDData(end-plotSize:end));
                 refreshdata(obj.myPlotHandle);
                 
                 
-                Fs = 1/obj.myPID.myTimeDiff;% Sampling frequency
+                Fs = 1/str2double(get(obj.myDeltaT, 'String'));% Sampling frequency
                 L = length(tempPIDData);    % Length of signal
                 NFFT = 2^nextpow2(L);       % Next power of 2 from length of y
                 Y = fft(tempPIDData,NFFT)/L;
+                f = Fs/2*linspace(0,1,NFFT/2+1);
                 set(obj.myFFTPlotHandle, 'YData', 2*abs(Y(1:NFFT/2+1)));
+                set(obj.myFFTPlotHandle, 'XData', f);
                 refreshdata(obj.myFFTPlotHandle);
                 drawnow;
             end
