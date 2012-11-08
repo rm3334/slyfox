@@ -119,6 +119,8 @@ classdef FreqSynth < hgsetget
         end
         function initialize(obj)
             if obj.myDEBUGmode ~= 1
+                myHandles = guidata(obj.myTopFigure);
+                tVal = get(myHandles.visaCMD, 'Value');
                 if tVal ~= 1
                     obj.updateFreqSynth(1);
                     g = eval(obj.myVISAconstructor);

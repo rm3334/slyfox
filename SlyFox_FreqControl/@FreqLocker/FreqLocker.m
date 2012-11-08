@@ -30,7 +30,7 @@ classdef FreqLocker < hgsetget
     end
     
     properties (Constant)
-        bufferSize = 512;
+        bufferSize = 256;
         plotSize = 40;
     end
     
@@ -363,7 +363,7 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             prevExc = 0; %For use in calculating the present Error
             linewidth = str2double(get(myHandles.linewidth, 'String'));
-            newCenterFreq = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
+            newCenterFreq = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
@@ -629,8 +629,8 @@ classdef FreqLocker < hgsetget
                     fprintf(fid, '\r\n');
                     
                     if (runNum > 5 && tNorm >= 0.1)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreq - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreq + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreq - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreq + linewidth/2));
                     end
                     pointDone = 1;
             end
@@ -693,7 +693,7 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             prevExc = 0; %For use in calculating the present Error
             linewidth = str2double(get(myHandles.linewidth, 'String'));
-            newCenterFreq = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
+            newCenterFreq = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
@@ -992,8 +992,8 @@ classdef FreqLocker < hgsetget
                     fprintf(fid, '\r\n');
                     
                     if (runNum > 5 && tNorm >= 0.1)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreq - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreq + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreq - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreq + linewidth/2));
                     end
                     pointDone = 1;
             end
@@ -1059,8 +1059,8 @@ classdef FreqLocker < hgsetget
             prevExcL = 0; %For use in calculating the present Error for Low Freq Lock
             prevExcH = 0; %For use in calculating the present Error for Low Freq Lock
             linewidth = str2double(get(myHandles.linewidth, 'String'));
-            newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
-            newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
+            newCenterFreqL = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
+            newCenterFreqH = str2double(get(myHandles.highStartFrequency1, 'String'))- linewidth/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
@@ -1395,8 +1395,8 @@ classdef FreqLocker < hgsetget
                     
                     
                     if (runNum > 5 && tNorm >= 0.1)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreqL - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreqH + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreqL - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
                     end
                     pointDone = 1;
             end
@@ -1468,8 +1468,8 @@ classdef FreqLocker < hgsetget
             prevExcL = 0; %For use in calculating the present Error for Low Freq Lock
             prevExcH = 0; %For use in calculating the present Error for Low Freq Lock
             linewidth = str2double(get(myHandles.linewidth, 'String'));
-            newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
-            newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
+            newCenterFreqL = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
+            newCenterFreqH = str2double(get(myHandles.highStartFrequency1, 'String'))- linewidth/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
@@ -1819,8 +1819,8 @@ classdef FreqLocker < hgsetget
                     
                     
                     if (runNum > 5 && tNorm >= 0.1)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreqL - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreqH + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreqL - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
                     end
                     pointDone = 1;
             end
@@ -1895,9 +1895,9 @@ classdef FreqLocker < hgsetget
             prevExcPID4 = 0; %For use in calculating the present Error for PID4
             linewidth = str2double(get(myHandles.linewidth, 'String'));
             linewidth2 = str2double(get(myHandles.linewidth2, 'String'));
-            newCenterFreqL1 = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
+            newCenterFreqL1 = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
             newCenterFreqL2 = str2double(get(myHandles.lowStartFrequency2, 'String'))+ linewidth2/2;
-            newCenterFreqH1 = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
+            newCenterFreqH1 = str2double(get(myHandles.highStartFrequency1, 'String'))- linewidth/2;
             newCenterFreqH2 = str2double(get(myHandles.highStartFrequency2, 'String'))- linewidth2/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
@@ -2332,8 +2332,8 @@ classdef FreqLocker < hgsetget
                     
                     
                     if (runNum > 5 && tNorm >= 0.1 && tNorm <= 1.0)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreqL1 - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreqH1 + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreqL1 - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH1 + linewidth/2));
                         set(myHandles.lowStartFrequency2, 'String', num2str(newCenterFreqL2 - linewidth2/2));
                         set(myHandles.highStartFrequency2, 'String', num2str(newCenterFreqH2 + linewidth2/2));
                     end
@@ -2421,8 +2421,8 @@ classdef FreqLocker < hgsetget
             prevExcL = 0; %For use in calculating the present Error for Low Freq Lock
             prevExcH = 0; %For use in calculating the present Error for Low Freq Lock
             linewidth = str2double(get(myHandles.linewidth, 'String'));
-            newCenterFreqL = str2double(get(myHandles.lowStartFrequency, 'String'))+ linewidth/2;
-            newCenterFreqH = str2double(get(myHandles.highStartFrequency, 'String'))- linewidth/2;
+            newCenterFreqL = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
+            newCenterFreqH = str2double(get(myHandles.highStartFrequency1, 'String'))- linewidth/2;
             runNum = 1;
             if get(myHandles.cycleNumOnCN, 'Value')
                 runNum = 0;
@@ -2782,8 +2782,8 @@ classdef FreqLocker < hgsetget
                     
                     
                     if (runNum > 5 && tNorm >= 0.1)
-                        set(myHandles.lowStartFrequency, 'String', num2str(newCenterFreqL - linewidth/2));
-                        set(myHandles.highStartFrequency, 'String', num2str(newCenterFreqH + linewidth/2));
+                        set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreqL - linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
                     end
                     pointDone = 1;
             end
@@ -2902,7 +2902,8 @@ classdef FreqLocker < hgsetget
         end
         function [path, fileName] = createFileName(obj)
             myHandles = guidata(obj.myTopFigure);
-            basePath = get(myHandles.saveDirPID1, 'String');
+%             basePath = get(myHandles.saveDirPID1, 'String');
+            basePath = 'Z:\Sr3\data';
             folderPath = [datestr(now, 'yymmdd') filesep 'Lock'];
             curTime = datestr(now, 'HHMMSS');
             fileName = ['Lock_' curTime '.txt'];
