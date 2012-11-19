@@ -1513,7 +1513,7 @@ classdef FreqLocker < hgsetget
                                 'err1', 'cor1', 'servoVal1', ...
                                 'err2', 'cor2', 'servoVal2', ...
                                 'err3', 'cor3', 'servoVal3', ...
-                                'freqSr', 'cycleNum', 'badData'};
+                                'freqSr', 'delta','cycleNum', 'badData'};
                             if get(myHandles.stepVoltages, 'Value')
                                 colNames = [colNames obj.myAnalogStepper.myNames];
                             end
@@ -1804,8 +1804,10 @@ classdef FreqLocker < hgsetget
                     temp = [temp tempPID1 tempPID2 tempPID3];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 4
                         temp = [temp (newCenterFreqL + newCenterFreqH)/2];
+                        %delta
+                        temp = [temp (newCenterFreqL - newCenterFreqH)];
                     else
-                        temp = [temp 0];
+                        temp = [temp 0 0];
                     end
                     if get(myHandles.cycleNumOnCN, 'Value')
                         temp = [temp prevCycleNum];
@@ -1949,7 +1951,7 @@ classdef FreqLocker < hgsetget
                                 'err2', 'cor2', 'servoVal2', ...
                                 'err3', 'cor3', 'servoVal3', ...
                                 'err4', 'cor4', 'servoVal4', ...
-                                'freqSr1', 'freqSr2', 'cycleNum', 'badData'};
+                                'freqSr1', 'delta1', 'freqSr2', 'delta2', 'cycleNum', 'badData'};
                             if get(myHandles.stepVoltages, 'Value')
                                 colNames = [colNames obj.myAnalogStepper.myNames];
                             end
@@ -2316,7 +2318,8 @@ classdef FreqLocker < hgsetget
                         end
                     temp = [temp tempPID1 tempPID2 tempPID3 tempPID4];
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 8
-                        temp = [temp (newCenterFreqL1 + newCenterFreqH1)/2 (newCenterFreqL2 + newCenterFreqH2)/2];
+                        temp = [temp (newCenterFreqL1 + newCenterFreqH1)/2 (newCenterFreqL1 - newCenterFreqH1)];
+                        temp = [temp (newCenterFreqL2 + newCenterFreqH2)/2 (newCenterFreqL2 - newCenterFreqH2)];
                     else
                         temp = [temp 0 0];
                     end
