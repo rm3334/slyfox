@@ -2860,32 +2860,32 @@ classdef FreqLocker < hgsetget
         end
         function updatePIDvalues(obj)
             obj.mysPID1.myPIDs{1}.myKp = str2double(get(obj.myPID1gui.myKp, 'String'));
-            obj.mysPID1.myPIDs{1}.myKi = str2double(get(obj.myPID1gui.myKi, 'String'));
-            obj.mysPID1.myPIDs{1}.myKd = str2double(get(obj.myPID1gui.myKd, 'String'));
+            obj.mysPID1.myPIDs{1}.myTi = str2double(get(obj.myPID1gui.myTi, 'String'));
+            obj.mysPID1.myPIDs{1}.myTd = str2double(get(obj.myPID1gui.myTd, 'String'));
             obj.mysPID1.myPIDs{2}.myKp = str2double(get(obj.myPID1gui.myKp2, 'String'));
-            obj.mysPID1.myPIDs{2}.myKi = str2double(get(obj.myPID1gui.myKi2, 'String'));
-            obj.mysPID1.myPIDs{2}.myKd = str2double(get(obj.myPID1gui.myKd2, 'String'));
+            obj.mysPID1.myPIDs{2}.myTi = str2double(get(obj.myPID1gui.myTi2, 'String'));
+            obj.mysPID1.myPIDs{2}.myTd = str2double(get(obj.myPID1gui.myTd2, 'String'));
             
             obj.mysPID2.myPIDs{1}.myKp = str2double(get(obj.myPID2gui.myKp, 'String'));
-            obj.mysPID2.myPIDs{1}.myKi = str2double(get(obj.myPID2gui.myKi, 'String'));
-            obj.mysPID2.myPIDs{1}.myKd = str2double(get(obj.myPID2gui.myKd, 'String'));
+            obj.mysPID2.myPIDs{1}.myTi = str2double(get(obj.myPID2gui.myTi, 'String'));
+            obj.mysPID2.myPIDs{1}.myTd = str2double(get(obj.myPID2gui.myTd, 'String'));
             obj.mysPID2.myPIDs{2}.myKp = str2double(get(obj.myPID2gui.myKp2, 'String'));
-            obj.mysPID2.myPIDs{2}.myKi = str2double(get(obj.myPID2gui.myKi2, 'String'));
-            obj.mysPID2.myPIDs{2}.myKd = str2double(get(obj.myPID2gui.myKd2, 'String'));
+            obj.mysPID2.myPIDs{2}.myTi = str2double(get(obj.myPID2gui.myTi2, 'String'));
+            obj.mysPID2.myPIDs{2}.myTd = str2double(get(obj.myPID2gui.myTd2, 'String'));
             
             obj.mysPID3.myPIDs{1}.myKp = str2double(get(obj.myPID3gui.myKp, 'String'));
-            obj.mysPID3.myPIDs{1}.myKi = str2double(get(obj.myPID3gui.myKi, 'String'));
-            obj.mysPID3.myPIDs{1}.myKd = str2double(get(obj.myPID3gui.myKd, 'String'));
+            obj.mysPID3.myPIDs{1}.myTi = str2double(get(obj.myPID3gui.myTi, 'String'));
+            obj.mysPID3.myPIDs{1}.myTd = str2double(get(obj.myPID3gui.myTd, 'String'));
             obj.mysPID3.myPIDs{2}.myKp = str2double(get(obj.myPID3gui.myKp2, 'String'));
-            obj.mysPID3.myPIDs{2}.myKi = str2double(get(obj.myPID3gui.myKi2, 'String'));
-            obj.mysPID3.myPIDs{2}.myKd = str2double(get(obj.myPID3gui.myKd2, 'String'));
+            obj.mysPID3.myPIDs{2}.myTi = str2double(get(obj.myPID3gui.myTi2, 'String'));
+            obj.mysPID3.myPIDs{2}.myTd = str2double(get(obj.myPID3gui.myTd2, 'String'));
             
             obj.mysPID4.myPIDs{1}.myKp = str2double(get(obj.myPID4gui.myKp, 'String'));
-            obj.mysPID4.myPIDs{1}.myKi = str2double(get(obj.myPID4gui.myKi, 'String'));
-            obj.mysPID4.myPIDs{1}.myKd = str2double(get(obj.myPID4gui.myKd, 'String'));
+            obj.mysPID4.myPIDs{1}.myTi = str2double(get(obj.myPID4gui.myTi, 'String'));
+            obj.mysPID4.myPIDs{1}.myTd = str2double(get(obj.myPID4gui.myTd, 'String'));
             obj.mysPID4.myPIDs{2}.myKp = str2double(get(obj.myPID4gui.myKp2, 'String'));
-            obj.mysPID4.myPIDs{2}.myKi = str2double(get(obj.myPID4gui.myKi2, 'String'));
-            obj.mysPID4.myPIDs{2}.myKd = str2double(get(obj.myPID4gui.myKd2, 'String'));
+            obj.mysPID4.myPIDs{2}.myTi = str2double(get(obj.myPID4gui.myTi2, 'String'));
+            obj.mysPID4.myPIDs{2}.myTd = str2double(get(obj.myPID4gui.myTd2, 'String'));
             
         end
         function checkPIDenables(obj)
@@ -2935,23 +2935,23 @@ classdef FreqLocker < hgsetget
         end
         function saveState(obj)
             FreqLockerState.PID1myKp = get(obj.myPID1gui.myKp, 'String');
-            FreqLockerState.PID1myKi = get(obj.myPID1gui.myKi, 'String');
-            FreqLockerState.PID1myKd = get(obj.myPID1gui.myKd, 'String');
+            FreqLockerState.PID1myTi = get(obj.myPID1gui.myTi, 'String');
+            FreqLockerState.PID1myTd = get(obj.myPID1gui.myTd, 'String');
             FreqLockerState.PID1myDeltaT = get(obj.myPID1gui.myDeltaT, 'String');
             
             FreqLockerState.PID2myKp = get(obj.myPID2gui.myKp, 'String');
-            FreqLockerState.PID2myKi = get(obj.myPID2gui.myKi, 'String');
-            FreqLockerState.PID2myKd = get(obj.myPID2gui.myKd, 'String');
+            FreqLockerState.PID2myTi = get(obj.myPID2gui.myTi, 'String');
+            FreqLockerState.PID2myTd = get(obj.myPID2gui.myTd, 'String');
             FreqLockerState.PID2myDeltaT = get(obj.myPID2gui.myDeltaT, 'String');
             
             FreqLockerState.PID3myKp = get(obj.myPID3gui.myKp, 'String');
-            FreqLockerState.PID3myKi = get(obj.myPID3gui.myKi, 'String');
-            FreqLockerState.PID3myKd = get(obj.myPID3gui.myKd, 'String');
+            FreqLockerState.PID3myTi = get(obj.myPID3gui.myTi, 'String');
+            FreqLockerState.PID3myTd = get(obj.myPID3gui.myTd, 'String');
             FreqLockerState.PID3myDeltaT = get(obj.myPID3gui.myDeltaT, 'String');
             
             FreqLockerState.PID4myKp = get(obj.myPID4gui.myKp, 'String');
-            FreqLockerState.PID4myKi = get(obj.myPID4gui.myKi, 'String');
-            FreqLockerState.PID4myKd = get(obj.myPID4gui.myKd, 'String');
+            FreqLockerState.PID4myTi = get(obj.myPID4gui.myTi, 'String');
+            FreqLockerState.PID4myTd = get(obj.myPID4gui.myTd, 'String');
             FreqLockerState.PID4myDeltaT = get(obj.myPID4gui.myDeltaT, 'String');
             save FreqLockerState;
         end
@@ -2961,24 +2961,24 @@ classdef FreqLocker < hgsetget
                 myHandles = guidata(obj.myTopFigure);
                 
                 set(obj.myPID1gui.myKp, 'String', FreqLockerState.PID1myKp);
-                set(obj.myPID1gui.myKi, 'String', FreqLockerState.PID1myKi);
-                set(obj.myPID1gui.myKd, 'String', FreqLockerState.PID1myKd);
+                set(obj.myPID1gui.myTi, 'String', FreqLockerState.PID1myTi);
+                set(obj.myPID1gui.myTd, 'String', FreqLockerState.PID1myTd);
                 set(obj.myPID1gui.myDeltaT, 'String', FreqLockerState.PID1myDeltaT);
                 disp('1')
 
                 set(obj.myPID2gui.myKp, 'String', FreqLockerState.PID2myKp);
-                set(obj.myPID2gui.myKi, 'String', FreqLockerState.PID2myKi);
-                set(obj.myPID2gui.myKd, 'String', FreqLockerState.PID2myKd);
+                set(obj.myPID2gui.myTi, 'String', FreqLockerState.PID2myTi);
+                set(obj.myPID2gui.myTd, 'String', FreqLockerState.PID2myTd);
                 set(obj.myPID2gui.myDeltaT, 'String', FreqLockerState.PID2myDeltaT);
 
                 set(obj.myPID3gui.myKp, 'String', FreqLockerState.PID3myKp);
-                set(obj.myPID3gui.myKi, 'String', FreqLockerState.PID3myKi);
-                set(obj.myPID3gui.myKd, 'String', FreqLockerState.PID3myKd);
+                set(obj.myPID3gui.myTi, 'String', FreqLockerState.PID3myTi);
+                set(obj.myPID3gui.myTd, 'String', FreqLockerState.PID3myTd);
                 set(obj.myPID3gui.myDeltaT, 'String', FreqLockerState.PID3myDeltaT);
                 
                 set(obj.myPID4gui.myKp, 'String', FreqLockerState.PID4myKp);
-                set(obj.myPID4gui.myKi, 'String', FreqLockerState.PID4myKi);
-                set(obj.myPID4gui.myKd, 'String', FreqLockerState.PID4myKd);
+                set(obj.myPID4gui.myTi, 'String', FreqLockerState.PID4myTi);
+                set(obj.myPID4gui.myTd, 'String', FreqLockerState.PID4myTd);
                 set(obj.myPID4gui.myDeltaT, 'String', FreqLockerState.PID4myDeltaT);
                 guidata(obj.myTopFigure, myHandles);
             catch

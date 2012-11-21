@@ -8,8 +8,8 @@ classdef PID < handle
     properties
         myPolarity = 1; %Polarity of error
         myKp = 0;       %Proportional Gain
-        myKi = 0;       %Integral Gain
-        myKd = 0;       %Derivative Gain
+        myTi = 10^10;       %Integral Gain
+        myTd = 0;       %Derivative Gain
         myORange = 100;  %Clamped Output Range
         myIntE = 0;  %Record of ALL Previous Errors
         myE0 = 0;    %Previous output error
@@ -19,11 +19,11 @@ classdef PID < handle
     
     methods
         % Instantiates the object
-        function obj = PID(pol, Kp, Ki, Kd, oRange)
+        function obj = PID(pol, Kp, Ti, Td, oRange)
             obj.myPolarity = pol;
             obj.myKp = Kp;
-            obj.myKi = Ki;
-            obj.myKd = Kd;
+            obj.myTi = Ti;
+            obj.myTd = Td;
             obj.myORange = oRange;
             obj.myT0;
         end
@@ -32,9 +32,9 @@ classdef PID < handle
         %Nice Pseudocode from Wikipedia
         function u = calculate(obj, e1, t1)
             if t1 < 0
-                timeDiff = abs(t1);
+                timeDiff = abs(t1)/1000;
             else
-                timeDiff = t1 - obj.myT0;
+                timeDiff = (t1 - obj.myT0)/1000;
             end
             obj.myTimeDiff = timeDiff;
             
@@ -48,7 +48,7 @@ classdef PID < handle
             end
             
             %Calculate Output
-            u = obj.myKp*e1 + obj.myKi*obj.myIntE + obj.myKd*derivative;
+            u = obj.myKp*(e1 + (obj.myTi^-1)*obj.myIntE + obj.myTd*derivative);
             
             %Clamp the outputs
             if abs(u) > obj.myORange
@@ -70,8 +70,8 @@ classdef PID < handle
         end
         function reset(obj)
             obj.myKp = 0;
-            obj.myKi = 0;
-            obj.myKd = 0;
+            obj.myTi = 10^10;
+            obj.myTd = 0;
             obj.myIntE = 0;
             obj.myE0 = 0;
             obj.myT0 = 0;
