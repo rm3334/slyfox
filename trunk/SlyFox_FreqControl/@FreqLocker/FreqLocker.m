@@ -30,7 +30,7 @@ classdef FreqLocker < hgsetget
     end
     
     properties (Constant)
-        bufferSize = 256;
+        bufferSize = 128;
         plotSize = 40;
     end
     
@@ -2321,7 +2321,7 @@ classdef FreqLocker < hgsetget
                         temp = [temp (newCenterFreqL1 + newCenterFreqH1)/2 (newCenterFreqL1 - newCenterFreqH1)];
                         temp = [temp (newCenterFreqL2 + newCenterFreqH2)/2 (newCenterFreqL2 - newCenterFreqH2)];
                     else
-                        temp = [temp 0 0];
+                        temp = [temp 0 0 0 0];
                     end
                     if get(myHandles.cycleNumOnCN, 'Value')
                         temp = [temp prevCycleNum];
