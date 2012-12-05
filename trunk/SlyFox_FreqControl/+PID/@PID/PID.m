@@ -32,9 +32,9 @@ classdef PID < handle
         %Nice Pseudocode from Wikipedia
         function u = calculate(obj, e1, t1)
             if t1 < 0
-                timeDiff = abs(t1)/1000;
+                timeDiff = abs(t1)*1000;
             else
-                timeDiff = (t1 - obj.myT0)/1000;
+                timeDiff = (t1 - obj.myT0);
             end
             obj.myTimeDiff = timeDiff;
             
@@ -48,7 +48,11 @@ classdef PID < handle
             end
             
             %Calculate Output
-            u = obj.myKp*(e1 + (obj.myTi^-1)*obj.myIntE + obj.myTd*derivative);
+            if (obj.myTi ~= 0)
+                u = obj.myKp*(e1 + ((obj.myTi*1000)^-1)*obj.myIntE + (obj.myTd*1000)*derivative);
+            else
+                u = (e1);
+            end
             
             %Clamp the outputs
             if abs(u) > obj.myORange
