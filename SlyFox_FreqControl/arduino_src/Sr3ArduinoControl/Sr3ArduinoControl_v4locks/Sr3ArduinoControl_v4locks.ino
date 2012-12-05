@@ -154,10 +154,10 @@ void advanceCycleNum(){
     
     switch (cycleNum){
       case 0:
-        mirrorTTL1 = false;
+        mirrorTTL1 = true;
         break;
       case 1:
-        mirrorTTL1 = false;
+        mirrorTTL1 = true;
         break;
       case 2:
         mirrorTTL1 = true;
