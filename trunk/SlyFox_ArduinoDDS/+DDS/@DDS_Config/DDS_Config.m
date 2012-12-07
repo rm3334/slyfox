@@ -66,8 +66,8 @@ classdef DDS_Config < hgsetget
             %needed to reach the desired frequency given the chips system
             %clock.
             q = quantizer('ufixed','round', [48 0]);
-            ftwRAW = (desiredFrequency*2^48)/obj.mySysClk;
-            ftw = num2hex(q, ftwRAW);
+            ftwRAW = (desiredFrequency*2^48)/obj.mySysClk
+            ftw = num2hex(q, ftwRAW)
             outFreq = hex2num(q, ftw)*(obj.mySysClk*10^6)/2^48;
         end
         

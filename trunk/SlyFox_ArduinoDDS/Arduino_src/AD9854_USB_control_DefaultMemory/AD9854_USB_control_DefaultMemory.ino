@@ -49,7 +49,7 @@ volatile int currentPhaseStepIndice = 0;
 //byte phaseSteps[30];
 //byte numPhaseSteps;
 
-boolean readyForPhaseStepping = true; // is used to determinte whether or not phase stepping should be tried
+boolean readyForPhaseStepping = false; // is used to determinte whether or not phase stepping should be tried
 byte phaseSteps[6] = {0x00, 0x00, 0x20, 0x00, 0x10, 0x00};
 
 byte numPhaseSteps = 3;
@@ -73,6 +73,8 @@ void setup() {
   Port_Init();
   Serial_Init();
   SPI_Init();
+  IO_Reset_0(); //necessary for continued communication after the program is closed and opened
+  IO_Reset_1(); //necessary for continued communication after the program is closed and opened
   //DDS0_Init();
   //DDS1_Init();
   attachInterrupt(0, startPhaseStep, RISING);
@@ -221,7 +223,9 @@ void loop() {
           else {
             DDS1_Init();
           }
-          Serial.println("DDS Reinitialized");
+          String sOut = "";
+          sOut = "DDS " + String(chiptoWrite, DEC) + " Reinitialized";
+          Serial.println(sOut);
         }
       }
       else{  
@@ -282,13 +286,15 @@ void Port_Init(void) {
   pinMode(pinMasterReset_0, OUTPUT);
   pinMode(pinIOReset_0, OUTPUT);
   pinMode(pinCS_0, OUTPUT);
+  pinMode(pinIOUpdate_0, OUTPUT);
   
   pinMode(pinMasterReset_1, OUTPUT);
   pinMode(pinIOReset_1, OUTPUT);
   pinMode(pinCS_1, OUTPUT);
+  pinMode(pinIOUpdate_1, OUTPUT);
   
-  pinMode(pinFSK_0, INPUT);
-  pinMode(pinFSK_1, INPUT);
+  pinMode(pinFSK_0, OUTPUT);
+  pinMode(pinFSK_1, OUTPUT);
   
   pinMode(pinNEWSEQUENCE, INPUT);
   pinMode(pinSTEPSEQUENCE, INPUT);
