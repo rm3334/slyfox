@@ -67,8 +67,14 @@ classdef DDS_Frontend < hgsetget
                             'Tag', ['setDefault' num2str(obj.myBoardAddr)],...
                             'String', 'Set Default',...
                             'Callback', @obj.setDefaultButton_Callback);
+                reinitializeDDS = uicontrol( ...
+                            'Parent', buttonVBox,...
+                            'Style', 'pushbutton', ...
+                            'Tag', ['reinitializeDDS' num2str(obj.myBoardAddr)],...
+                            'String', 'Reinitialize DDS',...
+                            'Callback', @obj.reinitializeDDS_Callback);
                 uiextras.Empty('Parent', buttonVBox);
-                set(buttonVBox, 'Sizes', [-3 -1 -2 -1 -1 -3]);
+                set(buttonVBox, 'Sizes', [-3 -1 -2 -1 -1 -1 -3]);
                 
 
                 
@@ -324,6 +330,16 @@ classdef DDS_Frontend < hgsetget
             params = struct('ampHex', dAmpHex, 'FTW1', dftw);
             iSet = obj.myDDS.createInstructionSet('Defaults', params);
 %             iSet{1}
+            fwrite(obj.mySerial, iSet{1});
+            fscanf(obj.mySerial)
+        end
+        
+        function reinitializeDDS_Callback(obj, src, eventData)
+            % Makes the Arduino send the initializations bits to the DDS
+            myHandles = guidata(obj.myTopFigure);
+            
+            params = struct('board', obj.myBoardAddr);
+            iSet = obj.myDDS.createInstructionSet('Reinitialize', params);
             fwrite(obj.mySerial, iSet{1});
             fscanf(obj.mySerial)
         end

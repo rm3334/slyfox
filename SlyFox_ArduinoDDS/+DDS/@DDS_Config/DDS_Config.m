@@ -366,6 +366,15 @@ classdef DDS_Config < hgsetget
                     checkSumLow = obj.createCheckSum(instrSet);
                     instrSet = [instrSet; uint8(checkSumLow)];
                     instrCell{1} = instrSet;
+                case 'Reinitialize'
+                    instrSet = [instrSet; uint8(';')]; %tells the microprocessor that this is an arduino CMD not at DDS cmd
+                    instrSet = [instrSet; uint8(obj.myBoardAddress)]; %which board to use
+                    instrSet = [instrSet; 1]; %Number of Bytes in Instruction after this point
+                    instrSet = [instrSet; uint8('R')]; %Instruction R for Reinitialize
+                    
+                    checkSumLow = obj.createCheckSum(instrSet);
+                    instrSet = [instrSet; uint8(checkSumLow)];
+                    instrCell{1} = instrSet;
             end
         end
         
