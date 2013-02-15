@@ -310,6 +310,7 @@ classdef DDS_Config < hgsetget
                     end
                     
                 case 'CHANGEMODE'
+                    disp('ChangeMode')
                     instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
                     instrSet = [instrSet; obj.myBoardAddress]; %which board to use
                     instrSet = [instrSet; 5]; %Number of Bytes in Instruction after this point
@@ -320,6 +321,7 @@ classdef DDS_Config < hgsetget
                     configBin = num2bin(q, configNum);
                     a = obj.myHWProps('AvailableModes');
                     modeIdx = find(cellfun(@(x) strcmp(x, params.NEWMODE), a));
+                    params.NEWMODE
                     mCodes = obj.myHWProps('ModeCodes');
                     newModeBin = mCodes{modeIdx};
                     configBin(obj.myHWProps('ConfigModePos')) = newModeBin;
@@ -334,6 +336,7 @@ classdef DDS_Config < hgsetget
                     instrSet = [instrSet; uint8(checkSumLow)];
                     instrCell{1} = instrSet;
                     
+                    configHex
                     obj.myMode = params.NEWMODE;
                 case 'Amplitude'
                     instrSet = [instrSet; uint8(':')]; %tells the microprocessor to enter passthrough mode
