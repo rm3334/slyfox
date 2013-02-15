@@ -28,6 +28,8 @@ Ver: 0.2
 #define setPinTTL_OUT2_HIGH() PORTC |= 0b00000010;
 #define setPinTTL_OUT2_LOW() PORTC &= 0b11111101;
 
+#define pinTTL_IN3_pol 10
+#define pinTTL_IN3_Upol 11
 #define pinTTL_OUT3 12 //Source of mirrored TTL is set by mirrorTTL3source.
 #define setPinTTL_OUT3_HIGH() PORTB |= 0b00010000;
 #define setPinTTL_OUT3_LOW() PORTB &= 0b11101111;
@@ -67,8 +69,8 @@ volatile unsigned long clockPulseTime = 80000;
 volatile int cycleNum = 666;
 volatile boolean mirrorTTL1 = true; // This is usually for varying systematics
 volatile boolean mirrorTTL2 = true; // Used for mirroring the Clock Bias field on/off
-volatile int mirrorTTL3source = 10; // 10 - source for beta shutter for polarized sequence
-                                    // 11 - source for beta shutter for unpolarized sequence
+volatile int mirrorTTL3source = pinTTL_IN3_pol; // 10 - source for beta shutter for polarized sequence
+                                                // 11 - source for beta shutter for unpolarized sequence
 
 void setup(){
   Serial_Init();
@@ -78,6 +80,11 @@ void setup(){
   pinMode(pinLCWaveplate, OUTPUT);
   pinMode(pinTTL_IN1, INPUT);
   pinMode(pinTTL_OUT1, OUTPUT);
+  pinMode(pinTTL_IN2, INPUT);
+  pinMode(pinTTL_OUT2, OUTPUT);
+  pinMode(pinTTL_OUT3, OUTPUT);
+  pinMode(pinTTL_IN3_pol, INPUT);
+  pinMode(pinTTL_IN3_Upol, INPUT);
   pinMode(pinClockTTL, OUTPUT);
   attachInterrupt(0, changeStartCOM, RISING);
   attachInterrupt(1, advanceCycleNum, RISING);
@@ -182,7 +189,7 @@ void loop(){
 }
 
 void advanceCycleNum(){
-  mirrorTTL3source = 10; //default polarized line beta shutter sequence
+  mirrorTTL3source = pinTTL_IN3_pol; //default polarized line beta shutter sequence
   mirrorTTL2 = true;  //default clock bias field TTL mirrored
   if (mode == 1) {
     cycleNum += 1;
@@ -237,7 +244,7 @@ void advanceCycleNum(){
   else if (mode == 4){
     mirrorTTL1 = true;
     mirrorTTL2 = false; //Leave clock bias field off
-    mirrorTTL3source = 11; //Use unpolarized beta shutter protocol
+    mirrorTTL3source = pinTTL_IN3_Upol; //Use unpolarized beta shutter protocol
   }
   else {
     mirrorTTL1 = true;
