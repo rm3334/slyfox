@@ -337,7 +337,7 @@ classdef FreqSweeper < handle
                             uicontrol( ...
                                 'Parent', directionConstantVB, ...
                                 'Style', 'popup', ...
-                                'String', 'Ignore LC Waveplate | LC V1 | LC V2 | Oscillate LC Waveplate', ...
+                                'String', 'Ignore LC Waveplate | LC V1 | LC V2 | Oscillate LC Waveplate | Unpolarized Line', ...
                                 'Tag', 'oscLCwave', ...
                                 'Value', 1);
                             set(directionConstantVB, 'Sizes', [-1 -1 -1 -1]);
@@ -581,8 +581,23 @@ classdef FreqSweeper < handle
                 end
                 
                 %Initialize Liquid Crystal Waveplate
-                if get(myHandles.oscLCwave, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
-                    %fprintf(obj.myLCuControl.mySerial, 'H')
+                LCmode = get(myHandles.oscLCwave, 'Value'); %equals 1 when no communication is required
+                %IMMEDIATELY CHANGE THE LIQUID CRYSTAL WAVEPLATE IF NEED BE
+                if LCmode ~= 1 && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
+                    switch LCmode
+                        case 2 %LC V1
+                            fprintf(obj.myLCuControl.mySerial, ':0;c2;d0;t80000');
+                        case 3 %LC V2
+                            fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
+                        case 4 %Oscillate LC
+                            if ~mod(runNum+1,2)
+                                fprintf(obj.myLCuControl.mySerial, ':0;c2;d0;t80000');
+                            else
+                                fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
+                            end
+                        case 5 %Unpolarized Line
+                            fprintf(obj.myLCuControl.mySerial, ':4;c0;d0;t80000');
+                    end
                 end
             %1a. Initialize Progress Bar
             jProgBar = getappdata(obj.myTopFigure, 'jProgBar');
@@ -715,16 +730,18 @@ classdef FreqSweeper < handle
                 %IMMEDIATELY CHANGE THE LIQUID CRYSTAL WAVEPLATE IF NEED BE
                 if LCmode ~= 1 && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                     switch LCmode
-                        case 2
+                        case 2 %LC V1
                             fprintf(obj.myLCuControl.mySerial, ':0;c2;d0;t80000');
-                        case 3
+                        case 3 %LC V2
                             fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
-                        case 4
+                        case 4 %Oscillate LC
                             if ~mod(runNum+1,2)
                                 fprintf(obj.myLCuControl.mySerial, ':0;c2;d0;t80000');
                             else
                                 fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
                             end
+                        case 5 %Unpolarized Line
+                            fprintf(obj.myLCuControl.mySerial, ':4;c0;d0;t80000');
                     end
                 end
 %                 if ~ret
