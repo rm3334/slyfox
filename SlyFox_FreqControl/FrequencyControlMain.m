@@ -22,7 +22,8 @@ function FrequencyControlMain(DEBUGMODE )
 %                 f1.setTimeSynth(t1);
             ardLC = uControlFrontend(f, tp, 1, 'LC');
             ardCN = uControlFrontend(f, tp, 2, 'CN');
-            AVS = AnalogVoltageStepper(f, tp);
+%             AVS = AnalogVoltageStepper(f, tp);
+            AVCC = AnalogVoltageCC(f, tp);
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
 %                 fs1.setTimeSynth(t1);
@@ -33,19 +34,21 @@ function FrequencyControlMain(DEBUGMODE )
                 fL.setGageConfigFrontend(g1);
                 fL.setFreqSweeper(fs1);
                 fL.setLCuControl(ardLC);
-                fL.setAnalogStepper(AVS);
+%                 fL.setAnalogStepper(AVS);
+                fL.setAnalogCC(AVCC);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
 %             tp.TabNames = {'Gage', 'FreqSynth',  'TimeSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
-            tp.TabNames = {'Gage', 'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
+            tp.TabNames = {'Gage', 'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageCC', 'Sweeper', 'FreqLocker', 'GageStreamer'};
         case 2
             f1 = FreqSynth(f,tp);
 %             t1 = TimeSynth(f,tp);
 %                 f1.setTimeSynth(t1);
             ardLC = uControlFrontend(f, tp, 1, 'LC');
             ardCN = uControlFrontend(f, tp, 2, 'CN');
-            AVS = AnalogVoltageStepper(f, tp);
+%             AVS = AnalogVoltageStepper(f, tp);
+            AVCC = AnalogVoltageCC(f, tp);
             fs1 = FreqSweeper(f,tp);
                 fs1.setFreqSynth(f1);
 %                 fs1.setTimeSynth(t1);
@@ -57,11 +60,12 @@ function FrequencyControlMain(DEBUGMODE )
                 fL.setLCuControl(ardLC);
                 fL.setCycleNuControl(ardCN);
 %                 fL.setAnalogStepper(AVS);
+                fL.setAnalogCC(AVCC);
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
 %             tp.TabNames = {'FreqSynth', 'TimeSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
-            tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
+            tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageCC', 'Sweeper', 'FreqLocker', 'GageStreamer'};
 %             tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'Sweeper', 'FreqLocker', 'GageStreamer'};
 
     end
@@ -110,12 +114,19 @@ function FrequencyControlMain(DEBUGMODE )
         delete(ardLC);
         ardCN.quit();
         delete(ardCN);
-        AVS.quit();
+%         AVS.quit();
+        AVCC.quit();
+
 %         delete(AVS);
 %         delete(pan);
 %         delete(f);
 %         clear all;
         delete(gcf)
+        try
+            fclose(instrfind);
+            delete(instrfind);
+        catch err
+        end
         clear all
     end
     

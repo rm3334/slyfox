@@ -34,6 +34,11 @@ Ver: 0.2
 #define setPinTTL_OUT3_HIGH() PORTB |= 0b00010000;
 #define setPinTTL_OUT3_LOW() PORTB &= 0b11101111;
 
+#define pinTTL_IN4 A3 //Reads this TTL In
+#define pinTTL_OUT4 A2 //Depending on state either mirrors TTL_IN1 or is held HIGH.
+#define setPinTTL_OUT4_HIGH() PORTC |= 0b00000100;
+#define setPinTTL_OUT4_LOW() PORTC &= 0b11111011;
+
 #define pinClockTTL 8 //Used when arduino is used to supply clock AOM TTL
 
 #define pinLED 13 
@@ -71,6 +76,7 @@ volatile boolean mirrorTTL1 = true; // This is usually for varying systematics
 volatile boolean mirrorTTL2 = true; // Used for mirroring the Clock Bias field on/off
 volatile int mirrorTTL3source = pinTTL_IN3_pol; // 10 - source for beta shutter for polarized sequence
                                                 // 11 - source for beta shutter for unpolarized sequence
+volatile boolean mirrorTTL4 = true; // Used for mirroring the Z shim coil rotation
 
 void setup(){
   Serial_Init();
@@ -85,6 +91,8 @@ void setup(){
   pinMode(pinTTL_OUT3, OUTPUT);
   pinMode(pinTTL_IN3_pol, INPUT);
   pinMode(pinTTL_IN3_Upol, INPUT);
+  pinMode(pinTTL_IN4, INPUT);
+  pinMode(pinTTL_OUT4, OUTPUT);
   pinMode(pinClockTTL, OUTPUT);
   attachInterrupt(0, changeStartCOM, RISING);
   attachInterrupt(1, advanceCycleNum, RISING);
@@ -124,6 +132,19 @@ void loop(){
     {
       setPinTTL_OUT3_LOW();
     }
+  if (mirrorTTL4)
+  { 
+    if(digitalRead(pinTTL_IN4)){
+      setPinTTL_OUT4_HIGH();
+    }else
+    {
+      setPinTTL_OUT4_LOW();
+    }
+  }
+  else
+  {
+    setPinTTL_OUT4_HIGH(); //this is just because of the logic state of the z-field rotation
+  }
     
   if (mode == 0 || mode == 1) {
     switch (cycleNum){
@@ -188,11 +209,11 @@ void loop(){
   }
 }
 
-void advanceCycleNum(){
+void setCycleAttributes(){
   mirrorTTL3source = pinTTL_IN3_pol; //default polarized line beta shutter sequence
   mirrorTTL2 = true;  //default clock bias field TTL mirrored
+  mirrorTTL4 = true;
   if (mode == 1) {
-    cycleNum += 1;
     cycleNum %= 4;
     
     switch (cycleNum){
@@ -211,7 +232,6 @@ void advanceCycleNum(){
     }
   }
   else if (mode == 2) {
-    cycleNum += 1;
     cycleNum %= 8;
     
     switch (cycleNum){
@@ -245,10 +265,31 @@ void advanceCycleNum(){
     mirrorTTL1 = true;
     mirrorTTL2 = false; //Leave clock bias field off
     mirrorTTL3source = pinTTL_IN3_Upol; //Use unpolarized beta shutter protocol
+    mirrorTTL4 = false; //do not add shim coil rotation to zero field state
   }
   else {
     mirrorTTL1 = true;
   }
+  
+}
+void advanceCycleNum(){
+  mirrorTTL3source = pinTTL_IN3_pol; //default polarized line beta shutter sequence
+  mirrorTTL2 = true;  //default clock bias field TTL mirrored
+  mirrorTTL4 = true;
+  if (mode == 1) {
+    cycleNum += 1;
+    cycleNum %= 4;
+
+  }
+  else if (mode == 2) {
+    cycleNum += 1;
+    cycleNum %= 8;
+  }
+  else {
+    mirrorTTL1 = true;
+  }
+  
+  setCycleAttributes();
 }
 
 void changeStartCOM(){
@@ -319,6 +360,17 @@ void ComputerCom(){
       }
     }
       digitalWrite(pinLED, LOW);
+      //QUICK HACK TO GET TIMING CORRECT FOR UNPOLARIZED LINE
+//      if (mode == 4){
+//        mirrorTTL1 = true;
+//        mirrorTTL2 = false; //Leave clock bias field off
+//        mirrorTTL3source = pinTTL_IN3_Upol; //Use unpolarized beta shutter protocol
+//        mirrorTTL4 = false; //do not add shim coil rotation to zero field state
+//      }
+//      else {
+//        mirrorTTL1 = true;
+//      }
+    setCycleAttributes();
       //Serial.println(cycleNum);
 }
 
