@@ -590,11 +590,7 @@ classdef FreqSweeper < handle
                         case 3 %LC V2
                             fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
                         case 4 %Oscillate LC
-                            if ~mod(runNum+1,2)
-                                fprintf(obj.myLCuControl.mySerial, ':0;c2;d0;t80000');
-                            else
                                 fprintf(obj.myLCuControl.mySerial, ':0;c0;d0;t80000');
-                            end
                         case 5 %Unpolarized Line
                             fprintf(obj.myLCuControl.mySerial, ':4;c0;d0;t80000');
                     end
