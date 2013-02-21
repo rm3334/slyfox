@@ -28,6 +28,9 @@ classdef FreqLocker < hgsetget
         mysPID4 = [];
         myPID4gui = [];
         myDataToOutput = [];
+        myPIDx = [];
+        myPIDy = [];
+        myPIDz = [];
     end
     
     properties (Constant)
@@ -41,13 +44,15 @@ classdef FreqLocker < hgsetget
             obj.myPanel.Parent = f;
             import PID.*
             
-            obj.myPID1gui = PID.PID_gui(top, obj.myPanel, '1');
+            initValues = struct('kP1',1.625,'Ti1',14.83,'Td1',0.24, 'kP2',1,'Ti2',10e10,'Td2',0,'delta', 3.92644);
+            
+            obj.myPID1gui = PID.PID_gui(top, obj.myPanel, '1', initValues);
             obj.mysPID1 = seriesPID({obj.myPID1gui.myPID, obj.myPID1gui.myPID2});
-            obj.myPID2gui = PID.PID_gui(top, obj.myPanel, '2');
+            obj.myPID2gui = PID.PID_gui(top, obj.myPanel, '2', initValues);
             obj.mysPID2 = seriesPID({obj.myPID2gui.myPID, obj.myPID2gui.myPID2});
-            obj.myPID3gui = PID.PID_gui(top, obj.myPanel, '3');
+            obj.myPID3gui = PID.PID_gui(top, obj.myPanel, '3', initValues);
             obj.mysPID3 = seriesPID({obj.myPID3gui.myPID, obj.myPID3gui.myPID2});
-            obj.myPID4gui = PID.PID_gui(top, obj.myPanel, '4');
+            obj.myPID4gui = PID.PID_gui(top, obj.myPanel, '4', initValues);
             obj.mysPID4 = seriesPID({obj.myPID4gui.myPID, obj.myPID4gui.myPID2});
             
             lockOptPanel = uiextras.Panel('Parent', obj.myPanel, ...
@@ -2429,6 +2434,9 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             rezeroSequenceNumber = 41;
             voltageStepSize = 1.25;
+            obj.myPIDx = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            obj.myPIDy = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            obj.myPIDz = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
             zeroingExcAndVoltages = [0, 0; 0, 0; 0, 0];
             prevExcPID1 = 0; %For use in calculating the present Error for PID1
             prevExcPID2 = 0; %For use in calculating the present Error for PID2
@@ -2463,7 +2471,7 @@ classdef FreqLocker < hgsetget
                                 %7 = Unpol,  Iz =  Iz0
                                 %8 = Unpol,  Iy =  Iy0 + Delta
                                 %9 and on.....do whatever seqPlace says 
-            
+           
             %AVOID MEMORY MOVEMENT SLOWDOWNS
             tempScanData = zeros(6,FreqLocker.bufferSize);
             tempSummedData = zeros(1,FreqLocker.bufferSize);
@@ -2855,6 +2863,9 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(1);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
+                                u = obj.myPIDx.calculate(e1, -1);
+                                newVoltage = zeroingExcAndVoltages(2,2) + u;
                                 pause(0.2)
                                 obj.changeAnalogVoltage(0, newVoltage);
                             case 3 % Unpol,  Iy =  Iy0 - Delta
@@ -2868,6 +2879,9 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(2);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
+                                u = obj.myPIDy.calculate(e1, -1);
+                                newVoltage = zeroingExcAndVoltages(2,2) + u;
                                 pause(0.2)
                                 obj.changeAnalogVoltage(1, newVoltage);
                             case 6 % Unpol,  Iz =  Iz0 - Delta
@@ -2881,6 +2895,9 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(3);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
+                                u = obj.myPIDz.calculate(e1, -1);
+                                newVoltage = zeroingExcAndVoltages(2,2) + u;
                                 pause(0.2)
                                 obj.changeAnalogVoltage(2, newVoltage);
                         end
@@ -3089,6 +3106,12 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'voltageStepSize');
                     rmappdata(obj.myTopFigure, 'zeroingExcAndVoltages');
                     rmappdata(obj.myTopFigure, 'rezeroSeqPlace');
+                    delete(obj.myPIDx);
+                    delete(obj.myPIDy);
+                    delete(obj.myPIDz);
+                    obj.myPIDx = [];
+                    obj.myPIDy = [];
+                    obj.myPIDz = [];
                 catch exception
                     exception.message
                 end

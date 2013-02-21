@@ -539,6 +539,11 @@ classdef FreqSweeper < handle
                             stopFrequency = str2double(get(myHandles.startFrequency, 'String')); %FLIPPED
                         end
                         try
+                            if (stopFrequency - startFrequency)/stepFrequency > 5000
+                                exception1 = MException('VerifyOutput:OutOfBounds', ...
+                                'Results are outside the allowable limits');
+                                throw(exception1)
+                            end
                             freqList = startFrequency:stepFrequency:stopFrequency;
                             curFrequency = freqList(1);
                         catch exception
