@@ -2434,9 +2434,9 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             rezeroSequenceNumber = 41;
             voltageStepSize = 1.25;
-            obj.myPIDx = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
-            obj.myPIDy = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
-            obj.myPIDz = PID.PID(1, 1, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            obj.myPIDx = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            obj.myPIDy = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            obj.myPIDz = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
             zeroingExcAndVoltages = [0, 0; 0, 0; 0, 0];
             prevExcPID1 = 0; %For use in calculating the present Error for PID1
             prevExcPID2 = 0; %For use in calculating the present Error for PID2
