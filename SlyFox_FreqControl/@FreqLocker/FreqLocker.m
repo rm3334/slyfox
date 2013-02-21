@@ -2428,7 +2428,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'readyForData', 0);
             myHandles = guidata(obj.myTopFigure);
             rezeroSequenceNumber = 41;
-            voltageStepSize = 0.35;
+            voltageStepSize = 1.25;
             zeroingExcAndVoltages = [0, 0; 0, 0; 0, 0];
             prevExcPID1 = 0; %For use in calculating the present Error for PID1
             prevExcPID2 = 0; %For use in calculating the present Error for PID2
@@ -2853,9 +2853,10 @@ classdef FreqLocker < hgsetget
                             case 2 % Unpol,  Ix =  Ix0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(1);
-                                [C, I] = max(zeroingExcAndVoltages);
+%                                 [C, I] = max(zeroingExcAndVoltages);
+                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
                                 pause(0.2)
-                                obj.changeAnalogVoltage(0, zeroingExcAndVoltages(I(1),2));
+                                obj.changeAnalogVoltage(0, newVoltage);
                             case 3 % Unpol,  Iy =  Iy0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(2);
@@ -2865,9 +2866,10 @@ classdef FreqLocker < hgsetget
                             case 5 % Unpol,  Iy =  Iy0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(2);
-                                [C, I] = max(zeroingExcAndVoltages);
+%                                 [C, I] = max(zeroingExcAndVoltages);
+                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
                                 pause(0.2)
-                                obj.changeAnalogVoltage(1, zeroingExcAndVoltages(I(1),2));
+                                obj.changeAnalogVoltage(1, newVoltage);
                             case 6 % Unpol,  Iz =  Iz0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(3);
@@ -2877,9 +2879,10 @@ classdef FreqLocker < hgsetget
                             case 8 % Unpol,  Iz =  Iz0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(3);
-                                [C, I] = max(zeroingExcAndVoltages);
+%                                 [C, I] = max(zeroingExcAndVoltages);
+                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
                                 pause(0.2)
-                                obj.changeAnalogVoltage(2, zeroingExcAndVoltages(I(1),2));
+                                obj.changeAnalogVoltage(2, newVoltage);
                         end
                     end
                         
@@ -3531,6 +3534,19 @@ classdef FreqLocker < hgsetget
                 clear variables
                 clear mex
             end
+        end
+        function [ newVoltage ] = findBestVoltage(obj, zeroingExcAndVoltages)
+            %FINDBESTVOLTAGE Summary of this function goes here
+            %   Fitting a parabola to the data to pull out the best Voltage
+            %   Note: If I fit PeakExc = -b*(V-V0)^2 + c to pull out V0....
+            %   PeakExc = -b*V^2 + 2*b*V0*V - b*V0^2 + c with....
+            %   PeakExc = a2*V^2 + a1*V + a0
+            %   Then, V0 = a1/(-2*a2)
+            [p, S] = polyfit(zeroingExcAndVoltages(:,2), zeroingExcAndVoltages(:,1), 2);
+            newVoltage = p(2)/(-2*p(1));
+            %     x = (0: 0.1: 5)';
+            %     f = polyval(p,x);
+            %     plot(zeroingExcAndVoltages(:,2),zeroingExcAndVoltages(:,1),'o',x,f,'-')
         end
         function advanceAnalogValues(obj, ~,~)
             obj.myAnalogStepper.myDAQSession.queueOutputData(obj.myDataToOutput);
