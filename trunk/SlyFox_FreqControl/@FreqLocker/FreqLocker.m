@@ -44,7 +44,7 @@ classdef FreqLocker < hgsetget
             obj.myPanel.Parent = f;
             import PID.*
             
-            initValues = struct('kP1',1.625,'Ti1',14.83,'Td1',0.24, 'kP2',1,'Ti2',10e10,'Td2',0,'delta', 3.92644);
+            initValues = struct('kP1',1.625,'Ti1',14.83,'Td1',0.24, 'kP2',1,'Ti2',10e10,'Td2',0,'delta', 8);
             
             obj.myPID1gui = PID.PID_gui(top, obj.myPanel, '1', initValues);
             obj.mysPID1 = seriesPID({obj.myPID1gui.myPID, obj.myPID1gui.myPID2});
