@@ -28,9 +28,6 @@ classdef FreqLocker < hgsetget
         mysPID4 = [];
         myPID4gui = [];
         myDataToOutput = [];
-        myPIDx = [];
-        myPIDy = [];
-        myPIDz = [];
     end
     
     properties (Constant)
@@ -2434,9 +2431,10 @@ classdef FreqLocker < hgsetget
             myHandles = guidata(obj.myTopFigure);
             rezeroSequenceNumber = 41;
             voltageStepSize = 1.25;
-            obj.myPIDx = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
-            obj.myPIDy = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
-            obj.myPIDz = PID.PID(1, 0.25, 4, 0, 2); %kP = 1, Ti = 4 iterations
+            meanFilterNum = 3;
+            meanVx = NaN;
+            meanVy = NaN;
+            meanVz = NaN;
             zeroingExcAndVoltages = [0, 0; 0, 0; 0, 0];
             prevExcPID1 = 0; %For use in calculating the present Error for PID1
             prevExcPID2 = 0; %For use in calculating the present Error for PID2
@@ -2555,6 +2553,10 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'voltageStepSize', voltageStepSize);
             setappdata(obj.myTopFigure, 'zeroingExcAndVoltages', zeroingExcAndVoltages);
             setappdata(obj.myTopFigure, 'rezeroSeqPlace', rezeroSeqPlace);
+            setappdata(obj.myTopFigure, 'meanFilterNum', meanFilterNum);
+            setappdata(obj.myTopFigure, 'meanVx', meanVx);
+            setappdata(obj.myTopFigure, 'meanVy', meanVy);
+            setappdata(obj.myTopFigure, 'meanVz', meanVz);
             
             pause(0.5) %I think I need this to make sure we get our first point good
             guidata(obj.myTopFigure, myHandles);
@@ -2591,6 +2593,10 @@ classdef FreqLocker < hgsetget
             zeroingExcAndVoltages = getappdata(obj.myTopFigure, 'zeroingExcAndVoltages');
             rezeroSeqPlace = getappdata(obj.myTopFigure, 'rezeroSeqPlace');
             previousVoltages = obj.readAnalogVoltages();
+            meanFilterNum = getappdata(obj.myTopFigure, 'meanFilterNum');
+            meanVx = getappdata(obj.myTopFigure, 'meanVx');
+            meanVy = getappdata(obj.myTopFigure, 'meanVy');
+            meanVz = getappdata(obj.myTopFigure, 'meanVz');
             
             if runNum > 1
                 tempH = getappdata(obj.myTopFigure, 'plottingHandles');
@@ -2863,11 +2869,12 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(1);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
-                                u = obj.myPIDx.calculate(e1, -1);
-                                newVoltage = zeroingExcAndVoltages(2,2) + u;
+                                if (isnan(meanVx))
+                                    meanVx = zeroingExcAndVoltages(2,2);
+                                end
+                                meanVx = ((meanFilterNum-1)*meanVx + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(0, newVoltage);
+                                obj.changeAnalogVoltage(0, meanVx);
                             case 3 % Unpol,  Iy =  Iy0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(2);
@@ -2879,11 +2886,12 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(2);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
-                                u = obj.myPIDy.calculate(e1, -1);
-                                newVoltage = zeroingExcAndVoltages(2,2) + u;
+                                if (isnan(meanVy))
+                                    meanVy = zeroingExcAndVoltages(2,2);
+                                end
+                                meanVy = ((meanFilterNum-1)*meanVy + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(1, newVoltage);
+                                obj.changeAnalogVoltage(1, meanVy);
                             case 6 % Unpol,  Iz =  Iz0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(3);
@@ -2895,11 +2903,12 @@ classdef FreqLocker < hgsetget
                                 zeroingExcAndVoltages(3,2) = previousVoltages(3);
 %                                 [C, I] = max(zeroingExcAndVoltages);
                                 newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                e1 = newVoltage - zeroingExcAndVoltages(2,2);
-                                u = obj.myPIDz.calculate(e1, -1);
-                                newVoltage = zeroingExcAndVoltages(2,2) + u;
+                                if (isnan(meanVz))
+                                    meanVz = zeroingExcAndVoltages(2,2);
+                                end
+                                meanVz = ((meanFilterNum-1)*meanVz + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(2, newVoltage);
+                                obj.changeAnalogVoltage(2, meanVz);
                         end
                     end
                         
@@ -3061,6 +3070,10 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'voltageStepSize', voltageStepSize);
                 setappdata(obj.myTopFigure, 'zeroingExcAndVoltages', zeroingExcAndVoltages);
                 setappdata(obj.myTopFigure, 'rezeroSeqPlace', rezeroSeqPlace);
+                setappdata(obj.myTopFigure, 'meanFilterNum', meanFilterNum);
+                setappdata(obj.myTopFigure, 'meanVx', meanVx);
+                setappdata(obj.myTopFigure, 'meanVy', meanVy);
+                setappdata(obj.myTopFigure, 'meanVz', meanVz);
                 
                 guidata(obj.myTopFigure, myHandles);
                
@@ -3106,12 +3119,10 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'voltageStepSize');
                     rmappdata(obj.myTopFigure, 'zeroingExcAndVoltages');
                     rmappdata(obj.myTopFigure, 'rezeroSeqPlace');
-                    delete(obj.myPIDx);
-                    delete(obj.myPIDy);
-                    delete(obj.myPIDz);
-                    obj.myPIDx = [];
-                    obj.myPIDy = [];
-                    obj.myPIDz = [];
+                    rmappdata(obj.myTopFigure, 'meanFilterNum');
+                    rmappdata(obj.myTopFigure, 'meanVx');
+                    rmappdata(obj.myTopFigure, 'meanVy');
+                    rmappdata(obj.myTopFigure, 'meanVz');
                 catch exception
                     exception.message
                 end
