@@ -2867,14 +2867,22 @@ classdef FreqLocker < hgsetget
                             case 2 % Unpol,  Ix =  Ix0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(1);
-%                                 [C, I] = max(zeroingExcAndVoltages);
-                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                if (isnan(meanVx))
-                                    meanVx = zeroingExcAndVoltages(2,2);
+                                [C, I] = max(zeroingExcAndVoltages);
+                                if (I(1) == 2)
+                                    newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                    meanVx = ((meanFilterNum-1)*meanVx + newVoltage)/meanFilterNum;
+                                    if (isnan(meanVx))
+                                        meanVx = zeroingExcAndVoltages(2,2);
+                                    end
+                                elseif (I(1) == 1)
+                                    meanVx = zeroingExcAndVoltages(2,2) - 0.3;
+                                else
+                                    meanVx = zeroingExcAndVoltages(2,2) + 0.3 ;   
                                 end
-                                meanVx = ((meanFilterNum-1)*meanVx + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(0, meanVx);
+                                if (~isnan(meanVx))
+                                    obj.changeAnalogVoltage(0, meanVx);
+                                end
                             case 3 % Unpol,  Iy =  Iy0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(2);
@@ -2884,14 +2892,22 @@ classdef FreqLocker < hgsetget
                             case 5 % Unpol,  Iy =  Iy0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(2);
-%                                 [C, I] = max(zeroingExcAndVoltages);
-                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                if (isnan(meanVy))
-                                    meanVy = zeroingExcAndVoltages(2,2);
+                                [C, I] = max(zeroingExcAndVoltages);
+                                if (I(1) == 2)
+                                    newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                    meanVy = ((meanFilterNum-1)*meanVy + newVoltage)/meanFilterNum;
+                                    if (isnan(meanVy))
+                                        meanVy = zeroingExcAndVoltages(2,2);
+                                    end
+                                elseif (I(1) == 1)
+                                    meanVy = zeroingExcAndVoltages(2,2) - 0.3;
+                                else
+                                    meanVy = zeroingExcAndVoltages(2,2) + 0.3 ;   
                                 end
-                                meanVy = ((meanFilterNum-1)*meanVy + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(1, meanVy);
+                                if (~isnan(meanVy))
+                                    obj.changeAnalogVoltage(1, meanVy);
+                                end
                             case 6 % Unpol,  Iz =  Iz0 - Delta
                                 zeroingExcAndVoltages(1,1) = tNorm;
                                 zeroingExcAndVoltages(1,2) = previousVoltages(3);
@@ -2901,14 +2917,22 @@ classdef FreqLocker < hgsetget
                             case 8 % Unpol,  Iz =  Iz0 + Delta
                                 zeroingExcAndVoltages(3,1) = tNorm;
                                 zeroingExcAndVoltages(3,2) = previousVoltages(3);
-%                                 [C, I] = max(zeroingExcAndVoltages);
-                                newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
-                                if (isnan(meanVz))
-                                    meanVz = zeroingExcAndVoltages(2,2);
+                                [C, I] = max(zeroingExcAndVoltages);
+                                if (I(1) == 2)
+                                    newVoltage = obj.findBestVoltage(zeroingExcAndVoltages);
+                                    meanVz = ((meanFilterNum-1)*meanVz + newVoltage)/meanFilterNum;
+                                    if (isnan(meanVz))
+                                        meanVz = zeroingExcAndVoltages(2,2);
+                                    end
+                                elseif (I(1) == 1)
+                                    meanVz = zeroingExcAndVoltages(2,2) - 0.3;
+                                else
+                                    meanVz = zeroingExcAndVoltages(2,2) + 0.3 ;   
                                 end
-                                meanVz = ((meanFilterNum-1)*meanVz + newVoltage)/meanFilterNum;
                                 pause(0.2)
-                                obj.changeAnalogVoltage(2, meanVz);
+                                if (~isnan(meanVz))
+                                    obj.changeAnalogVoltage(2, meanVz);
+                                end
                         end
                     end
                         
