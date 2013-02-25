@@ -1522,9 +1522,9 @@ classdef FreqLocker < hgsetget
                                 'err2', 'cor2', 'servoVal2', ...
                                 'err3', 'cor3', 'servoVal3', ...
                                 'freqSr', 'delta','cycleNum', 'badData'};
-                            if get(myHandles.stepVoltages, 'Value')
-                                colNames = [colNames obj.myAnalogStepper.myNames];
-                            end
+%                             if get(myHandles.stepVoltages, 'Value')
+%                                 colNames = [colNames obj.myAnalogStepper.myNames];
+%                             end
                             n = length(colNames);
                             for i=1:n
                                 fprintf(fid, '%s\t', colNames{i});
