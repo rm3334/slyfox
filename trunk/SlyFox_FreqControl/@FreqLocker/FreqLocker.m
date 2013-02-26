@@ -28,11 +28,14 @@ classdef FreqLocker < hgsetget
         mysPID4 = [];
         myPID4gui = [];
         myDataToOutput = [];
+        myDriftPlotHandle = [];
+        myDriftFitHandle = [];
     end
     
     properties (Constant)
         bufferSize = 128;
         plotSize = 40;
+        refTime = 1361903296619;
     end
     
     methods
@@ -2497,8 +2500,8 @@ classdef FreqLocker < hgsetget
             tempPID3Data = zeros(1,FreqLocker.bufferSize);
             tempPID4Data = zeros(1,FreqLocker.bufferSize);
             tempDriftData = NaN(2,FreqLocker.bufferSize);
-            myHandles.myDriftFitHandle = [];
-            myHandles.myDriftPlotHandle = [];
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             
             
@@ -2873,13 +2876,13 @@ classdef FreqLocker < hgsetget
                                 case 1
                                     tempPID1Data = [tempPID1Data(2:end) calcErr1];
                                     tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
-                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) time];
+                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                                 case 3
                                     tempPID2Data = [tempPID2Data(2:end) calcErr2];
                                 case 5
                                     tempPID3Data = [tempPID3Data(2:end) calcErr3];
                                     tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
-                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) time];
+                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                                 case 7
                                     tempPID4Data = [tempPID4Data(2:end) calcErr4];
                             end
@@ -3700,33 +3703,34 @@ classdef FreqLocker < hgsetget
         function updateDriftPlots(obj, runNum)
             myHandles = guidata(obj.myTopFigure);
             tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
-            if isempty(myHandles.myDriftPlotHandle)
-                myHandles.myDriftPlotHandle = plot(myHandles.DriftAXES, tempDriftData(2,:), tempDriftData(1,:),'ok', 'LineWidth', 3); 
+            if isempty(obj.myDriftPlotHandle)
+                obj.myDriftPlotHandle = plot(myHandles.DriftAXES, tempDriftData(2,:), tempDriftData(1,:),'ok', 'LineWidth', 3); 
                 set(myHandles.DriftAXES, 'NextPlot', 'add');
             else
-                set(myHandles.myDriftPlotHandle, 'YData', tempDriftData(1,:));
-                set(myHandles.myDriftPlotHandle, 'XData', tempDriftData(2,:));
-                refreshdata(myHandles.myDriftPlotHandle);
+                set(obj.myDriftPlotHandle, 'YData', tempDriftData(1,:));
+                set(obj.myDriftPlotHandle, 'XData', tempDriftData(2,:));
+                refreshdata(obj.myDriftPlotHandle);
                 drawnow;
                 
                 if(runNum >= 20)
                     criteria = ~isnan(tempDriftData(1,:));
                     xFull = tempDriftData(2,criteria);
                     yFull = tempDriftData(1,criteria);
-                    if length(xFull > 15)
+                    if (length(xFull) > 15)
                         x = xFull(end-15:end);
-                        x = yFull(end-15:end);
+                        y = yFull(end-15:end);
                     else
                         x = xFull;
                         y = yFull;
                     end
                     p = polyfit(x, y,1);
                     f = polyval(p,x);
-                    if isempty(myHandles.myDriftFitHandle)
-                        myHandles.myDriftFitHandle = plot(myHandles.DriftAXES, x, f);
+                    if isempty(obj.myDriftFitHandle)
+                        obj.myDriftFitHandle = plot(myHandles.DriftAXES, x, f);
                     else
-                        set(myHandles.myDriftFitHandle, 'YData', f);
-                        set(myHandles.myDriftFitHandle, 'XData', x);
+                        set(obj.myDriftFitHandle, 'YData', f);
+                        set(obj.myDriftFitHandle, 'XData', x);
+                        title(myHandles.DriftAXES, ['Residual Drift is ' num2str(p(1)*1000, 3) ' mHz/s']);
                     end
                 end
             end
