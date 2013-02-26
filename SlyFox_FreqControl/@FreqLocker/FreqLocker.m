@@ -405,6 +405,9 @@ classdef FreqLocker < hgsetget
             tempSummedData = zeros(1,FreqLocker.bufferSize);
             tempNormData = zeros(1,FreqLocker.bufferSize);
             tempPID1Data = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -446,6 +449,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'scanData', tempScanData);
             setappdata(obj.myTopFigure, 'summedData', tempSummedData);
             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -463,6 +467,7 @@ classdef FreqLocker < hgsetget
             tempScanData = getappdata(obj.myTopFigure, 'scanData');
             tempSummedData = getappdata(obj.myTopFigure, 'summedData');
             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -606,6 +611,8 @@ classdef FreqLocker < hgsetget
                     end
                     
                     tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                    tempDriftData(1, :) = [tempDriftData(1, 2:end) newCenterFreq];
+                    tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                     
                     %Do some Plotting
                     firstplot = 1;
@@ -661,6 +668,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreq + linewidth/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -672,6 +680,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExc', prevExc);
@@ -696,6 +705,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'scanData');
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'PID1Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -738,6 +748,9 @@ classdef FreqLocker < hgsetget
             tempNormData = zeros(1,FreqLocker.bufferSize);
             tempPID1Data = zeros(1,FreqLocker.bufferSize);
             tempIntermittentData = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -779,6 +792,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'scanData', tempScanData);
             setappdata(obj.myTopFigure, 'summedData', tempSummedData);
             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'intermittentData', tempIntermittentData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
@@ -797,6 +811,7 @@ classdef FreqLocker < hgsetget
             tempScanData = getappdata(obj.myTopFigure, 'scanData');
             tempSummedData = getappdata(obj.myTopFigure, 'summedData');
             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             tempIntermittentData = getappdata(obj.myTopFigure, 'intermittentData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
@@ -958,6 +973,9 @@ classdef FreqLocker < hgsetget
                                 end
                         end
                         tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                        tempDriftData(1, :) = [tempDriftData(1, 2:end) newCenterFreq];
+                        tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
+                                
                     else
                         calcErr1 = 0;
                         calcCorr1 = 0;
@@ -1024,6 +1042,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreq + linewidth/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -1035,6 +1054,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'scanData', tempScanData);
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExc', prevExc);
@@ -1060,6 +1080,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'scanData');
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'PID1Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -1514,6 +1535,9 @@ classdef FreqLocker < hgsetget
             tempNormData = zeros(1,FreqLocker.bufferSize);
             tempPID1Data = zeros(1,FreqLocker.bufferSize);
             tempPID2Data = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             
             
@@ -1566,6 +1590,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'summedData', tempSummedData);
             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
             setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -1586,6 +1611,7 @@ classdef FreqLocker < hgsetget
             tempSummedData = getappdata(obj.myTopFigure, 'summedData');
             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
             tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -1773,8 +1799,12 @@ classdef FreqLocker < hgsetget
                         switch seqPlace
                             case 1
                                 tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                                tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL + newCenterFreqH)/2];
+                                tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                             case 3
                                 tempPID2Data = [tempPID2Data(2:end) calcErr2];
+                                tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL + newCenterFreqH)/2];
+                                tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                         end
                     
                     %Do some Plotting
@@ -1853,6 +1883,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -1866,6 +1897,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                 setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
@@ -1894,6 +1926,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'PID1Data');
                     rmappdata(obj.myTopFigure, 'PID2Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -1951,6 +1984,9 @@ classdef FreqLocker < hgsetget
             tempPID2Data = zeros(1,FreqLocker.bufferSize);
             tempPID3Data = zeros(1,FreqLocker.bufferSize);
             tempPID4Data = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             
             
@@ -2006,6 +2042,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
             setappdata(obj.myTopFigure, 'PID3Data', tempPID3Data);
             setappdata(obj.myTopFigure, 'PID4Data', tempPID4Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -2032,6 +2069,7 @@ classdef FreqLocker < hgsetget
             tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
             tempPID3Data = getappdata(obj.myTopFigure, 'PID3Data');
             tempPID4Data = getappdata(obj.myTopFigure, 'PID4Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -2261,10 +2299,14 @@ classdef FreqLocker < hgsetget
                         switch seqPlace
                             case 1
                                 tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                                tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
+                                tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                             case 3
                                 tempPID2Data = [tempPID2Data(2:end) calcErr2];
                             case 5
                                 tempPID3Data = [tempPID3Data(2:end) calcErr3];
+                                tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
+                                tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                             case 7
                                 tempPID4Data = [tempPID4Data(2:end) calcErr4];
                         end
@@ -2369,6 +2411,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency2, 'String', num2str(newCenterFreqH2 + linewidth2/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -2384,6 +2427,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
                 setappdata(obj.myTopFigure, 'PID3Data', tempPID3Data);
                 setappdata(obj.myTopFigure, 'PID4Data', tempPID4Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExcPID1', prevExcPID1);
@@ -2420,6 +2464,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'PID2Data');
                     rmappdata(obj.myTopFigure, 'PID3Data');
                     rmappdata(obj.myTopFigure, 'PID4Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -3215,6 +3260,9 @@ classdef FreqLocker < hgsetget
             tempNormData = zeros(1,FreqLocker.bufferSize);
             tempPID1Data = zeros(1,FreqLocker.bufferSize);
             tempPID2Data = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            obj.myDriftFitHandle = [];
+            obj.myDriftPlotHandle = [];
             
             
 
@@ -3262,6 +3310,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'summedData', tempSummedData);
             setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
             setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -3282,6 +3331,7 @@ classdef FreqLocker < hgsetget
             tempSummedData = getappdata(obj.myTopFigure, 'summedData');
             tempPID1Data = getappdata(obj.myTopFigure, 'PID1Data');
             tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -3480,6 +3530,8 @@ classdef FreqLocker < hgsetget
                         switch seqPlace
                             case 1
                                 tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                                tempDriftData(1, :) = [tempDriftData(1, 2:end) newCenterFreqL];
+                                tempDriftData(2, :) = [tempDriftData(2, 2:end) ((time- obj.refTime)/1000)];
                             case 3
                                 tempPID2Data = [tempPID2Data(2:end) calcErr2];
                         end
@@ -3562,6 +3614,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -3575,6 +3628,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'summedData', tempSummedData);
                 setappdata(obj.myTopFigure, 'PID1Data', tempPID1Data);
                 setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExcL', prevExcL);
@@ -3604,6 +3658,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'summedData');
                     rmappdata(obj.myTopFigure, 'PID1Data');
                     rmappdata(obj.myTopFigure, 'PID2Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -3736,9 +3791,6 @@ classdef FreqLocker < hgsetget
             end
             guidata(obj.myTopFigure, myHandles);
         end
-        
-        
-        
         function [path, fileName] = createFileName(obj)
             myHandles = guidata(obj.myTopFigure);
 %             basePath = get(myHandles.saveDirPID1, 'String');
