@@ -291,10 +291,10 @@ classdef FreqLocker < hgsetget
                        set(lockControl, 'Sizes', [-3, -1, -1, -3, -1]);
             lockOutput = uiextras.TabPanel('Parent', obj.myPanel);
                 p1 = uiextras.Panel('Parent', lockOutput);
-                    axes('Tag', 'servoVal1AXES', 'Parent', p1, 'ActivePositionProperty', 'OuterPosition');
+                    axes('Tag', 'DriftAXES', 'Parent', p1, 'ActivePositionProperty', 'OuterPosition');
                 p2 = uiextras.Panel('Parent', lockOutput);
                     axes('Tag', 'normExcAXES', 'Parent', p2, 'ActivePositionProperty', 'OuterPosition');
-                    lockOutput.TabNames = {'SVal1', 'Normalized Exc'};
+                    lockOutput.TabNames = {'Drift', 'Normalized Exc'};
                     lockOutput.SelectedChild = 1;
             emptyBox = uiextras.Empty('Parent', obj.myPanel);
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1 -1]);
@@ -2496,6 +2496,9 @@ classdef FreqLocker < hgsetget
             tempPID2Data = zeros(1,FreqLocker.bufferSize);
             tempPID3Data = zeros(1,FreqLocker.bufferSize);
             tempPID4Data = zeros(1,FreqLocker.bufferSize);
+            tempDriftData = NaN(2,FreqLocker.bufferSize);
+            myHandles.myDriftFitHandle = [];
+            myHandles.myDriftPlotHandle = [];
             
             
             
@@ -2552,6 +2555,7 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
             setappdata(obj.myTopFigure, 'PID3Data', tempPID3Data);
             setappdata(obj.myTopFigure, 'PID4Data', tempPID4Data);
+            setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
             setappdata(obj.myTopFigure, 'runNum', runNum);
             setappdata(obj.myTopFigure, 'fid', fid);
             setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
@@ -2589,6 +2593,7 @@ classdef FreqLocker < hgsetget
             tempPID2Data = getappdata(obj.myTopFigure, 'PID2Data');
             tempPID3Data = getappdata(obj.myTopFigure, 'PID3Data');
             tempPID4Data = getappdata(obj.myTopFigure, 'PID4Data');
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
             runNum = getappdata(obj.myTopFigure, 'runNum');
             fid = getappdata(obj.myTopFigure, 'fid');
             seqPlace = getappdata(obj.myTopFigure, 'seqPlace');
@@ -2867,10 +2872,14 @@ classdef FreqLocker < hgsetget
                             switch seqPlace
                                 case 1
                                     tempPID1Data = [tempPID1Data(2:end) calcErr1];
+                                    tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
+                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) time];
                                 case 3
                                     tempPID2Data = [tempPID2Data(2:end) calcErr2];
                                 case 5
                                     tempPID3Data = [tempPID3Data(2:end) calcErr3];
+                                    tempDriftData(1, :) = [tempDriftData(1, 2:end) (newCenterFreqL1 + newCenterFreqH1)/2];
+                                    tempDriftData(2, :) = [tempDriftData(2, 2:end) time];
                                 case 7
                                     tempPID4Data = [tempPID4Data(2:end) calcErr4];
                             end
@@ -3081,6 +3090,7 @@ classdef FreqLocker < hgsetget
                         set(myHandles.highStartFrequency2, 'String', num2str(newCenterFreqH2 + linewidth2/2));
                     end
                     pointDone = 1;
+                    obj.updateDriftPlots(runNum);
             end
             if (getappdata(obj.myTopFigure, 'run')) % Prepare for a new data point
                 if runNum == 1
@@ -3096,6 +3106,7 @@ classdef FreqLocker < hgsetget
                 setappdata(obj.myTopFigure, 'PID2Data', tempPID2Data);
                 setappdata(obj.myTopFigure, 'PID3Data', tempPID3Data);
                 setappdata(obj.myTopFigure, 'PID4Data', tempPID4Data);
+                setappdata(obj.myTopFigure, 'DriftData', tempDriftData);
                 setappdata(obj.myTopFigure, 'runNum', runNum);
                 setappdata(obj.myTopFigure, 'seqPlace', seqPlace);
                 setappdata(obj.myTopFigure, 'prevExcPID1', prevExcPID1);
@@ -3141,6 +3152,7 @@ classdef FreqLocker < hgsetget
                     rmappdata(obj.myTopFigure, 'PID2Data');
                     rmappdata(obj.myTopFigure, 'PID3Data');
                     rmappdata(obj.myTopFigure, 'PID4Data');
+                    rmappdata(obj.myTopFigure, 'DriftData');
                     rmappdata(obj.myTopFigure, 'runNum');
                     rmappdata(obj.myTopFigure, 'taxis');
                     rmappdata(obj.myTopFigure, 'fid');
@@ -3685,6 +3697,44 @@ classdef FreqLocker < hgsetget
             end
                 
         end
+        function updateDriftPlots(obj, runNum)
+            myHandles = guidata(obj.myTopFigure);
+            tempDriftData = getappdata(obj.myTopFigure, 'DriftData');
+            if isempty(myHandles.myDriftPlotHandle)
+                myHandles.myDriftPlotHandle = plot(myHandles.DriftAXES, tempDriftData(2,:), tempDriftData(1,:),'ok', 'LineWidth', 3); 
+                set(myHandles.DriftAXES, 'NextPlot', 'add');
+            else
+                set(myHandles.myDriftPlotHandle, 'YData', tempDriftData(1,:));
+                set(myHandles.myDriftPlotHandle, 'XData', tempDriftData(2,:));
+                refreshdata(myHandles.myDriftPlotHandle);
+                drawnow;
+                
+                if(runNum >= 20)
+                    criteria = ~isnan(tempDriftData(1,:));
+                    xFull = tempDriftData(2,criteria);
+                    yFull = tempDriftData(1,criteria);
+                    if length(xFull > 15)
+                        x = xFull(end-15:end);
+                        x = yFull(end-15:end);
+                    else
+                        x = xFull;
+                        y = yFull;
+                    end
+                    p = polyfit(x, y,1);
+                    f = polyval(p,x);
+                    if isempty(myHandles.myDriftFitHandle)
+                        myHandles.myDriftFitHandle = plot(myHandles.DriftAXES, x, f);
+                    else
+                        set(myHandles.myDriftFitHandle, 'YData', f);
+                        set(myHandles.myDriftFitHandle, 'XData', x);
+                    end
+                end
+            end
+            guidata(obj.myTopFigure, myHandles);
+        end
+        
+        
+        
         function [path, fileName] = createFileName(obj)
             myHandles = guidata(obj.myTopFigure);
 %             basePath = get(myHandles.saveDirPID1, 'String');
