@@ -218,10 +218,10 @@ void setCycleAttributes(){
     
     switch (cycleNum){
       case 0:
-        mirrorTTL1 = true;
+        mirrorTTL1 = false;
         break;
       case 1:
-        mirrorTTL1 = true;
+        mirrorTTL1 = false;
         break;
       case 2:
         mirrorTTL1 = true;

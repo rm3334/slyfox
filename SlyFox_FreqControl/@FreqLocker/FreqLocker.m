@@ -408,6 +408,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -751,6 +752,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             %2.5 Initialize Frequency Synthesizer
             obj.myFreqSynth.initialize();
@@ -1517,6 +1519,7 @@ classdef FreqLocker < hgsetget
             prevExcL = 0; %For use in calculating the present Error for Low Freq Lock
             prevExcH = 0; %For use in calculating the present Error for Low Freq Lock
             linewidth = str2double(get(myHandles.linewidth, 'String'));
+            linewidth2 = str2double(get(myHandles.linewidth2, 'String'));
             newCenterFreqL = str2double(get(myHandles.lowStartFrequency1, 'String'))+ linewidth/2;
             newCenterFreqH = str2double(get(myHandles.highStartFrequency1, 'String'))- linewidth/2;
             runNum = 1;
@@ -1538,6 +1541,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             
             
@@ -1618,6 +1622,7 @@ classdef FreqLocker < hgsetget
             prevExcL = getappdata(obj.myTopFigure, 'prevExcL');
             prevExcH = getappdata(obj.myTopFigure, 'prevExcH');
             linewidth = str2double(get(myHandles.linewidth, 'String'));
+            linewidth2 = str2double(get(myHandles.linewidth2, 'String'));
             newCenterFreqL = getappdata(obj.myTopFigure, 'newCenterFreqL');
             newCenterFreqH = getappdata(obj.myTopFigure, 'newCenterFreqH');
             prevFrequency = getappdata(obj.myTopFigure, 'prevFrequency');
@@ -1652,11 +1657,12 @@ classdef FreqLocker < hgsetget
                         case 1 % right side of line 1
                             curFrequency = newCenterFreqL + linewidth/2;
                         case 2 % left side of line 2
-                            curFrequency = newCenterFreqH - linewidth/2;
+                            curFrequency = newCenterFreqH - linewidth2/2;
                         case 3 % right side of line 2
-                            curFrequency = newCenterFreqH + linewidth/2;
+                            curFrequency = newCenterFreqH + linewidth2/2;
                     end
-                if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
+%                 if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
+                if strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
                     disp([':1;c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
                     fprintf(obj.myLCuControl.mySerial, [':1;c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
                     %fscanf(obj.myLCuControl.mySerial)
@@ -1880,7 +1886,7 @@ classdef FreqLocker < hgsetget
                     
                     if (runNum > 5 && tNorm >= 0.1)
                         set(myHandles.lowStartFrequency1, 'String', num2str(newCenterFreqL - linewidth/2));
-                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth/2));
+                        set(myHandles.highStartFrequency1, 'String', num2str(newCenterFreqH + linewidth2/2));
                     end
                     pointDone = 1;
                     obj.updateDriftPlots(runNum);
@@ -1987,6 +1993,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             
             
@@ -2547,6 +2554,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             
             
@@ -3263,6 +3271,7 @@ classdef FreqLocker < hgsetget
             tempDriftData = NaN(2,FreqLocker.bufferSize);
             obj.myDriftFitHandle = [];
             obj.myDriftPlotHandle = [];
+            cla(myHandles.DriftAXES);
             
             
 
