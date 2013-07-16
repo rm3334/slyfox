@@ -10,6 +10,7 @@ classdef DDS_uControlFrontend < hgsetget
         myPanel = [];
         myDDSs;
         mySerial;
+        myPortListBox;
     end
     
     methods
@@ -30,7 +31,7 @@ classdef DDS_uControlFrontend < hgsetget
                 comPortListHB = uiextras.HBox('Parent', uCbuttonVB);
                     uiextras.Empty('Parent', comPortListHB);
                     a = instrhwinfo('serial');
-                    uicontrol(...
+                    obj.myPortListBox = uicontrol(...
                                 'Parent', comPortListHB,...
                                 'Style', 'popupmenu', ...
                                 'Tag', 'comPortListMenu',...
@@ -59,12 +60,12 @@ classdef DDS_uControlFrontend < hgsetget
                 uiextras.Empty('Parent', uCbuttonVB);
             uCbuttonVB.Sizes = [-2 -1 -1 -1 -2];
 
-            uiextras.Empty('Parent', obj.myPanel);
+%             uiextras.Empty('Parent', obj.myPanel);
             for i=1:numDDS
                 obj.myDDSs{i} = DDS.DDS_Frontend(obj.myTopFigure, obj.myPanel, i-1);
             end
 %             set(obj.myPanel, 'ColumnSizes', [-1 -1 -1, -1], 'RowSizes', [-1, -1]);
-            set(obj.myPanel, 'RowSizes', [-1, -1]);
+%             set(obj.myPanel, 'RowSizes', [-1, -1]);
 
             
             myHandles = guihandles(obj.myTopFigure);
@@ -133,6 +134,9 @@ classdef DDS_uControlFrontend < hgsetget
             guidata(obj.myTopFigure, myHandles);
         end
         
+        function setDriftMode(obj, num)
+            obj.myDDSs{num}.setDriftMode();
+        end
         function quit(obj)
             myHandles = guidata(obj.myTopFigure);
             success = 0;

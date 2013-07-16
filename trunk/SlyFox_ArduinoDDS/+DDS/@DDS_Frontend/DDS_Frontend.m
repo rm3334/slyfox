@@ -4,6 +4,8 @@ classdef DDS_Frontend < hgsetget
     %   has many controls to change the various parameters of a DDS_Config
     %   object and also to change the characteristics of the DDS output.
     %   Written by Ben Bloom 10/4/2011
+    % need to create some nice functions for setting drift and sending
+    % drift
     
     properties
         myTopFigure = [];
@@ -16,6 +18,7 @@ classdef DDS_Frontend < hgsetget
         myCurrentMode = 1;
         myAvailableModes = {'Single Tone', 'FSK', 'Ramped FSK', 'Chirp', 'BPSK'};
         myCurrentRegister = 1;
+        myModeTabPanel;
     end
     
     methods
@@ -78,9 +81,11 @@ classdef DDS_Frontend < hgsetget
                 
 
                 
-            modeTabPanel = uiextras.TabPanel('Parent', obj.myPanel, ...
+            
+                modeTabPanel = uiextras.TabPanel('Parent', obj.myPanel, ...
                 'Tag', 'modeTabPanel', ...
                 'Callback', @obj.modeTabPanel_Callback);
+                obj.myModeTabPanel = modeTabPanel;
             
                 stVB = uiextras.VBox('Parent', modeTabPanel);
                     uiextras.Empty('Parent', stVB);
@@ -316,7 +321,6 @@ classdef DDS_Frontend < hgsetget
             fscanf(obj.mySerial)
         end
         
-        
         function setDefaultButton_Callback(obj, src, eventData)
             myHandles = guidata(obj.myTopFigure);
             
@@ -447,6 +451,27 @@ classdef DDS_Frontend < hgsetget
                 fwrite(obj.mySerial, iSet{1});
                 fscanf(obj.mySerial)
             end
+        end
+        
+        function addToDriftRate(obj, driftCor)
+            myHandles = guidata(obj.myTopFigure);
+            
+            % set the tab to be chirp
+            obj.myCurrentMode = 4;
+            obj.myModeTabPanel.SelectedChild = 4;
+            % set the pulldown mode list to be send slope
+            set(myHandles.(['CHIRPsetting' num2str(obj.myBoardAddr)]), 'Value', 2);
+            % add driftCor to slope that is in the box already
+            prevVal = str2double(get(myHandles.(['chirpSlope' num2str(obj.myBoardAddr)]), 'String'));
+            newVal = prevVal - driftCor;
+            set(myHandles.(['chirpSlope' num2str(obj.myBoardAddr)]), 'String', num2str(newVal, '%11.6g'));  
+            % send command
+            obj.sendCommand_Callback()
+        end
+        function setDriftMode(obj)
+            % set the tab to be chirp
+            obj.myCurrentMode = 4;
+            obj.myModeTabPanel.SelectedChild = 4;
         end
     end
     
