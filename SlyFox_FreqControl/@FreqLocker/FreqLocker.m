@@ -3832,7 +3832,7 @@ classdef FreqLocker < hgsetget
                     if get(myHandles.calcSrFreq, 'Value') && runNum >= 8 && rezeroSeqPlace > 8
                         temp = [temp (newCenterFreqL1 + newCenterFreqH1)/2 (newCenterFreqL1 - newCenterFreqH1)];
                     else
-                        temp = [temp 0 0 0 0];
+                        temp = [temp 0 0];
                     end
                     if get(myHandles.cycleNumOnCN, 'Value')
                         temp = [temp prevCycleNum];
