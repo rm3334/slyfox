@@ -262,7 +262,7 @@ void setCycleAttributes(){
     }
   }
   else if (mode == 4){
-    mirrorTTL1 = true;
+    mirrorTTL1 = false;
     mirrorTTL2 = false; //Leave clock bias field off
     mirrorTTL3source = pinTTL_IN3_Upol; //Use unpolarized beta shutter protocol
     mirrorTTL4 = false; //do not add shim coil rotation to zero field state
