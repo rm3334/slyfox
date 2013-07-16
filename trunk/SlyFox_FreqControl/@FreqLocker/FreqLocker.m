@@ -314,14 +314,14 @@ classdef FreqLocker < hgsetget
                                 'String', 'Temperature Fixed Sensor', ...
                                 'FontWeight', 'bold', ...
                                 'FontUnits', 'normalized', ...
-                                'FontSize', 0.7);
+                                'FontSize', 0.4);
                 uicontrol(...
                                 'Parent', correctionGrid, ...
                                 'Style', 'text', ...
                                 'String', 'Temperature Bellows Sensor', ...
                                 'FontWeight', 'bold', ...
                                 'FontUnits', 'normalized', ...
-                                'FontSize', 0.7);
+                                'FontSize', 0.4);
                  uicontrol(...
                                 'Parent', correctionGrid, ...
                                 'Style', 'text', ...
@@ -329,7 +329,7 @@ classdef FreqLocker < hgsetget
                                 'Tag', 'TempFixed', ...
                                 'FontWeight', 'bold', ...
                                 'FontUnits', 'normalized', ...
-                                'FontSize', 0.7);
+                                'FontSize', 0.4);
                  uicontrol(...
                                 'Parent', correctionGrid, ...
                                 'Style', 'text', ...
@@ -337,7 +337,7 @@ classdef FreqLocker < hgsetget
                                 'Tag', 'TempBellows', ...
                                 'FontWeight', 'bold', ...
                                 'FontUnits', 'normalized', ...
-                                'FontSize', 0.7);
+                                'FontSize', 0.4);
                 set(correctionGrid, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1]);
             set(obj.myPanel, 'ColumnSizes', [-1 -1], 'RowSizes', [-1 -1 -1 -1]);
             myHandles = guihandles(obj.myTopFigure);
@@ -3380,8 +3380,8 @@ classdef FreqLocker < hgsetget
                 end
                 if get(myHandles.useTSensor, 'Value')
                     try
-                            obj.myTempSensor = visa('ni', 'GPIB0::12::INSTR');
-                            fopen(obj.myTempSensor);
+                            obj.myTempSensor = visa('ni', 'GPIB0::12::INSTR')
+                            fopen(obj.myTempSensor)
                     catch err
                     end
                 end
@@ -3651,7 +3651,7 @@ classdef FreqLocker < hgsetget
                                             else
                                                 calcCorr2 = obj.mysPID2.calculate(calcErr2, -deltaT2);
                                             end
-                                            newCenterFreqL2 = newCenterFreqL2 + calcCorr2;
+                                            newCenterFreqH1 = newCenterFreqH1 + calcCorr2;
                                 end
                         end
 
@@ -3816,14 +3816,14 @@ classdef FreqLocker < hgsetget
                             tempPID1 = [0 0 0];%err correctionApplied servoVal
                         end
                         if runNum >= 2 && seqPlace == 3 && ~badData && rezeroSeqPlace > 8
-                            tempPID2 = [calcErr2 calcCorr2 newCenterFreqL2];%err correctionApplied servoVal
+                            tempPID2 = [calcErr2 calcCorr2 newCenterFreqH1];%err correctionApplied servoVal
                         else
                             tempPID2 = [0 0 0];
                         end
                     temp = [temp tempPID1 tempPID2];
                     temp = [temp previousVoltages];
                     if get(myHandles.useTSensor, 'Value')
-                        [Vfixed, Cfixed, Vbellows, Cbellows] = readTemps();
+                        [Vfixed, Cfixed, Vbellows, Cbellows] = obj.readTemps();
                         temp = [temp Vfixed Cfixed Vbellows Cbellows];
                         set(myHandles.TempFixed, 'String', num2str(Cfixed, '%5.8f'));
                         set(myHandles.TempBellows, 'String', num2str(Cbellows, '%5.8f'));
