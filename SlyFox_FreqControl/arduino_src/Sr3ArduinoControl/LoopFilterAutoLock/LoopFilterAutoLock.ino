@@ -30,6 +30,8 @@ Ver: 0.1
 #define setMode6dBP() PORTD = (PORTD & ~modeSetMask) | (0b01111000 & modeSetMask)
 #define setMode9dB() PORTD = (PORTD & ~modeSetMask) | (0b11111000 & modeSetMask)
 #define setModeSearch() PORTD = (PORTD & ~modeSetMask) | (0b11100000 & modeSetMask) //for sweeping to find a fringe
+#define setMode3dB() PORTD = (PORTD & ~modeSetMask) | (0b11101000 & modeSetMask) //for craziness
+
 
 byte isLocked;
 byte previousIsLocked;
@@ -40,7 +42,9 @@ byte currentALmode;
 byte transmission;
 byte prevTransmission;
 byte searching;
-unsigned long time;
+unsigned long timeOut;
+unsigned long currentTime;
+
 
 void setup(){
   pinMode(pinLED, OUTPUT);
@@ -53,7 +57,8 @@ void setup(){
   DDRD &= 0b11111000; // Sets the pins for WRITING current mode
   setMode = 0;
   searching = 0;
-  Serial.begin(9600);
+//  Serial.begin(9600);
+  setPinSWEEP_HIGH();
 }
 
 void loop(){
@@ -63,28 +68,43 @@ void loop(){
     currentALmode = (prevTransmission << 1) | transmission;
     if(setMode == 15)
     {
-      if (currentALmode = 1) //Just passed a fringe!
+      if (currentALmode == 1) //Just passed a fringe!
       {
+        setPinSWEEP_HIGH();
+        delayMicroseconds(8000);
+        setModeProp();
+        delayMicroseconds(1000);
+        setMode6dB();
+        delayMicroseconds(1000);
+        setMode6dBP();
+        delayMicroseconds(1000);
         setMode9dB();
         setMode = 15;
+        delayMicroseconds(16383);
       }
-      else if (currentALmode = 2) //Just fell out of lock
+      else if (currentALmode == 2) //Just fell out of lock
       {
         searching = 1;
-        setModeSearch();
+        //setModeSearch();
+        setModeAcq();
+//        timeOut = millis();
+        setPinSWEEP_LOW();
       }
-      else if (currentALmode = 0) //Out of lock
+      else if (currentALmode == 0) //Out of lock
       {
         if (searching == 0)
         {
           searching = 1;
-          setModeSearch();
+          //setModeSearch();
+          setModeAcq();
         }
-        setPinSWEEP_LOW();
-        setPinSWEEP_HIGH();
+//        currentTime = millis()- timeOut;
+//        if(currentTime > 49){
+          setPinSWEEP_LOW();
+//        }
       }
       else { // lock is working!
-            setPinSWEEP_LOW();
+            setPinSWEEP_HIGH();
             searching = 0;
       }
     }
@@ -112,7 +132,9 @@ void loop(){
           break;
       }
       setMode = currentModeSwitch;
+      setPinSWEEP_HIGH();
     }
+
 
     PORTB |= 0b00011111; //Don't know why I have to constantly reset this?
     prevTransmission = transmission;
