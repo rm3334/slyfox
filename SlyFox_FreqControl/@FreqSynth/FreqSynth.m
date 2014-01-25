@@ -164,6 +164,19 @@ classdef FreqSynth < hgsetget
                 end
             end
         end
+        function ret = setAmplitude(obj, newAmp)
+            try
+                fprintf(obj.myVISAobject, ['AMPL', ' ', newAmp, 'DB']);
+                ret = 1;
+            catch
+                if obj.myDEBUGmode ~= 1
+                    errordlg('Abandon hope, could not set Amplitude.')
+                    ret = 0;
+                else
+                    ret = 1;
+                end
+            end
+        end
         function quit(obj)
             delete(obj.myPanel);
             obj.myPanel = [];
