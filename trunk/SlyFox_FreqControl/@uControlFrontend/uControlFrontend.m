@@ -8,6 +8,7 @@ classdef uControlFrontend < hgsetget
         mySerial = [];
         myName = [];
         myMode = 0;
+        myInternalCounter = 1;
     end
     
     methods
@@ -77,8 +78,15 @@ classdef uControlFrontend < hgsetget
                                     'String', 'CycleNum on?',...
                                     'Visible', 'on', ...
                                     'Value', 0);
+                    uicontrol(...
+                                    'Parent', uCbuttonVB,...
+                                    'Style', 'checkbox', ...
+                                    'Tag', ['useInternalCounter' NAME],...
+                                    'String', 'Use Internal Counter?',...
+                                    'Visible', 'on', ...
+                                    'Value', 0);
                 uiextras.Empty('Parent', uCbuttonVB);
-            uCbuttonVB.Sizes = [-2 -1 -1 -1 -1 -2];
+            uCbuttonVB.Sizes = [-2 -1 -1 -1 -1 -1 -2];
             
             
             myHandles = guihandles(obj.myTopFigure);
@@ -88,10 +96,12 @@ classdef uControlFrontend < hgsetget
                   set(myHandles.(['openSerial' NAME]), 'Visible', 'off');
                   set(myHandles.(['closeSerial' NAME]), 'Visible', 'off');
                   set(myHandles.(['cycleNumOn' NAME]), 'Visible', 'on');
+                  set(myHandles.(['useInternalCounter' NAME]), 'Visible', 'on');
                 case 1
                   set(myHandles.(['openSerial' NAME]), 'Visible', 'on');
                   set(myHandles.(['closeSerial' NAME]), 'Visible', 'on');
                   set(myHandles.(['cycleNumOn' NAME]), 'Visible', 'off');
+                  set(myHandles.(['useInternalCounter' NAME]), 'Visible', 'off');
             end
             guidata(obj.myTopFigure, myHandles);
         end
@@ -123,13 +133,20 @@ classdef uControlFrontend < hgsetget
             end
         end
         function cycleNum = getCycleNum(obj)
+                myHandles = guihandles(obj.myTopFigure);
                 try
 %                     fopen(obj.mySerial);
 %                     fwrite(obj.mySerial, 'c');
 %                     cycleNum = fscanf(obj.mySerial);
 %                     fclose(obj.mySerial);
+                    if(~get(myHandles.(['useInternalCounter' obj.myName]), 'Value'))
                       fprintf(obj.mySerial, 'SENS:TOT:DATA?');
                       cycleNum = fscanf(obj.mySerial);
+                    else
+                      disp(['Internal Counter: ' num2str(obj.myInternalCounter)])
+                      cycleNum = num2str(obj.myInternalCounter);
+                      obj.myInternalCounter = obj.myInternalCounter + 1;
+                    end
                 catch exception
                     exception.message
                     disp('Error when getting cycleNum');

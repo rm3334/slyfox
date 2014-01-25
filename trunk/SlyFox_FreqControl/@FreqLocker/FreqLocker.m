@@ -2682,6 +2682,8 @@ classdef FreqLocker < hgsetget
             setappdata(obj.myTopFigure, 'readyForData', 1);
         end
         function start4PeakLockRezero_takeNextPoint(obj, data)
+            ramseyAmplitude = 7;
+            rabiAmplitude = -26.8;
             myHandles = guidata(obj.myTopFigure);
             tempNormData = getappdata(obj.myTopFigure, 'normData');
             tempScanData = getappdata(obj.myTopFigure, 'scanData');
@@ -2748,6 +2750,7 @@ classdef FreqLocker < hgsetget
                 %accordingly.
                 NEXTrezeroSeqPlace
                 if (NEXTrezeroSeqPlace > 8)
+%                    ret = obj.myFreqSynth.setAmplitude(num2str(ramseyAmplitude));
                    switch mod(seqPlace+1,8) 
                         case 0 % left side of line 1
                             curFrequency = newCenterFreqL1 - linewidth/2;
@@ -2775,6 +2778,7 @@ classdef FreqLocker < hgsetget
 %                             runNum
 %                             rezeroSeqPlace+1
 %                             previousVoltages(1) - voltageStepSize
+%                         ret = obj.myFreqSynth.setAmplitude(num2str(rabiAmplitude));
                         switch mod(rezeroSeqPlace+1,rezeroSequenceNumber) 
                             case 0 % Unpol,  Ix =  Ix0 - Delta
                                 curFrequency = (newCenterFreqL1 + newCenterFreqH1)/2;
@@ -3336,7 +3340,7 @@ classdef FreqLocker < hgsetget
             
             %Initialize Liquid Crystal Waveplate
             if get(myHandles.bounceLCwaveplate, 'Value') && strcmp(get(myHandles.openSerialLC, 'Enable'), 'off')
-                fprintf(obj.myLCuControl.mySerial, [':2;c' int2str(mod(seqPlace+1,8)) ';d0;t80000']);
+                fprintf(obj.myLCuControl.mySerial, [':2;c' int2str(mod(seqPlace+1,4)) ';d0;t80000']);
             end
             
 
@@ -3458,8 +3462,8 @@ classdef FreqLocker < hgsetget
                 end
                 rezeroSeqPlace = mod(cycleNum-2,rezeroSequenceNumber);% 1 for previous measurement and 1 for mike bishof's convention
                 NEXTrezeroSeqPlace = mod(rezeroSeqPlace + 1, rezeroSequenceNumber);
-                seqPlace = mod(cycleNum-2,8); % 1 for previous measurement and 1 for mike bishof's convention
-                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,8)) '\n']);
+                seqPlace = mod(cycleNum-2,4); % 1 for previous measurement and 1 for mike bishof's convention
+                fprintf(1,['Cycle Number for data just taken : ' num2str(cycleNum-1) '\rTherfore we just took seqPlace: ' num2str(mod(cycleNum-2,4)) '\n']);
                 if runNum ~= 0 && prevCycleNum ~= (cycleNum-1)
                     fprintf(1, 'Cycle Slipped\n');
                     badData = 1;
@@ -3774,7 +3778,7 @@ classdef FreqLocker < hgsetget
                         end
                     end
                     if (mod(rezeroSeqPlace+1,rezeroSequenceNumber) > 8) 
-                        switch mod(seqPlace+1,8)
+                        switch mod(seqPlace+1,4)
                             case 0
                                 set(myHandles.lockStatus, 'String', 'Low1_L');
                             case 1
@@ -3782,7 +3786,7 @@ classdef FreqLocker < hgsetget
                             case 2
                                 set(myHandles.lockStatus, 'String', 'High1_L');
                             case 3
-                                set(myHandles.lockStatus, 'String', 'High2_R');
+                                set(myHandles.lockStatus, 'String', 'High1_R');
                         end
                     else
                         switch mod(rezeroSeqPlace+1,rezeroSequenceNumber)
