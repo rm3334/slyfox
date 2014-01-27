@@ -64,8 +64,9 @@ function FrequencyControlMain(DEBUGMODE )
             gs = GageStreamerClientFrontend(f, tp);
                 gs.setFreqSweeper(fs1);
                 gs.setFreqLocker(fL);
+            pidPan = PID_Panel(f,tp)
 %             tp.TabNames = {'FreqSynth', 'TimeSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageStepper', 'Sweeper', 'FreqLocker', 'GageStreamer'};
-            tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageCC', 'Sweeper', 'FreqLocker', 'GageStreamer'};
+            tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'AnalogVoltageCC', 'Sweeper', 'FreqLocker', 'GageStreamer', 'PID Panel'};
 %             tp.TabNames = {'FreqSynth', 'LC_Arduino', 'NC_Arduino', 'Sweeper', 'FreqLocker', 'GageStreamer'};
 
     end
@@ -116,6 +117,8 @@ function FrequencyControlMain(DEBUGMODE )
         delete(ardCN);
 %         AVS.quit();
         AVCC.quit();
+        pidPan.quit();
+        delete(pidPan);
 
 %         delete(AVS);
 %         delete(pan);
